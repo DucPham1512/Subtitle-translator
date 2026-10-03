@@ -1,0 +1,42 @@
+[project]
+name = "subagent"
+version = "0.1.0"
+description = "Translate burned-in Chinese subtitles into Vietnamese with pinyin, and render them back onto the video."
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "openai>=1.30",
+    "pyyaml>=6",
+    "python-dotenv>=1",
+    "numpy>=1.26",
+    "opencv-python-headless>=4.9",
+    "pypinyin>=0.51",
+    "jieba>=0.42",
+    "pysubs2>=1.7",
+]
+
+[project.optional-dependencies]
+# OCR: RapidOCR on ONNX Runtime (install onnxruntime-gpu for CUDA, onnxruntime for CPU only).
+ocr = ["rapidocr", "onnxruntime-gpu"]
+# Voice match: install torch/torchaudio from the CUDA wheel index first (see README).
+voice = ["speechbrain>=1.0", "torch", "torchaudio"]
+# Cast recognition (who is on screen / talking): OWLv2 + DINOv2; needs torch from the voice extra.
+cast = ["transformers>=4.45", "pillow"]
+app = ["PySide6>=6.6", "python-mpv>=1.0"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[tool.setuptools.packages.find]
+include = ["subagent*", "app*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = [".venv", "work", "cache", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

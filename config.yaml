@@ -1,0 +1,269 @@
+show:
+  name: <show name>
+  genre_register: co_trang_tien_hiep
+device: auto
+video:
+  sample_fps: 4
+  subtitle_band:
+    top: 0.8272
+    bottom: 0.8959
+    left: 0.1943
+    right: 0.798
+  text_threshold: 200
+  change_threshold: 0.02
+  empty_text_ratio: 0.002
+  subtitle_detection: outline         # outline: text must be bright with a dark outline | bright: any bright pixels
+  outline_dark_threshold: 60          # grayscale at or below this is an outline pixel
+  outline_reach_px: 2                 # a bright pixel this close to a dark one is outlined
+  min_outlined_ratio: 0.006           # fewer outlined pixels than this fraction: no subtitle (0 lost in ep002 at 0.006)
+  band_frames: 5                      # fuse up to 5 frames of the same subtitle (median): OCR benchmark 2026-10-03,
+                                      # generic segmentation 89.3% -> 90.0% lines (5.4a, 6.11c)
+ocr:
+  min_confidence: 0.6
+  merge_max_edit_distance: 1
+  fragment_max_samples: 1          # events on screen for this many sampled frames or fewer are "fragments"
+  fragment_merge_similarity: 0.6   # fold a fragment into a neighbour this similar (or containing it)
+  # generic subtitle segmentation (5.4a; needs `calibrate EPISODE --style` once per series): OCR benchmark
+  # 2026-10-03 on 12 reviewed episodes, line accuracy 86.6% (grey band as is) -> 90.0% with band_frames 5
+  preprocess: segment
+  recognize: line                  # crop the segmented line; recognition model only
+  mask_image: original             # the recognizer reads the band's own pixels (binarised glyphs lose strokes)
+  mask_scale: 1.0                  # the recognizer resizes crops to 48 px anyway
+non_dialogue:
+  enabled: true
+  box_height_tolerance: 0.25
+  box_center_tolerance: 0.15
+  max_duration_ms: 8000
+ocr_fix:
+  batch_size: 50
+  max_char_changes: 2
+audio:
+  sample_rate: 16000
+  pad_ms: 100
+  min_event_ms: 400
+voice:
+  model: speechbrain/spkrec-ecapa-voxceleb
+  top_k: 3
+  accept_score: 0.60               # stricter: 96% of confident speakers correct on ep001/ep002 (0.55 gave 93%)
+  min_margin: 0.08
+  unknown_below: 0.35
+  confusable_similarity: 0.75
+  learn_from_reviews: true         # rebuild the voice bank from reviewed lines after each finish-review
+  learn_min_ms: 800                # reviewed lines shorter than this carry too little voice
+  learn_trim_ms: 80                # cut from both ends of a line (neighbouring speech bleeds in)
+  learn_min_clips: 3               # a character needs this many samples to get a voice
+  learn_outlier_share: 0.1         # least typical share of samples dropped (likely mislabelled lines)
+  learn_from_auto: true            # auto-mode episodes may teach too, only through the filter and gate below
+  learn_auto_min_score: 0.70       # voice match top-1 score (status "fixed" or "new_voice")
+  learn_auto_min_margin: 0.15      # top-1 minus top-2
+  learn_auto_allowed_flags: [cps_exceeded, check_pinyin]   # any other flag keeps the line out
+  learn_auto_min_test_lines: 30    # human-reviewed lines needed to measure whether auto lines help
+  learn_auto_max_drop: 0.0         # accuracy on human-reviewed lines may not get worse at all
+  new_voices: true                 # group voices that match no known character into new characters (npc_005_01)
+  new_voice_below: 0.70            # lines whose best known-character score is below this may be new (user
+                                   # 2026-10-02: a new id with default ta/ngươi beats a wrong known speaker)
+  new_voice_similarity: 0.60       # lines are grouped when their voices are at least this similar
+  new_voice_known_max: 0.65        # a group whose average voice scores this high is a known character (user, 2026-10-02)
+  new_voice_min_lines: 3           # smaller groups stay unknown
+  new_voice_prefix: npc            # automatic ids: npc_<episode>_<voice>
+cast:                              # who is on screen and who is talking (OWLv2 + DINOv2 on the GPU)
+  enabled: true
+  detector_model: google/owlv2-base-patch16-ensemble
+  embed_model: facebook/dinov2-base
+  queries: [a cartoon character, a cartoon person, a cartoon fish, a dog]
+  frame_width: 960
+  sample_fps: 5
+  min_score: 0.15
+  min_box_height: 0.12
+  min_box_width: 0.05
+  max_box_width: 0.9
+  nms_iou: 0.5
+  match_similarity: 0.70           # ep001-005 replay: talking sprite named right 88% by ep005 (0.75: 91%, fewer named)
+  match_margin: 0.03
+  unknown_similarity: 0.75
+  motion_fps: 10
+  motion_width: 480
+  talk_dominance: 1.6              # 1.3 named the talker right 71% by ep005; 1.6: 88%
+  learn: true
+  name_min_votes: 3                # 2 votes at 60% let early wrong names spread
+  name_min_share: 0.75
+  add_similarity: 0.85             # 0.75 let wrong crops pile up under a name
+  max_exemplars: 60
+pinyin:
+  polyphone_fallback: true
+  polyphones:
+  - 了
+  - 行
+  - 长
+  - 得
+  - 还
+  - 重
+  - 为
+  - 着
+  - 地
+  - 的
+  - 觉
+  - 都
+  - 处
+  - 传
+  - 藏
+windows:
+  gap_ms: 3000
+  max_lines: 40
+  context_overlap: 5
+translate:
+  max_retries: 2
+  max_line_chars: 42
+  max_lines_per_event: 2
+  max_cps: 17
+  retry_on_cps: false              # false: reading speed is flagged for review, never retried
+  picture_veto: "off"              # off | recognised | any: a talking character on screen disputes the voice
+  picture_evidence: tiebreak       # all | tiebreak | off: picture shown only where the voice is unsure (2026-10-02:
+                                   # the talking sprite made the translator override sure voices, e.g. ep006 new_voice)
+                                   # benchmark 2026-10-02 (ep007-011, 100 gold lines): off 78.5%, recognised 78.7%,
+                                   # any 77.4%; disagreement lines 47 / 37 / 33%: the talking sprite is wrong too often
+  pronoun_terms:
+  - ta
+  - ngươi
+  - huynh
+  - đệ
+  - tỷ
+  - muội
+  - sư phụ
+  - đồ nhi
+  - sư huynh
+  - sư đệ
+  - sư tỷ
+  - sư muội
+  - tại hạ
+  - bổn tọa
+  - lão phu
+  - bản cung
+  - trẫm
+  - thần
+  - nô tỳ
+  - các hạ
+  - tiền bối
+  - vãn bối
+  - tôi
+  - bạn
+  - anh
+  - em
+  - chị
+  - cậu
+  - tớ
+  - mày
+  - tao
+evaluate:
+  min_score: 3
+  criteria:
+  - meaning
+  - pronouns
+  - register
+  - naturalness
+  - speaker
+sprite:
+  enabled: false                   # off: on ep002 the best sprite was the speaker 5% of the time
+  match_threshold: 0.8
+  scales:
+  - 0.6
+  - 0.8
+  - 1.0
+  - 1.2
+  trigger_conf_below: 0.6
+script_review:                     # whole-script pass before review: repeats, OCR noise, unrelated lines
+  enabled: true
+  role: utility                    # one call per episode (DeepSeek)
+  repeat_merge_gap_ms: 300         # identical text with at most this gap: one subtitle, merged (lossless)
+  repeat_window_ms: 4000           # a similar line within this time is flagged as a possible repeat
+  repeat_similarity: 0.6
+  remove_confidence: 0.9           # ep001/ep002: >=0.9 matched your deletions 27/27; 0.8-0.9 only 57%
+  max_remove_share: 0.1            # safety cap: more removals than this share of lines become flags
+  example_limit: 30                # reviewer decisions shown to the model, per kind
+  memory_auto_remove_min: 2        # a short text you removed this often and never kept is removed
+  memory_max_han: 2                # "short": at most this many Chinese characters
+review:
+  mode: human
+  predelete_fragments: true        # noisy one-frame OCR fragments arrive in review already deleted (restorable)
+  noise_max_han: 2                 # "noisy": at most this many Chinese characters, or stray digits
+audit:                             # accuracy measured on a sample of finished episodes (6.11)
+  sample_size: 20                  # random lines per episode (about 300 over 15 episodes: about ±4%)
+  min_per_stratum: 3               # at least this many flagged and unflagged lines when available
+  max_disagreements: 15            # plus lines where voice / picture / speaker disagree (reported separately)
+  include_human: false             # human-reviewed episodes show your corrections, not the system's accuracy
+  ignore_flags: [cps_exceeded, check_pinyin]   # not about correctness; on ep001-006 reading speed flagged most lines
+memory:
+  correction_examples: 20          # recent reviewer corrections shown to translator and evaluator
+  character_lifecycle: true        # keep / archive unlocked characters (npc_..., translator-made) by appearances
+  archive_after_absent: 2          # a one-off not seen for this many episodes is archived (hidden, restorable)
+  probation: true                  # a new character (npc_..., translator-named) is a candidate until it comes back
+  probation_min_lines: 3           # approved lines it speaks in its first episode (user decision 2026-10-02)
+  probation_window: 2              # ...and it must come back within the next 2 episodes (user decision)
+  story_so_far_max_words: 600
+  style_rules_max: 30
+  dream_max_lines: 400
+render:
+  font_dir: fonts
+  font_name: Noto Sans
+  pinyin_font_size: 36.0
+  vi_font_size: 48.0
+  pinyin_min_scale: 0.7
+  line_spacing: 1.2
+  avg_char_width: 0.55
+  outline: 2.5
+  shadow: 0
+  primary_color: '&H00FFFFFF'
+  outline_color: '&H00000000'
+  mask: blur
+  blur_radius: 20
+  mask_color: black
+  encoder: auto
+  quality: 20
+llm:
+  temperature: 0
+  max_retries: 5
+  timeout_s: 120
+  max_retry_wait_s: 90             # Gemini's per-minute limit asks for ~40 s; the old 16 s backoff gave up first
+  providers:
+    translator:
+      base_url: https://api.deepseek.com
+      api_key_env: DEEPSEEK_API_KEY
+      model: deepseek-chat
+    utility:
+      base_url: https://api.deepseek.com
+      api_key_env: DEEPSEEK_API_KEY
+      model: deepseek-chat
+    evaluator:
+      base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+      api_key_env: GEMINI_API_KEY
+      model: gemini-3.5-flash-lite
+  prices:                              # USD per 1M tokens
+    # DeepSeek's price page lists deepseek-flash; deepseek-chat priced at its peak rates (off-peak is half)
+    deepseek-chat: {input: 0.30, input_cached: 0.006, output: 1.20}
+    # free tier: no charge (paid tier would be input 0.25, input_cached 0.025, output 1.50)
+    gemini-3.1-flash-lite: {input: 0, input_cached: 0, output: 0}
+    gemini-3.5-flash-lite: {input: 0, input_cached: 0, output: 0}
+budget:
+  max_cost_per_episode: 1.0
+paths:
+  work_dir: E:/Video Data/Raw
+episodes:
+  video_extensions:
+  - .mp4
+  - .mkv
+  - .avi
+  - .mov
+  - .flv
+  - .webm
+  - .ts
+  number_patterns:
+  - 第\s*(\d+)\s*[集话話]
+  - (?i)\bep(?:isode)?[\s._-]*(\d+)
+  - (?i)\be(\d{1,4})\b
+  - (\d{1,4})
+output:
+  folder: E:/Video Data/Translated
+  name_suffix: _vi
+  on_exists: ask
+cleanup:
+  auto: true

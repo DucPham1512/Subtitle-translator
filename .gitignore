@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+work/
+cache/
+data/episodes/
+data/memory/
+libmpv-2.dll

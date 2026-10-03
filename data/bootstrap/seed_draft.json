@@ -1,0 +1,511 @@
+{
+  "characters": [
+    {
+      "id": "ca",
+      "name_zh": "鱼",
+      "name_vi": "Cá",
+      "description": "Nhân vật đại diện cho những con cá nói chung."
+    },
+    {
+      "id": "co_ba_thuong",
+      "name_zh": "姬伯常",
+      "name_vi": "Cơ Bá Thường",
+      "description": "Cha của Cơ Tử."
+    },
+    {
+      "id": "co_tu",
+      "name_zh": "姬子",
+      "name_vi": "Cơ Tử",
+      "description": "Con của Cơ Bá Thường."
+    },
+    {
+      "id": "su_thuong_phi",
+      "name_zh": "史尚飞",
+      "name_vi": "Sử Thượng Phi",
+      "description": "Bạn của Cơ Tử, xưng hô chú - cháu với Cơ Bá Thường."
+    },
+    {
+      "id": "so_luu_can",
+      "name_zh": "楚留勤",
+      "name_vi": "Sở Lưu Cần",
+      "description": "Bạn của Cơ Tử, xưng hô chú - cháu với Cơ Bá Thường."
+    },
+    {
+      "id": "bac_ty",
+      "name_zh": "北匕",
+      "name_vi": "Bắc Tỵ",
+      "description": "Con trai Bắc Minh, xưng hô chú - cháu với Cơ Bá Thường."
+    },
+    {
+      "id": "tieu_luong",
+      "name_zh": "小亮",
+      "name_vi": "Tiểu Lượng",
+      "description": "Em họ Bắc Tỵ."
+    }
+  ],
+  "pronoun_pairs": [
+    {
+      "speaker_id": "ca",
+      "listener_id": "co_ba_thuong",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_ba_thuong",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "ca",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "ca",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "ca",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "ca",
+      "listener_id": "bac_ty",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "ca",
+      "listener_id": "tieu_luong",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "tieu_luong",
+      "listener_id": "ca",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_ba_thuong",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "con",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "co_ba_thuong",
+      "self_term": "con",
+      "address_term": "cha",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_ba_thuong",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "cháu",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "co_ba_thuong",
+      "self_term": "cháu",
+      "address_term": "chú",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_ba_thuong",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "cháu",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "co_ba_thuong",
+      "self_term": "cháu",
+      "address_term": "chú",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_ba_thuong",
+      "listener_id": "bac_ty",
+      "self_term": "ta",
+      "address_term": "cháu",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "co_ba_thuong",
+      "self_term": "cháu",
+      "address_term": "chú",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "bac_ty",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "co_tu",
+      "listener_id": "tieu_luong",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "tieu_luong",
+      "listener_id": "co_tu",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "bac_ty",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "su_thuong_phi",
+      "listener_id": "tieu_luong",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "tieu_luong",
+      "listener_id": "su_thuong_phi",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "bac_ty",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "so_luu_can",
+      "listener_id": "tieu_luong",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "tieu_luong",
+      "listener_id": "so_luu_can",
+      "self_term": "ta",
+      "address_term": "ngươi",
+      "context": ""
+    },
+    {
+      "speaker_id": "bac_ty",
+      "listener_id": "tieu_luong",
+      "self_term": "ta",
+      "address_term": "em",
+      "context": ""
+    },
+    {
+      "speaker_id": "tieu_luong",
+      "listener_id": "bac_ty",
+      "self_term": "em",
+      "address_term": "anh",
+      "context": ""
+    }
+  ],
+  "glossary": [
+    {
+      "zh": "钓鱼佬",
+      "vi": "câu thủ",
+      "pinyin": "diào yú lǎo",
+      "type": "term",
+      "notes": "Người đam mê câu cá, thường dùng với sắc thái hài hước."
+    },
+    {
+      "zh": "终焉大鱼利维坦",
+      "vi": "Chung Yên Đại Ngư Leviathan",
+      "pinyin": "zhōng yān dà yú lì wéi tǎn",
+      "type": "name",
+      "notes": "Con cá khổng lồ tận thế trong truyền thuyết."
+    },
+    {
+      "zh": "楚钓帝",
+      "vi": "Sở Điếu Đế",
+      "pinyin": "chǔ diào dì",
+      "type": "title",
+      "notes": "Điếu Đế họ Sở, một trong những Điếu Đế."
+    },
+    {
+      "zh": "白虎钓帝",
+      "vi": "Bạch Hổ Điếu Đế",
+      "pinyin": "bái hǔ diào dì",
+      "type": "title",
+      "notes": "Điếu Đế với Bạch Hổ Cốt."
+    },
+    {
+      "zh": "青龙钓帝",
+      "vi": "Thanh Long Điếu Đế",
+      "pinyin": "qīng lóng diào dì",
+      "type": "title",
+      "notes": "Điếu Đế với Thanh Long."
+    },
+    {
+      "zh": "白虎骨",
+      "vi": "Bạch Hổ Cốt",
+      "pinyin": "bái hǔ gǔ",
+      "type": "item",
+      "notes": "Xương của Bạch Hổ, nguồn sức mạnh của Bạch Hổ Điếu Đế."
+    },
+    {
+      "zh": "楚新钓",
+      "vi": "Sở Tân Điếu",
+      "pinyin": "chǔ xīn diào",
+      "type": "place",
+      "notes": "Địa danh hoặc thế lực liên quan đến câu cá."
+    },
+    {
+      "zh": "何罗鱼",
+      "vi": "Hà La Ngư",
+      "pinyin": "hé luó yú",
+      "type": "name",
+      "notes": "Loài cá trong truyền thuyết."
+    },
+    {
+      "zh": "远古鲲",
+      "vi": "Viễn Cổ Côn",
+      "pinyin": "yuǎn gǔ kūn",
+      "type": "name",
+      "notes": "Cá Côn thời viễn cổ, rất lớn."
+    },
+    {
+      "zh": "仙品钓鱼佬",
+      "vi": "Tiên Phẩm Câu Thủ",
+      "pinyin": "xiān pǐn diào yú lǎo",
+      "type": "term",
+      "notes": "Cấp bậc cao nhất của câu thủ."
+    },
+    {
+      "zh": "爆竿",
+      "vi": "bạo can",
+      "pinyin": "bào gān",
+      "type": "term",
+      "notes": "Cần câu bị gãy do cá quá lớn."
+    },
+    {
+      "zh": "爆户",
+      "vi": "bạo hộ",
+      "pinyin": "bào hù",
+      "type": "term",
+      "notes": "Câu được rất nhiều cá."
+    },
+    {
+      "zh": "白条",
+      "vi": "bạch điều",
+      "pinyin": "bái tiáo",
+      "type": "name",
+      "notes": "Loài cá nhỏ, thường chỉ cá con."
+    },
+    {
+      "zh": "大板鲫",
+      "vi": "đại bản tức",
+      "pinyin": "dà bǎn jì",
+      "type": "name",
+      "notes": "Cá diếc lớn."
+    },
+    {
+      "zh": "空军",
+      "vi": "không quân",
+      "pinyin": "kōng jūn",
+      "type": "term",
+      "notes": "Không câu được con cá nào."
+    },
+    {
+      "zh": "打窝",
+      "vi": "đả oa",
+      "pinyin": "dǎ wō",
+      "type": "term",
+      "notes": "Thả mồi để dụ cá."
+    },
+    {
+      "zh": "钓位",
+      "vi": "điếu vị",
+      "pinyin": "diào wèi",
+      "type": "term",
+      "notes": "Vị trí câu cá."
+    },
+    {
+      "zh": "传承",
+      "vi": "truyền thừa",
+      "pinyin": "chuán chéng",
+      "type": "term",
+      "notes": "Sự kế thừa kỹ thuật, truyền thống."
+    },
+    {
+      "zh": "鱼",
+      "vi": "Cá",
+      "pinyin": "Yú",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "姬伯常",
+      "vi": "Cơ Bá Thường",
+      "pinyin": "Jī Bó Cháng",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "姬子",
+      "vi": "Cơ Tử",
+      "pinyin": "Jī Zi",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "史尚飞",
+      "vi": "Sử Thượng Phi",
+      "pinyin": "Shǐ Shàng Fēi",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "楚留勤",
+      "vi": "Sở Lưu Cần",
+      "pinyin": "Chǔ Liú Qín",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "北匕",
+      "vi": "Bắc Tỵ",
+      "pinyin": "Běi Bǐ",
+      "type": "name",
+      "notes": null
+    },
+    {
+      "zh": "小亮",
+      "vi": "Tiểu Lượng",
+      "pinyin": "Xiǎo Liàng",
+      "type": "name",
+      "notes": null
+    }
+  ],
+  "generated_at": "2026-09-30T19:36:57+00:00",
+  "voices": [],
+  "confusable_pairs": [],
+  "warnings": [
+    "voice bank skipped: Voice match needs speechbrain + torch. See README for the CUDA install command."
+  ]
+}
