@@ -214,6 +214,17 @@ def cmd_clean(args, config, paths, progress) -> int:
     return 0
 
 
+def cmd_baseline(args, config, paths, progress) -> int:
+    from subagent.baseline import baseline_dir, freeze
+    from subagent.episodes import Registry
+
+    registry = Registry(paths)
+    eps = [registry.resolve(x).id for x in args.episodes] if args.episodes else None
+    done = freeze(config, paths, args.name, eps)
+    print(f"frozen into {baseline_dir(paths, args.name)}: {', '.join(done) or 'nothing'}")
+    return 0
+
+
 def cmd_bootstrap(args, config, paths, progress) -> int:
     from subagent.joblock import job_lock
     from subagent.llm import LLMClient
@@ -291,6 +302,18 @@ def cmd_audit(args, config, paths, progress) -> int:
             s = audit.draw_sample(config, paths, ep.id)
             print(f"{ep.id}: {sum(x.kind == 'random' for x in s)} random + "
                   f"{sum(x.kind == 'disagreement' for x in s)} disagreement lines")
+        return 0
+    if args.action == "remap-key":
+        from pathlib import Path
+
+        from subagent.ocr_benchmark import remap_key
+
+        if not args.archive:
+            print("remap-key needs --archive DIR (the folder the old key and events were archived to)")
+            return 2
+        key, lost = remap_key(paths, Path(args.archive))
+        print(f"answer key: {len(key['corrections'])} corrections, {len(key['excluded'])} exclusions moved to "
+              f"today's line ids; {len(lost)} found no line: {', '.join(lost) or '-'}")
         return 0
     if args.action == "ocr":
         from subagent.ocr_benchmark import ocr_episodes, run_ocr_benchmark
@@ -533,6 +556,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("episode")
     p.set_defaults(func=cmd_clean)
 
+    p = sub.add_parser("baseline", parents=[common], help="copy finished reviews into a fixed baseline")
+    p.add_argument("action", choices=["freeze"])
+    p.add_argument("name", help="the baseline's name (folder <work>/_baseline/<name>/)")
+    p.add_argument("episodes", nargs="*", help="episodes (default: every finished episode)")
+    p.set_defaults(func=cmd_baseline)
+
     p = sub.add_parser("dream", parents=[common], help="offline memory consolidation")
     p.add_argument("--auto-apply", action="store_true", help="apply proposals that touch no locked entry")
     p.add_argument("--no-cache", action="store_true")
@@ -543,12 +572,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_voices)
 
     p = sub.add_parser("audit", parents=[common], help="accuracy measured on a sample of finished episodes")
-    p.add_argument("action", choices=["sample", "report", "benchmark", "ocr"])
+    p.add_argument("action", choices=["sample", "report", "benchmark", "ocr", "remap-key"])
     p.add_argument("episodes", nargs="*", help="episodes (default: every finished episode)")
     p.add_argument("--redraw", action="store_true", help="draw a new sample even if one exists")
     p.add_argument("--label", help="benchmark: a name for this run (e.g. before-cleanup)")
     p.add_argument("--no-cache", action="store_true", help="benchmark: bypass the LLM response cache")
     p.add_argument("--existing", action="store_true", help="ocr: score the OCR already on disk instead of rerunning it")
+    p.add_argument("--archive", help="remap-key: the folder the old answer key and events were archived to")
     p.set_defaults(func=cmd_audit)
 
     p = sub.add_parser("partial-review", parents=[common],

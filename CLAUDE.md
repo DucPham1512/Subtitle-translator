@@ -139,6 +139,8 @@ subagent/
   characters.py        automatic characters from new voices: ids, "unnamed" test, new_voices.json I/O (5.8)
   context.py  state.py  progress.py  joblock.py  media.py  device.py  textutil.py  util.py  errors.py
   ocr_benchmark.py     raw OCR scored against the corrected Chinese of reviewed episodes (6.11c)
+  baseline.py          fixed copy of finished reviews for benchmarks (6.11d)
+  character_card.py    who an id is: name, description, first episode, voice clip, picture (6.4)
   subtitle_style.py    generic subtitle segmentation: stroke-width transform, series style calibration (5.4a)
   stages/
     ingest.py  ocr.py  events.py  ocr_fix.py  audio.py  voice.py
@@ -166,7 +168,7 @@ app/                   desktop app (PySide6); imports `subagent`, never the reve
   shortcuts.py  widgets.py
   views/
     episodes.py  run.py  review.py  memory.py  bootstrap.py  dreaming.py  settings.py
-    character_dialog.py  common.py
+    character_dialog.py  character_browser.py  common.py
   i18n/                app_en.ts, app_vi.ts (+ compiled .qm), fill_vi.py (Vietnamese strings)
 prompts/               one .md file per prompt, loaded at runtime
 data/
@@ -435,6 +437,12 @@ CREATE TABLE candidate_sprites (  -- a candidate's unrecognised talking sprites 
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   candidate_id TEXT NOT NULL, embedding BLOB NOT NULL, episode_id TEXT, event_id TEXT
 );
+
+-- Re-finish safety: one episode's share of learning, replaced when its review is finished again.
+CREATE TABLE line_decision_episodes (zh TEXT, episode_id TEXT, removed INTEGER, kept INTEGER, PRIMARY KEY (zh, episode_id));
+CREATE TABLE sprite_feedback (     -- votes one episode gave an exemplar; added = 1: it added the exemplar
+  exemplar_id INTEGER, episode_id TEXT, right INTEGER, wrong INTEGER, added INTEGER, PRIMARY KEY (exemplar_id, episode_id)
+);
 ```
 
 ### 4.2 Markdown memory (`data/memory/`)
@@ -690,6 +698,8 @@ output:
   on_exists: ask                      # ask (app) | overwrite | keep_both | fail (CLI default when non-interactive)
 cleanup:
   auto: true                          # delete temporary files when an episode is done
+baseline:
+  name: null                          # set: every finished review is copied to <work>/_baseline/<name>/ (6.11d)
 ```
 
 Values above are the code defaults (`config.py`), except `number_patterns` (code default: only the last pattern). The project's `config.yaml` holds the tuned values; each tuned key carries a comment with the measurement behind it.
@@ -816,7 +826,7 @@ Values above are the code defaults (`config.py`), except `number_patterns` (code
   - Reviewer box edits come first (`ReviewedLine.cast_*`, made in the review screen's On screen view, 6.4; `sprite_learning.apply_review_edits`): moved/resized boxes and boxes drawn around missed characters (with a character chosen) are cut from the analysed frame and described again (the image model loads only for this; skipped with a log message when it cannot); the reviewer's talking mark replaces the detected talker (`none`: nobody on screen talks), and a box marked talking on a line with a trusted speaker is labelled as that speaker unless named explicitly.
   - Reviewer box labels (`ReviewedLine.cast_labels`) come first: a labelled box is that character (its crop joins the bank; the exemplar that had named it differently gains a `wrong`, one that named it right a `right`); a box labelled `_none` (not a character) is never learned and never votes. Labelled boxes are left out of the talking-line corrections and votes.
   - Recognitions ≥ `add_similarity` and confirmed talkers join the bank (new poses). Each character keeps its `max_exemplars` best-confirmed exemplars (right − wrong, then newest).
-  - Written through `MemoryManager.write_sprites` in one transaction, one `memory_log` row per character, commit `sprites from <ep>: +n, -m, k new names, c corrections`. Deleting a character deletes its sprites.
+  - Written through `MemoryManager.write_sprites` in one transaction, one `memory_log` row per character, commit `sprites from <ep>: +n, -m, k new names, c corrections`. Deleting a character deletes its sprites. Re-finish safe: each episode's votes and added exemplars are recorded (`sprite_feedback`); learning the episode again first takes them back (its additions deleted, its votes subtracted) and plans against the bank without them. An exemplar its votes removed cannot come back.
 - **Measured (replay of ep001–005 with reviewed speakers):** talking sprite named right 4/5, 6/14, 29/39, 29/33 (ep002–ep005); speaker among recognised characters 25–38% of lines; coverage grows with the bank. Main-cast libraries clean except pairs who always appear and move together.
 - **Backfill:** `python -m subagent sprites learn` runs the cast stage on finished episodes that lack it, then learns from each, in episode order.
 - **Tests** never load the models: `tests/conftest.py` turns `cast.enabled` off and sets `HF_HUB_OFFLINE=1`; cast tests use a fake detector, image model, frames and motion.
@@ -896,7 +906,7 @@ Values above are the code defaults (`config.py`), except `number_patterns` (code
 - **OCR errors in real dialogue** (same call; user decision 2026-10-03): a line that is real dialogue but whose Chinese has an OCR error is not noise. The model returns `action: fix`, `reason: ocr`, the whole corrected line (`zh_fix`) and its context check (`evidence`); the prompt spells out the checks: a 7 becomes 了 only where the particle fits the grammar and a number does not (never deleted, never kept beside an added 了); a character such as 楚 / 姬 / 史 is stray screen text only at the edge of the line, outside its grammar, with the line complete without it, while the same character inside the sentence is the show's wording (euphemism, slang, a name); similar-looking characters and edge doubles only when the context makes the word clear. When it cannot write the corrected line it returns `check` / `ocr`. Code accepts a fix only with evidence, changing at most `fix_max_change_share` of the line, and refuses a 7 that is dropped, kept beside an added 了, or reads as a number (next to a digit, after 第, before one of `measure_words`); a refused fix becomes a `check` flag. Fixes are never applied: the line gets flag `script_ocr` and the editor's notes show the suggested Chinese and the evidence; the reviewer edits the Chinese (pinyin follows) and checks the Vietnamese, which was translated from the wrong text.
 - **Measured** (12 human-reviewed episodes, against the OCR answer key, 142 of 1,761 lines with wrong Chinese after OCR correction): the old prompt pointed at 41 of them as noise / suspect, with no fix. The new one suggests 46 fixes, 38 exactly right (83%), 1 harmful (a correct line "fixed"), plus 16 OCR check flags; accepting every fix raises correct Chinese from 1,619 to 1,656 lines. Without the context checks it suggested more (51 right) but damaged 8 correct lines (puns and euphemisms such as 鸡道, 史). It removed 37 lines the reviewer also deleted and 2 the reviewer retyped (garbage readings of 不好 and 也太……). About $0.005 per episode.
 - **Output:** `script_review.jsonl` (`ScriptDecision`). The review draft applies it (5.14): removed lines arrive deleted (restorable) with flag `script_<reason>`; flagged lines get `script_suspect`, fixes `script_ocr`, and the note is shown in the editor. In auto mode removed lines are left out of the video; fixes are only listed.
-- **Its memory:** after each finished review, the Memory Manager counts per normalized text what the reviewer removed and kept (`record_line_decisions`). Lossless repeat merges are not the reviewer's decision; short lines kept and pre-deleted lines restored count as kept. Locked rows (edited in the Memory screen) are not changed.
+- **Its memory:** after each finished review, the Memory Manager counts per normalized text what the reviewer removed and kept (`record_line_decisions`). Lossless repeat merges are not the reviewer's decision; short lines kept and pre-deleted lines restored count as kept. Locked rows (edited in the Memory screen) are not changed. Each episode's share is kept in `line_decision_episodes`, so finishing a review again replaces that episode's share instead of adding to it.
 
 ### 5.14 Review gate and review data (`stages/review.py`)
 
@@ -965,7 +975,7 @@ Values above are the code defaults (`config.py`), except `number_patterns` (code
 
 ### 5.16 Human-edit mining (part of Memory Manager import step)
 
-- A changed `speaker`/`listener` → appended to `data/memory/speaker_corrections.jsonl` for dreaming.
+- A changed `speaker`/`listener` → appended to `data/memory/speaker_corrections.jsonl` for dreaming (mining an episode again first drops its earlier entries).
 - A `vi` change where a glossary term's translation differs → glossary proposal with `source="human"`.
 - Pronoun changes are not parsed in code; dreaming extracts them (5.18).
 
@@ -1032,7 +1042,8 @@ python -m subagent dream [--auto-apply]
 python -m subagent voices learn|evaluate      # rebuild the voice bank now / measure voice-match accuracy (5.8a)
 python -m subagent sprites learn             # cast stage where missing + sprite learning, finished episodes (5.8b)
 python -m subagent partial-review EPISODE    # mid-review: learn from approved lines, re-check the remaining (6.4b)
-python -m subagent audit sample|report|benchmark|ocr [EPISODE...] [--redraw] [--label NAME] [--no-cache] [--existing]   # 6.11, 6.11b, 6.11c
+python -m subagent audit sample|report|benchmark|ocr|remap-key [EPISODE...] [--redraw] [--label NAME] [--no-cache] [--existing] [--archive DIR]   # 6.11, 6.11b, 6.11c
+python -m subagent baseline freeze NAME [EPISODE...]   # copy finished reviews into a fixed baseline (6.11d)
 python -m subagent status [EPISODE] [--json] # stage completion, cost (total and per agent), flag counts
 python -m subagent check                     # binaries, fonts, output folder, API keys, missing prices, device
 ```
@@ -1123,6 +1134,7 @@ Three regions:
 - **Editor (bottom right):**
   - Editable: zh, pinyin (auto-generated; editing it sets `pinyin_overridden`; Regenerate discards the override), vi (Vietnamese input methods work), speaker and listener (dropdowns of known characters and the episode's new voices), line type.
   - **New character…:** creates a character without leaving review (id, Chinese and Vietnamese names, description), saved through the Memory Manager as a human edit (locked), and assigns it to the line's speaker or listener.
+  - **Who is this character?** Under the speaker / listener row, a card for the line's speaker: its picture, "first seen epXXX", description, and ▶ playing a voice sample. **Browse characters…** opens every id the line can take (characters, the episode's new voices, NPCs created in review, candidates on probation) with the same card per row; "Use as speaker" / "Use as listener" assigns one (one undo step). Cards come from `subagent/character_card.py`: name and description from memory (or the candidate), first episode from appearances (or the candidate, or the first reviewed episode it speaks in), and an example line: the longest reviewed dialogue line ≥ `voice.learn_min_ms` it speaks, preferring one where it is the talking sprite (`cast.jsonl`); this episode's draft is searched last. From that line a ≤ 4 s WAV clip (`media.extract_clip`) and the talking box's picture (the analysed frame, else the video frame) are cut once into `cache/character_cards/<id>/`. Loaded in workers. Built because a returning NPC was often given a new id when its old one could not be recognised (user decision 2026-10-03).
   - **New NPC:** gives the line's speaker the next free automatic id of the episode (`npc_<ep>_<n>`, after the voice stage's new voices), shown as "(new NPC)"; nothing is written to memory. The reviewer uses the same id on the character's other lines; at finish it is treated like a new voice of the episode and goes on probation (5.15b) when it speaks ≥ `memory.probation_min_lines` approved lines. The speaker / listener dropdowns also offer candidates on probation that may come back in this episode ("on probation since ep005"), so a return the voice stage missed can be assigned by hand.
   - **Original:** under the Chinese field, the original subtitle pixels (the subtitle band of the frame the cast stage used: the line's middle on the `cast.sample_fps` grid, `video.subtitle_band`), unmasked, to check the OCR text. Loaded in a worker (`Services.line_frame`), the last 40 lines cached; shows why when the video is missing. Below it, **OCR read**: what the recognizer read for the line after pre-processing (`Services.line_ocr_crop`: the line's first reading with the line's raw text, from `ocr_crops/`), at its position in the band, grey where nothing was read; after cleanup or without pre-processing it says so.
   - Read-only context: flags with reasons, script review note, evaluator feedback per attempt, glossary terms found in the line with their required vi forms, and the pronoun pair for the chosen speaker → listener.
@@ -1241,6 +1253,13 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 - **Symmetric crop** (2026-10-03, 12 episodes, after the band was re-drawn centred and the style re-learned on ep001; the baseline is segmentation without it): lines right 91.9% / CER 1.42% / junk events 312 → with tolerance 0: 93.0% / 1.24% / 150; 0.25: 93.0% / 1.21% / 144; 0.5: 92.8% / 1.27% / 148; 0.75: 92.9% / 1.25% / 151; 1: 92.7% / 1.28% / 144; 7 missed lines in every run. Lines right in the baseline and wrong with it: 16, 7, 7, 2, 4 (edge letters clipped: 比→此, 才 and 一 lost; plus 了 / 7 flips that a different crop width causes either way). Lines fixed: strays at the line's ends (一他们, 老爹一, 楚，, 史) and short lines read as junk before. 0.75 chosen: nearly the best accuracy, fewest broken lines. The baseline's 91.9% vs the earlier 90.0% comes from the new band and style together.
 - **End to end** (2026-10-03, 11 episodes, sandbox with today's memory; before = the episodes' old OCR + the old script review, after = generic segmentation with fusion + the Round 3 script review; both through OCR correction, voice, cast, translation and evaluation, script review): Chinese right after OCR correction 90.8% → 93.7% (95.5% with the script review's fixes accepted); lines translated from wrong Chinese 140 → 91; on the 90 lines whose Vietnamese the reviewer rewrote, similarity to the reviewer's text 0.80 → 0.84; speaker on named characters 92.3% both; evaluator first-pass 92.0% → 92.2%; same cost. The new OCR also reads about 35 lines the old one missed or garbled to noise the reviewer deleted (是我赢了 read as 丰音, 号称肿脸仙人咩 as 女): they are absent from the answer key, so key-based scores understate it and count them as junk.
 
+- **Re-mapping the key:** OCR re-runs renumber events (`stages/events.py`). `python -m subagent audit remap-key --archive DIR` moves each correction and exclusion of the key archived in `DIR` (`answer_key.json` + each episode's old `events.jsonl`) to today's event overlapping its old event most in time (`ocr_benchmark.remap_key`), saves it as the current key and lists the ids that found no line.
+
+### 6.11d Baseline (`baseline.py`, `baseline.name`, `python -m subagent baseline freeze`)
+
+- **Why:** a benchmark suite needs gold that later reruns cannot overwrite (user decision 2026-10-03: ep001–ep016 replayed from the bootstrap memory and re-reviewed in episode order, as the baseline for future experiments).
+- While `baseline.name` is set, `finish_review` copies the finished episode to `<work>/_baseline/<name>/<episode>/`: `approved.jsonl`, `edits.jsonl`, `events.jsonl`, `events_raw.jsonl`, `ocr_raw.jsonl`, `translations.jsonl`, `evaluations.jsonl`, `speakers.jsonl`, `new_voices.json`, `cast.jsonl`, `script_review.jsonl`, `pinyin.jsonl`, `video.json`, `state.json`; `manifest.json` records per episode the date, the files, the code and memory git commits and a config hash. Finishing again replaces the copy; a failed copy is reported (`baseline_failed`) and never fails the episode. `baseline freeze NAME [EPISODE...]` copies finished episodes by hand.
+
 ### 6.10 Interface language (i18n)
 
 - Every user-visible string goes through `self.tr()`. Translations live in `app/i18n/app_en.ts` and `app_vi.ts`, compiled to `.qm` and loaded with `QTranslator` at startup.
@@ -1304,6 +1323,9 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 | Source videos linked, not copied | Videos are large; relink with a fingerprint check covers moved files. |
 | Only the finished video in the output folder | Keeps the output folder clean; everything needed to re-render stays in the working folder. |
 | Render to a temp file, move on success | A failed or cancelled render never leaves a broken video under the final name. |
+| Learning from a finished review is re-finish safe (line decisions, speaker corrections, sprite votes) | Finishing an episode again (after a correction) must replace its contribution, not count it twice. |
+| Reviewed NPCs shown with picture, first episode and voice sample | A returning NPC is recognised by sight and sound; an opaque id led to new ids for old characters and mixed voices. |
+| Frozen baseline of re-reviewed episodes | Benchmarks score against gold that reruns cannot overwrite. |
 | Auto-delete only temporary files | Frees most of the space while keeping the script and edits that dreaming and re-rendering need. |
 
 ## 8. Non-functional requirements

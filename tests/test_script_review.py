@@ -163,3 +163,17 @@ def test_ocr_fixes_are_checked_before_they_are_suggested(project):
                           zh=e.zh, pinyin="", vi="x") for e in events]
     flagged = {x.event_id: x for x in review.apply_script_review(lines, list(d.values()))}
     assert "script_ocr" in flagged["ep001:0000"].flags and flagged["ep001:0000"].zh == "怎么可能姬"   # never applied
+
+
+def test_recording_an_episode_again_replaces_its_share(project):
+    config, paths = project
+    seed_memory(config, paths)
+    m = MemoryManager(paths, config)
+    m.record_line_decisions("ep001", removed=["楚", "楚"], kept=["哼"])
+    m.record_line_decisions("ep002", removed=["楚"], kept=[])
+    m.record_line_decisions("ep001", removed=["楚", "楚"], kept=["哼"])           # review finished again, unchanged
+    rows = {d.zh: d for d in MemoryStore(paths.memory_db).line_decisions()}
+    assert (rows["楚"].remove_count, rows["哼"].keep_count) == (3, 1)
+    m.record_line_decisions("ep001", removed=[], kept=["楚"])                      # finished again, decisions changed
+    rows = {d.zh: d for d in MemoryStore(paths.memory_db).line_decisions()}
+    assert (rows["楚"].remove_count, rows["楚"].keep_count, rows["哼"].keep_count) == (1, 1, 0)

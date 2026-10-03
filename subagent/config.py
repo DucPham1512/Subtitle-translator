@@ -353,6 +353,12 @@ class CleanupConfig(_Section):
     auto: bool = True
 
 
+class BaselineConfig(_Section):
+    # while set, every finished review is copied to <work>/_baseline/<name>/<episode>/ (gold + machine output +
+    # the memory version), so later reruns cannot overwrite the data a benchmark is built on
+    name: str | None = None
+
+
 class Config(_Section):
     show: ShowConfig = Field(default_factory=ShowConfig)
     device: Literal["auto", "cuda", "cpu"] = "auto"
@@ -379,6 +385,7 @@ class Config(_Section):
     episodes: EpisodesConfig = Field(default_factory=EpisodesConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
     cleanup: CleanupConfig = Field(default_factory=CleanupConfig)
+    baseline: BaselineConfig = Field(default_factory=BaselineConfig)
 
     def section(self, name: str) -> dict:
         """JSON-able dump of one top-level section (used in stage input hashes)."""

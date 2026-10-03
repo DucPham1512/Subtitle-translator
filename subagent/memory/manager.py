@@ -404,19 +404,41 @@ class MemoryManager:
     # -- sprites ------------------------------------------------------------------------------------
 
     def write_sprites(self, add: list[tuple[str, np.ndarray, str, str]], stats: dict[int, tuple[int, int]],
-                      remove: list[int], *, max_per_character: int, source: str = "system") -> dict[str, int]:
+                      remove: list[int], *, max_per_character: int, source: str = "system",
+                      episode_id: str | None = None, base: dict[int, tuple[int, int]] | None = None,
+                      undo: dict[int, tuple[int, int, bool]] | None = None) -> dict[str, int]:
         """Sprite bank update in one transaction: new exemplars (character, embedding, episode, event),
-        right/wrong counts, removals; then each character keeps its `max_per_character` best-confirmed."""
+        right/wrong counts, removals; then each character keeps its `max_per_character` best-confirmed.
+
+        With `episode_id` the update is that episode's learning and is re-finish safe: `undo` (what learning it
+        did last time, `MemoryStore.sprite_feedback`) is reversed first (its added exemplars deleted, its votes
+        taken back to `base`, the counts without them), and this run's votes and additions are recorded."""
         self._ensure_schema()
         now = now_iso()
         added: dict[str, int] = {}
         dropped: dict[str, int] = {}
+        base = base or {}
         with self.locked(), self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             try:
                 known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
+                if episode_id is not None:
+                    for ex_id, (_, _, was_added) in (undo or {}).items():
+                        if was_added:
+                            row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
+                            if row:
+                                conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+                                dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
+                        elif ex_id in base:
+                            conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (*base[ex_id], ex_id))
+                    conn.execute("DELETE FROM sprite_feedback WHERE episode_id=?", (episode_id,))
                 for ex_id, (right, wrong) in stats.items():
                     conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (right, wrong, ex_id))
+                    if episode_id is not None:
+                        b_right, b_wrong = base.get(ex_id, (0, 0))
+                        if (right, wrong) != (b_right, b_wrong):
+                            conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
+                                         "VALUES (?,?,?,?,0)", (ex_id, episode_id, right - b_right, wrong - b_wrong))
                 for ex_id in remove:
                     row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
                     if row:
@@ -427,8 +449,11 @@ class MemoryManager:
                         continue
                     vec = np.asarray(emb, np.float32)
                     vec = (vec / (np.linalg.norm(vec) or 1.0)).astype(np.float16)
-                    conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, wrong, "
-                                 "added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
+                    cur = conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, "
+                                       "wrong, added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
+                    if episode_id is not None:
+                        conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
+                                     "VALUES (?,?,0,0,1)", (cur.lastrowid, episode_id))
                     added[char] = added.get(char, 0) + 1
                 for char in {r["character_id"] for r in conn.execute("SELECT DISTINCT character_id FROM sprite_bank")}:
                     ids = [r["id"] for r in conn.execute(
@@ -436,6 +461,7 @@ class MemoryManager:
                     for ex_id in ids[max_per_character:]:
                         conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
                         dropped[char] = dropped.get(char, 0) + 1
+                conn.execute("DELETE FROM sprite_feedback WHERE exemplar_id NOT IN (SELECT id FROM sprite_bank)")
                 for char in sorted(set(added) | set(dropped)):
                     self._log(conn, "update", "sprite_bank", char, None,
                               {"added": added.get(char, 0), "removed": dropped.get(char, 0)}, None,
@@ -755,25 +781,38 @@ class MemoryManager:
 
     def record_line_decisions(self, episode_id: str, removed: list[str], kept: list[str]) -> int:
         """The reviewer's remove / keep decisions, counted per normalized text (memory of the script reviewer).
-        Locked rows (edited by hand in the Memory screen) are not changed."""
+        Locked rows (edited by hand in the Memory screen) are not changed. Each episode's share is kept apart
+        (`line_decision_episodes`), so recording an episode again replaces its share instead of adding to it."""
         from subagent.textutil import normalize_zh
 
-        changes: dict[str, list[int]] = {}
+        changes: dict[str, tuple[int, int]] = {}
         for texts, idx in ((removed, 0), (kept, 1)):
             for zh in texts:
                 key = normalize_zh(zh)
                 if key:
-                    changes.setdefault(key, [0, 0])[idx] += 1
+                    rem, keep = changes.get(key, (0, 0))
+                    changes[key] = (rem + 1, keep) if idx == 0 else (rem, keep + 1)
+        self._ensure_schema()
         written = 0
         with self.locked(), self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
             try:
-                for key, (rem, keep) in sorted(changes.items()):
+                old = {r["zh"]: (r["removed"], r["kept"]) for r in conn.execute(
+                    "SELECT zh, removed, kept FROM line_decision_episodes WHERE episode_id=?", (episode_id,))}
+                conn.execute("DELETE FROM line_decision_episodes WHERE episode_id=?", (episode_id,))
+                conn.executemany("INSERT INTO line_decision_episodes (zh, episode_id, removed, kept) VALUES (?,?,?,?)",
+                                 [(key, episode_id, rem, keep) for key, (rem, keep) in changes.items()])
+                for key in sorted(set(changes) | set(old)):
+                    rem, keep = changes.get(key, (0, 0))
+                    old_rem, old_keep = old.get(key, (0, 0))
+                    if (rem, keep) == (old_rem, old_keep):
+                        continue                   # this episode's share is unchanged
                     before = _fetch(conn, "line_decisions", key)
                     if before and before["locked"]:
                         continue
-                    after = {"zh": key, "remove_count": (before["remove_count"] if before else 0) + rem,
-                             "keep_count": (before["keep_count"] if before else 0) + keep,
+                    after = {"zh": key,
+                             "remove_count": max(0, (before["remove_count"] if before else 0) - old_rem + rem),
+                             "keep_count": max(0, (before["keep_count"] if before else 0) - old_keep + keep),
                              "last_episode": episode_id, "locked": 0, "updated_at": now_iso()}
                     conn.execute("INSERT OR REPLACE INTO line_decisions (zh, remove_count, keep_count, last_episode, "
                                  "locked, updated_at) VALUES (:zh, :remove_count, :keep_count, :last_episode, :locked, "
@@ -824,6 +863,10 @@ class MemoryManager:
         by_id = {line.event_id: line for line in approved}
         proposals: list[MemoryProposal] = []
         corrections = self.dir / "speaker_corrections.jsonl"
+        if corrections.is_file():                  # mining an episode again replaces its entries
+            kept = [ln for ln in corrections.read_text(encoding="utf-8").splitlines()
+                    if ln.strip() and json.loads(ln).get("episode") != episode_id]
+            atomic_write_text(corrections, "".join(f"{ln}\n" for ln in kept))
         for edit in edits:
             line = by_id.get(edit.event_id)
             if line is None:

@@ -76,6 +76,42 @@ class OcrBenchResult:
         return t
 
 
+def remap_ids(old: dict[str, tuple[int, int]], new_events: list[SubtitleEvent]) -> dict[str, str]:
+    """Old event id -> the new event overlapping its time most (events are renumbered when OCR runs again)."""
+    out = {}
+    for eid, (start, end) in old.items():
+        best = max(new_events, key=lambda e: _overlap(start, end, e.start_ms, e.end_ms), default=None)
+        if best is not None and _overlap(start, end, best.start_ms, best.end_ms) > 0:
+            out[eid] = best.id
+    return out
+
+
+def remap_key(paths: Paths, archive: Path) -> tuple[dict, list[str]]:
+    """Move the answer key in `archive` (answer_key.json + each episode's old events.jsonl, as archived before a
+    re-run) onto today's event ids, and save it as the current key. Returns the key and the ids that found no
+    new event (left out)."""
+    key = json.loads((archive / KEY_FILE).read_text(encoding="utf-8"))
+    lost: list[str] = []
+    mapping: dict[str, str] = {}
+    episodes = {eid.split(":")[0] for part in ("corrections", "excluded") for eid in key.get(part, {})}
+    for ep in sorted(episodes):
+        old = {e.id: (e.start_ms, e.end_ms) for e in read_jsonl(archive / ep / "events.jsonl", SubtitleEvent)}
+        mapping.update(remap_ids(old, read_jsonl(paths.episode_dir(ep) / "events.jsonl", SubtitleEvent)))
+    new = {k: v for k, v in key.items() if k not in ("corrections", "excluded")}
+    for part in ("corrections", "excluded"):
+        new[part] = {}
+        for eid, value in key.get(part, {}).items():
+            if eid in mapping:
+                new[part][mapping[eid]] = value
+            else:
+                lost.append(eid)
+    new["remapped"] = {"from": str(archive), "at": now_iso(), "lost": lost}
+    out = paths.work / FOLDER / KEY_FILE
+    out.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_text(out, json.dumps(new, ensure_ascii=False, indent=1))
+    return new, lost
+
+
 def load_key(paths: Paths) -> dict:
     path = paths.work / FOLDER / KEY_FILE
     if not path.is_file():

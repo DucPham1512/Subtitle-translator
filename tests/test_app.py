@@ -576,3 +576,73 @@ def test_bootstrap_learns_the_subtitle_style_as_a_job(qapp, project, monkeypatch
     assert started == []
     window.close()
     settle(qapp)
+
+
+def test_character_cards_and_browser_in_review(qapp, project, monkeypatch):
+    from app.main_window import MainWindow
+    from app.services import Services
+    from app.views import character_browser
+
+    config, paths = project
+    seed_memory(config, paths)
+    ep = register_episode(paths, 1)
+    work = paths.episode_dir(ep.id)
+    events = sample_events()
+    write_events(work, events)
+    write_jsonl(work / "pinyin.jsonl", [PinyinLine(event_id=e.id, pinyin="x") for e in events])
+    write_jsonl(work / "translations.jsonl", [
+        LineTranslation(event_id=e.id, speaker="lin_yuan", listener=None, speaker_conf=0.5, vi="Câu.", attempts=1)
+        for e in events])
+    gate(work, "human")
+    Registry(paths).set_status(ep.id, "awaiting_review")
+    window = MainWindow(Services(paths.root))
+    window.show_review(ep.id)
+    settle(qapp)
+    review = window.views["review"]
+    review._select(events[0].id)
+    settle(qapp)
+    assert "Lâm Uyên" in review.card_strip.text.text() and "đệ tử" in review.card_strip.text.text()
+
+    chosen = {}
+
+    class FakeBrowser:
+        def __init__(self, parent, ids, load, player, read_only=False):
+            chosen["ids"], chosen["card"] = set(ids), load("shi_zun")
+            self.choice = ("speaker", "shi_zun")
+
+        def exec(self):
+            return 1
+
+        def deleteLater(self):
+            pass
+
+    monkeypatch.setattr(character_browser, "CharacterBrowser", FakeBrowser)
+    review.browse_btn.click()
+    settle(qapp)
+    assert {"lin_yuan", "shi_zun"} <= chosen["ids"] and chosen["card"].name == "Sư tôn"
+    assert review.lines[events[0].id].speaker == "shi_zun"       # assigned like a manual choice
+    assert "Sư tôn" in review.card_strip.text.text()
+    window.close()
+    settle(qapp)
+
+
+def test_character_browser_lists_cards_and_assigns(qapp):
+    from PySide6.QtWidgets import QWidget
+
+    from app.views.character_browser import CharacterBrowser
+    from app.widgets import ClipPlayer
+    from subagent.character_card import CharacterCard
+
+    parent = QWidget()
+    cards = {"npc_001_01": CharacterCard(id="npc_001_01", name="npc_001_01", first_episode="ep001", kind="candidate"),
+             "lin_yuan": CharacterCard(id="lin_yuan", name="Lâm Uyên", description="đệ tử")}
+    dialog = CharacterBrowser(parent, {"npc_001_01": "npc_001_01", "lin_yuan": "Lâm Uyên"}, cards.__getitem__,
+                              ClipPlayer())
+    settle(qapp)
+    texts = [dialog.table.item(r, 1).text() for r in range(dialog.table.rowCount())]
+    assert any("first seen ep001" in t for t in texts) and any("đệ tử" in t for t in texts)
+    dialog.table.selectRow(texts.index(next(t for t in texts if "Lâm Uyên" in t)))
+    dialog.listener_btn.click()
+    assert dialog.choice == ("listener", "lin_yuan")
+    readonly = CharacterBrowser(parent, {"lin_yuan": "Lâm Uyên"}, cards.__getitem__, ClipPlayer(), read_only=True)
+    assert not readonly.speaker_btn.isEnabled() and not readonly.listener_btn.isEnabled()

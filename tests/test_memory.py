@@ -205,3 +205,24 @@ def test_deleted_lines_are_not_memory_evidence(project):
     m.episode_update("ep001", [kept, gone], translations, [], llm=None)
     assert m.store.get_row("glossary", "词0") is not None
     assert m.store.get_row("glossary", "词1") is None
+
+
+def test_mining_an_episode_again_replaces_its_speaker_corrections(project):
+    import json
+
+    config, paths = project
+    seed_memory(config, paths)
+    m = MemoryManager(paths, config)
+
+    def mine(ep: str) -> None:
+        line = ReviewedLine(event_id=f"{ep}:0000", start_ms=0, end_ms=1000, speaker="shi_zun", listener=None,
+                            zh="字", pinyin="", vi="x", approved=True)
+        edit = EditRecord(edit_id=f"{ep}:0000:speaker", event_id=f"{ep}:0000", field="speaker", before="lin_yuan",
+                          after="shi_zun")
+        m.mine_edits(ep, [line], [], [edit])
+
+    mine("ep002")
+    mine("ep001")
+    mine("ep001")                                   # the review of ep001 finished again
+    rows = [json.loads(ln) for ln in (paths.memory / "speaker_corrections.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert [r["episode"] for r in rows] == ["ep002", "ep001"]

@@ -154,6 +154,18 @@ def extract_frame(path: Path, t_ms: int, *, gray: bool = False, size: tuple[int,
     return arr.reshape(info_h, info_w) if gray else arr.reshape(info_h, info_w, 3)
 
 
+def extract_clip(path: Path, start_ms: int, end_ms: int, out: Path, *, sample_rate: int = 16000) -> Path:
+    """A short mono WAV of the audio between start_ms and end_ms (a voice sample to play)."""
+    ffmpeg = require_binary("ffmpeg")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.stem + ".tmp.wav")
+    run([ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-ss", f"{start_ms / 1000:.3f}",
+         "-t", f"{max(1, end_ms - start_ms) / 1000:.3f}", "-i", str(path), "-vn", "-ac", "1",
+         "-ar", str(sample_rate), str(tmp)])
+    tmp.replace(out)
+    return out
+
+
 @functools.lru_cache(maxsize=1)
 def available_encoders() -> frozenset[str]:
     ffmpeg = which("ffmpeg")

@@ -270,6 +270,14 @@ class Services:
         analysed = load_frame(self.paths.episode_dir(ep_id), event.id) if event else None
         return frame, self.config.video.subtitle_band.pixels(info.width, info.height), analysed
 
+    def character_card(self, ep_id: str, char_id: str, draft: list[ReviewedLine], media: bool = True):
+        """Who an id is (6.4): name, description, first episode, and a voice clip and picture from its example
+        line (cut once, cached). `draft`: the lines of the episode under review."""
+        from subagent.character_card import card_info, card_media
+
+        card = card_info(self.paths, self.config, char_id, current=ep_id, draft=draft)
+        return card_media(self.paths, self.config, card) if media else card
+
     def line_ocr_crop(self, ep_id: str, event: SubtitleEvent | None):
         """What OCR read for a line (band-sized grey image; ocr_crops/, temporary): the line's first reading whose
         text is the line's raw OCR text, else its first reading. None when no crop was saved."""

@@ -440,6 +440,17 @@ class Pipeline:
         self._render_and_deliver(ctx, on_exists)
         self.registry.set_status(ctx.episode.id, "done")
         write_report(ctx)
+        if self.config.baseline.name:
+            from subagent.baseline import freeze_episode
+
+            try:
+                freeze_episode(self.config, self.paths, ctx.episode.id, self.config.baseline.name)
+                self.progress.emit("baseline", "done", message=f"{ctx.episode.id} copied to baseline "
+                                                               f"{self.config.baseline.name}")
+            except Exception as exc:  # noqa: BLE001 - the episode is finished; the copy can be made again
+                log.warning("baseline copy of %s failed: %s", ctx.episode.id, exc)
+                self.progress.emit("baseline", "info", message=f"baseline copy failed: {exc}",
+                                   error_code="baseline_failed")
         if self.config.cleanup.auto:
             cleanup(ctx.work, ctx.episode.id)
             self.progress.emit("cleanup", "done")

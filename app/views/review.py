@@ -148,6 +148,11 @@ class ReviewView(QWidget):
             "speaker it goes on probation, and becomes a character only if it speaks again in the next 2 episodes."))
         self.new_npc_btn.clicked.connect(self._new_npc)
         who.addWidget(self.new_npc_btn)
+        self.browse_btn = QPushButton(self.tr("Browse characters…"))
+        self.browse_btn.setToolTip(self.tr("See every character's picture, first episode and voice sample, and "
+                                           "assign one to this line"))
+        self.browse_btn.clicked.connect(self._browse_characters)
+        who.addWidget(self.browse_btn)
         self.suggest_btn = QPushButton()
         self.suggest_btn.setToolTip(self.tr("Use the speaker Partial review suggests (the line is then flagged so you "
                                             "check its pronouns)"))
@@ -165,6 +170,15 @@ class ReviewView(QWidget):
         form.addRow(self.tr("Pinyin"), pinyin_row)
         form.addRow(self.tr("Vietnamese"), self.vi)
         form.addRow(self.tr("Speaker → listener"), who)
+        from app.views.character_browser import CharacterStrip
+        from app.widgets import ClipPlayer
+
+        self.clip_player = ClipPlayer()
+        self.card_strip = CharacterStrip(self.clip_player)
+        self.card_strip.setToolTip(self.tr("Who the speaker is: picture, first episode, description and a voice "
+                                           "sample from an episode you reviewed"))
+        form.addRow("", self.card_strip)
+        self._card_for: str | None = None
         form_layout.addLayout(form)
         self.warnings = QLabel()
         self.warnings.setWordWrap(True)
@@ -223,6 +237,7 @@ class ReviewView(QWidget):
         self.pinyin.textEdited.connect(lambda t: self._edit("pinyin", t))
         self.vi.textChanged.connect(lambda: self._edit("vi", self.vi.toPlainText()))
         self.speaker.currentIndexChanged.connect(lambda _: self._edit("speaker", self.speaker.currentData()))
+        self.speaker.currentIndexChanged.connect(lambda _: self._show_card())
         self.listener.currentIndexChanged.connect(lambda _: self._edit("listener", self.listener.currentData()))
         self.line_type.currentIndexChanged.connect(lambda _: self._edit("line_type", self.line_type.currentData()))
         self.regen.clicked.connect(self._regenerate_pinyin)
@@ -384,6 +399,44 @@ class ReviewView(QWidget):
         dialog = NewCharacterDialog(self, set(self.characters), self.zh.selectedText().strip())
         if dialog.exec():
             self.create_character(dialog.data())
+
+    def _card_loader(self):
+        ep_id = self.data.episode.id
+        draft = [line.model_copy() for line in self.lines.values()]
+        return lambda cid: self.services.character_card(ep_id, cid, draft)
+
+    def _show_card(self) -> None:
+        """The speaker's card under the speaker row (picture, first episode, description, voice sample)."""
+        cid = self.speaker.currentData()
+        if cid == self._card_for:
+            return
+        self._card_for = cid
+        if self.data is None or cid is None:
+            self.card_strip.clear()
+            return
+        self.card_strip.clear(self.tr("Loading…"))
+        load = self._card_loader()
+
+        def done(card) -> None:
+            if self._card_for == card.id:          # still the speaker shown
+                self.card_strip.show_card(card)
+
+        run_async(lambda: load(cid), done, lambda exc: self.card_strip.clear(str(exc)))
+
+    def _browse_characters(self) -> None:
+        from app.views.character_browser import CharacterBrowser
+
+        if self.data is None:
+            return
+        dialog = CharacterBrowser(self, dict(self.characters), self._card_loader(), self.clip_player,
+                                  read_only=self.data.read_only or self.current is None)
+        dialog.exec()
+        choice = dialog.choice
+        dialog.deleteLater()
+        if choice is not None and self.current is not None:
+            role, cid = choice
+            box = self.speaker if role == "speaker" else self.listener
+            box.setCurrentIndex(box.findData(cid))       # records the edit like a manual choice (one undo step)
 
     def _voice_label(self, cid: str, kind: str) -> str:
         if kind.startswith("candidate:"):

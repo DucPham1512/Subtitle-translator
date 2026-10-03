@@ -522,6 +522,23 @@ VI = {
     "Speaker set by partial review": "Người nói do duyệt một phần đặt",
     "New NPC": "NPC mới",
     "OCR read": "OCR đã đọc",
+    "Browse characters": "Duyệt nhân vật",
+    "Browse characters…": "Duyệt nhân vật…",
+    "Pictures and voice samples come from a line each character speaks in an episode you reviewed. Pick the one who speaks here.":
+        "Hình và mẫu giọng lấy từ một câu thoại của mỗi nhân vật trong tập bạn đã duyệt. Hãy chọn người đang nói ở đây.",
+    "Picture": "Hình",
+    "Voice": "Giọng",
+    "Use as speaker": "Dùng làm người nói",
+    "Use as listener": "Dùng làm người nghe",
+    "Close": "Đóng",
+    "Play a line this character speaks in an earlier episode": "Phát một câu nhân vật này nói ở tập trước",
+    "See every character's picture, first episode and voice sample, and assign one to this line":
+        "Xem hình, tập xuất hiện đầu tiên và mẫu giọng của mọi nhân vật, rồi gán một nhân vật cho câu này",
+    "Who the speaker is: picture, first episode, description and a voice sample from an episode you reviewed":
+        "Người nói là ai: hình, tập xuất hiện đầu tiên, mô tả và mẫu giọng từ một tập bạn đã duyệt",
+    "Loading…": "Đang tải…",
+    "on probation": "đang thử thách",
+    "first seen {ep}": "xuất hiện lần đầu {ep}",
     "Subtitle style (OCR segmentation)": "Kiểu phụ đề (tách chữ cho OCR)",
     "Learns the subtitle's colours, outline and letter size from the episode above, inside the saved band. Done once per series; learning it again re-reads the subtitles of every episode run afterwards.":
         "Học màu chữ, viền và cỡ chữ của phụ đề từ tập ở trên, trong vùng phụ đề đã lưu. Chỉ làm một lần cho mỗi bộ phim; học lại thì mọi tập chạy sau đó sẽ được đọc lại phụ đề.",
