@@ -34,8 +34,8 @@ VI = {
     "5. Generate seed": "5. Tạo dữ liệu khởi đầu",
     "6. Review seed": "6. Duyệt dữ liệu khởi đầu",
     "Episode:": "Tập:",
-    "Drag a rectangle over the subtitle line, then save. The position is the same in every episode, so this is done once.":
-        "Kéo một hình chữ nhật bao quanh dòng phụ đề rồi lưu. Vị trí giống nhau ở mọi tập nên chỉ cần làm một lần.",
+    "Drag a rectangle over the subtitle line, then save. Subtitles are centred, so the band widens to be symmetric around the middle of the frame. The position is the same in every episode, so this is done once.":
+        "Kéo một hình chữ nhật bao quanh dòng phụ đề rồi lưu. Phụ đề nằm giữa khung hình, nên vùng chọn sẽ được nới rộng cho cân đối hai bên quanh đường giữa khung hình. Vị trí giống nhau ở mọi tập nên chỉ cần làm một lần.",
     "Save subtitle band": "Lưu vùng phụ đề",
     "Calibrate": "Căn chỉnh",
     "Subtitle band saved.": "Đã lưu vùng phụ đề.",

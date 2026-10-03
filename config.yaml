@@ -5,10 +5,10 @@ device: auto
 video:
   sample_fps: 4
   subtitle_band:
-    top: 0.8272
-    bottom: 0.8959
-    left: 0.1943
-    right: 0.798
+    top: 0.8358
+    bottom: 0.8995
+    left: 0.2147
+    right: 0.7853
   text_threshold: 200
   change_threshold: 0.02
   empty_text_ratio: 0.002
@@ -26,6 +26,10 @@ ocr:
   recognize: line
   mask_image: original
   mask_scale: 1.0
+  # trim the line crop to be symmetric around the frame's centre (12 episodes, 2026-10-03: lines 91.9% -> 92.9%,
+  # junk events 312 -> 151, missed unchanged)
+  symmetric_crop: true
+  symmetric_crop_tolerance: 0.75   # 0: 16 lines broken by clipped edge letters; 0.25 / 0.5: 7; 0.75: 2; 1: 4
 non_dialogue:
   enabled: true
   box_height_tolerance: 0.25

@@ -548,6 +548,12 @@ def test_bootstrap_learns_the_subtitle_style_as_a_job(qapp, project, monkeypatch
     settle(qapp)
     assert "No subtitle style" in view.style_info.text()
     assert not view.style_preview_btn.isEnabled()
+    from PySide6.QtCore import QRectF
+
+    view.selector.selection_changed.emit(QRectF(0.3, 0.8, 0.5, 0.1))     # drawn off-centre: 0.3-0.8
+    sel = view.selector.sel
+    edges = (round(sel.left(), 4), round(sel.right(), 4), round(sel.top(), 4), round(sel.height(), 4))
+    assert edges == (0.2, 0.8, 0.8, 0.1)                   # widened to 0.2-0.8, rows kept
     started, shown = [], []
     monkeypatch.setattr(window.jobs, "start", lambda name, args: started.append((name, args)) or True)
     monkeypatch.setattr(view, "_show_style_preview", lambda: shown.append(True))

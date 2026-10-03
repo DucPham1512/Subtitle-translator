@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 import logging
+import math
 from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from subagent.config import Config, OcrConfig
+from subagent.config import Band, Config, OcrConfig
 from subagent.context import EpisodeContext
 from subagent.device import onnx_use_cuda
 from subagent.errors import ModelUnavailableError
 from subagent.media import imread
-from subagent.models import ChangeRecord, OcrBox, OcrReading
+from subagent.models import ChangeRecord, OcrBox, OcrReading, VideoInfo
 from subagent.textutil import keep_cjk
 from subagent.util import read_jsonl, write_jsonl
 
@@ -160,12 +161,36 @@ def line_span(clean: np.ndarray, cfg: OcrConfig) -> tuple[int, int, int, int] | 
     return (x0, y0, x1, y1) if y1 - y0 >= cfg.line_min_height * h else None
 
 
+def symmetric_span(span: tuple[int, int, int, int], center_x: float,
+                   tolerance: float) -> tuple[int, int, int, int] | None:
+    """The line span with the side farther from the frame's centre trimmed to the other side's length, leaving
+    `tolerance` line heights of difference (a letter segmentation missed at the short end is not answered by
+    cutting a real one off the long end). None when the span does not reach across the centre: subtitles are
+    centred, so a line wholly on one side is not one."""
+    x0, y0, x1, y1 = span
+    if not x0 < center_x < x1:
+        return None
+    left, right = center_x - x0, x1 - center_x
+    slack = tolerance * (y1 - y0)
+    if left > right + slack:
+        x0 = math.floor(center_x - right - slack)
+    elif right > left + slack:
+        x1 = math.ceil(center_x + left + slack)
+    return x0, y0, x1, y1
+
+
+def center_in_band(info: VideoInfo, band: Band) -> float:
+    """The frame's centre column in band coordinates."""
+    return info.width / 2 - band.pixels(info.width, info.height)[0]
+
+
 def prepare(band: np.ndarray, cfg: OcrConfig, style=None, stable: np.ndarray | None = None,
-            ) -> tuple[np.ndarray, float, int | tuple[int, int]]:
+            center_x: float | None = None) -> tuple[np.ndarray, float, int | tuple[int, int]]:
     """The image OCR reads, with the scale and padding that map its coordinates back to the band.
 
     In line mode the image is only the subtitle line (full band height); the returned padding is negative
-    by the crop's left edge so `to_band_coords` still maps back. An empty line gives an empty image."""
+    by the crop's left edge so `to_band_coords` still maps back. An empty line gives an empty image.
+    `center_x` (the frame's centre column in the band) is needed for `symmetric_crop`."""
     import cv2
 
     if cfg.preprocess == "none":
@@ -191,6 +216,8 @@ def prepare(band: np.ndarray, cfg: OcrConfig, style=None, stable: np.ndarray | N
     offset = 0
     if _line_mode(cfg):
         span = line_span(mask, cfg)
+        if span is not None and cfg.symmetric_crop and center_x is not None:
+            span = symmetric_span(span, center_x, cfg.symmetric_crop_tolerance)
         if span is None:
             return np.zeros((0, 0), np.uint8), 1.0, 0
         grow = cfg.isolate_grow_px
@@ -338,6 +365,7 @@ def run(ctx: EpisodeContext, engine: OcrEngine | None = None) -> dict[str, int]:
         from subagent.subtitle_style import load_style
 
         style = load_style(ctx.paths.bootstrap)
+    center_x = center_in_band(ctx.video_info(), ctx.config.video.subtitle_band) if cfg.symmetric_crop else None
     readings: list[OcrReading] = []
     done = 0
     for change in changes:
@@ -348,7 +376,7 @@ def run(ctx: EpisodeContext, engine: OcrEngine | None = None) -> dict[str, int]:
         h, w = band.shape[:2]
         stable_png = ctx.artifact("bands") / f"{change.t_ms}.stable.png"
         stable = imread(stable_png, gray=True) > 0 if stable_png.is_file() else None
-        image, scale, pad = prepare(band, cfg, style, stable)
+        image, scale, pad = prepare(band, cfg, style, stable, center_x)
         raw = to_band_coords(engine(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)), scale, pad) if image.size else []
         reading = reading_from_boxes(change.t_ms, raw, w, h, cfg)
         readings.append(reading)

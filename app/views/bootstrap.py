@@ -172,9 +172,11 @@ class BootstrapView(QWidget):
     def _calibrate_page(self) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.addWidget(QLabel(self.tr("Drag a rectangle over the subtitle line, then save. The position is the "
-                                        "same in every episode, so this is done once.")))
+        layout.addWidget(QLabel(self.tr("Drag a rectangle over the subtitle line, then save. Subtitles are centred, "
+                                        "so the band widens to be symmetric around the middle of the frame. The "
+                                        "position is the same in every episode, so this is done once.")))
         self.selector = FrameSelector()
+        self.selector.selection_changed.connect(self._center_band)
         layout.addWidget(self.selector, 1)
         row = QHBoxLayout()
         self.cal_slider = QSlider(Qt.Orientation.Horizontal)
@@ -284,6 +286,14 @@ class BootstrapView(QWidget):
         scroll.setWidget(image)
         box.addWidget(scroll, 1)
         dialog.exec()
+
+    def _center_band(self, sel: QRectF) -> None:
+        """The drawn band snaps to be symmetric around the frame's centre line (the side closer to the centre
+        grows); top and bottom stay as drawn."""
+        from subagent.config import Band
+
+        b = Band(top=sel.top(), bottom=sel.bottom(), left=sel.left(), right=sel.right()).centered()
+        self.selector.set_selection(QRectF(b.left, b.top, b.right - b.left, b.bottom - b.top))
 
     def _band_rect(self) -> QRectF:
         b = self.services.config.video.subtitle_band

@@ -344,372 +344,372 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="175"/>
-        <source>Drag a rectangle over the subtitle line, then save. The position is the same in every episode, so this is done once.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../views/bootstrap.py" line="183"/>
+        <location filename="../views/bootstrap.py" line="185"/>
         <source>Save subtitle band</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="190"/>
+        <location filename="../views/bootstrap.py" line="192"/>
         <source>Subtitle style (OCR segmentation)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="193"/>
+        <location filename="../views/bootstrap.py" line="195"/>
         <source>Learns the subtitle&apos;s colours, outline and letter size from the episode above, inside the saved band. Done once per series; learning it again re-reads the subtitles of every episode run afterwards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="200"/>
+        <location filename="../views/bootstrap.py" line="202"/>
         <source>Learn subtitle style from this episode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="202"/>
+        <location filename="../views/bootstrap.py" line="204"/>
         <source>Show style preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="218"/>
+        <location filename="../views/bootstrap.py" line="220"/>
         <source>The saved subtitle style cannot be read: {error}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="222"/>
+        <location filename="../views/bootstrap.py" line="224"/>
         <source>OCR segmentation is on, so learn the style before running episodes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="224"/>
+        <location filename="../views/bootstrap.py" line="226"/>
         <source>Only needed when OCR pre-processing is set to segmentation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="225"/>
+        <location filename="../views/bootstrap.py" line="227"/>
         <source>No subtitle style learned yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="227"/>
+        <location filename="../views/bootstrap.py" line="229"/>
         <source>none</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="229"/>
+        <location filename="../views/bootstrap.py" line="231"/>
         <source>Learned from {episode} on {date}: {polarity} text, fill grey {fill_min}–{fill_max}, outline {outline}, stroke {stroke:.3f} and letter height {height:.2f} of the band.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="232"/>
+        <location filename="../views/bootstrap.py" line="234"/>
         <source>light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="232"/>
+        <location filename="../views/bootstrap.py" line="234"/>
         <source>dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="261"/>
-        <location filename="../views/bootstrap.py" line="267"/>
-        <location filename="../views/bootstrap.py" line="560"/>
+        <location filename="../views/bootstrap.py" line="263"/>
+        <location filename="../views/bootstrap.py" line="269"/>
+        <location filename="../views/bootstrap.py" line="570"/>
         <source>Subtitle style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="262"/>
+        <location filename="../views/bootstrap.py" line="264"/>
         <source>Replace the saved subtitle style with one learned from {episode}? Episodes run afterwards read their subtitles again with the new style.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="270"/>
+        <location filename="../views/bootstrap.py" line="272"/>
         <source>Learning the subtitle style from {episode}…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="277"/>
+        <location filename="../views/bootstrap.py" line="279"/>
         <source>Subtitle style preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="280"/>
+        <location filename="../views/bootstrap.py" line="282"/>
         <source>Each pair: the subtitle band, then what segmentation keeps for OCR.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="306"/>
-        <location filename="../views/bootstrap.py" line="320"/>
-        <location filename="../views/bootstrap.py" line="322"/>
+        <location filename="../views/bootstrap.py" line="316"/>
+        <location filename="../views/bootstrap.py" line="330"/>
+        <location filename="../views/bootstrap.py" line="332"/>
         <source>Calibrate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="322"/>
+        <location filename="../views/bootstrap.py" line="332"/>
         <source>Subtitle band saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="329"/>
+        <location filename="../views/bootstrap.py" line="339"/>
         <source>List the characters (Chinese name, who they are), their relationships and how they address each other, and a short synopsis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="334"/>
+        <location filename="../views/bootstrap.py" line="344"/>
         <source>Import file…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="335"/>
+        <location filename="../views/bootstrap.py" line="345"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="352"/>
+        <location filename="../views/bootstrap.py" line="362"/>
         <source>Import cast list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="353"/>
+        <location filename="../views/bootstrap.py" line="363"/>
         <source>Text (*.md *.txt);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="359"/>
+        <location filename="../views/bootstrap.py" line="369"/>
         <source>Cast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="359"/>
+        <location filename="../views/bootstrap.py" line="369"/>
         <source>Saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="367"/>
-        <location filename="../views/bootstrap.py" line="466"/>
+        <location filename="../views/bootstrap.py" line="377"/>
+        <location filename="../views/bootstrap.py" line="476"/>
         <source>Character id:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="376"/>
+        <location filename="../views/bootstrap.py" line="386"/>
         <source>Mark in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="377"/>
+        <location filename="../views/bootstrap.py" line="387"/>
         <source>Mark out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="379"/>
+        <location filename="../views/bootstrap.py" line="389"/>
         <source>Save clip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="380"/>
+        <location filename="../views/bootstrap.py" line="390"/>
         <source>Import WAV files…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="394"/>
+        <location filename="../views/bootstrap.py" line="404"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="395"/>
-        <location filename="../views/bootstrap.py" line="454"/>
+        <location filename="../views/bootstrap.py" line="405"/>
+        <location filename="../views/bootstrap.py" line="464"/>
         <source>Delete clip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="415"/>
+        <location filename="../views/bootstrap.py" line="425"/>
         <source>in {a} · out {b}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="422"/>
-        <location filename="../views/bootstrap.py" line="428"/>
+        <location filename="../views/bootstrap.py" line="432"/>
+        <location filename="../views/bootstrap.py" line="438"/>
         <source>Voice clips</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="423"/>
+        <location filename="../views/bootstrap.py" line="433"/>
         <source>Choose a character, then mark the start and end of a line spoken only by that character.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="434"/>
+        <location filename="../views/bootstrap.py" line="444"/>
         <source>Import voice clips</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="435"/>
+        <location filename="../views/bootstrap.py" line="445"/>
         <source>Audio (*.wav *.mp3 *.flac *.m4a *.ogg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="450"/>
+        <location filename="../views/bootstrap.py" line="460"/>
         <source>{n} clips (3–5 recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="454"/>
+        <location filename="../views/bootstrap.py" line="464"/>
         <source>Delete {name}?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="463"/>
+        <location filename="../views/bootstrap.py" line="473"/>
         <source>The sprite check is turned off in Settings; templates are not used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="471"/>
+        <location filename="../views/bootstrap.py" line="481"/>
         <source>Grab paused frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="473"/>
+        <location filename="../views/bootstrap.py" line="483"/>
         <source>Save template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="497"/>
-        <location filename="../views/bootstrap.py" line="505"/>
+        <location filename="../views/bootstrap.py" line="507"/>
+        <location filename="../views/bootstrap.py" line="515"/>
         <source>Sprites</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="506"/>
+        <location filename="../views/bootstrap.py" line="516"/>
         <source>Grab a frame, drag a rectangle around the character, and choose the character id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="529"/>
+        <location filename="../views/bootstrap.py" line="539"/>
         <source>Drafts characters (Hán-Việt names), pronoun pairs and glossary terms from the cast list, and computes the voice bank from the clips. Nothing is written to memory until you approve the seed in step 6.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="532"/>
         <location filename="../views/bootstrap.py" line="542"/>
-        <location filename="../views/bootstrap.py" line="547"/>
+        <location filename="../views/bootstrap.py" line="552"/>
+        <location filename="../views/bootstrap.py" line="557"/>
         <source>Generate seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="542"/>
+        <location filename="../views/bootstrap.py" line="552"/>
         <source>Write the cast list first (step 2).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="267"/>
-        <location filename="../views/bootstrap.py" line="547"/>
-        <location filename="../views/bootstrap.py" line="689"/>
+        <location filename="../views/bootstrap.py" line="269"/>
+        <location filename="../views/bootstrap.py" line="557"/>
+        <location filename="../views/bootstrap.py" line="699"/>
         <source>Another job is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="569"/>
-        <location filename="../views/bootstrap.py" line="575"/>
+        <location filename="../views/bootstrap.py" line="175"/>
+        <source>Drag a rectangle over the subtitle line, then save. Subtitles are centred, so the band widens to be symmetric around the middle of the frame. The position is the same in every episode, so this is done once.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/bootstrap.py" line="579"/>
+        <location filename="../views/bootstrap.py" line="585"/>
         <source>Bootstrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="572"/>
+        <location filename="../views/bootstrap.py" line="582"/>
         <source>Seed ready. Review it in step 6.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="575"/>
+        <location filename="../views/bootstrap.py" line="585"/>
         <source>Memory seeded. You can run episode 1 now.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="584"/>
+        <location filename="../views/bootstrap.py" line="594"/>
         <source>Characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="584"/>
+        <location filename="../views/bootstrap.py" line="594"/>
         <source>Pronoun pairs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="585"/>
+        <location filename="../views/bootstrap.py" line="595"/>
         <source>Glossary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="595"/>
+        <location filename="../views/bootstrap.py" line="605"/>
         <source>Add row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="596"/>
+        <location filename="../views/bootstrap.py" line="606"/>
         <source>Remove row</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="605"/>
+        <location filename="../views/bootstrap.py" line="615"/>
         <source>Character A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="605"/>
+        <location filename="../views/bootstrap.py" line="615"/>
         <source>Character B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="606"/>
+        <location filename="../views/bootstrap.py" line="616"/>
         <source>Similarity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="611"/>
+        <location filename="../views/bootstrap.py" line="621"/>
         <source>Voices that sound alike (read-only). Double-click a name to hear a clip.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="613"/>
+        <location filename="../views/bootstrap.py" line="623"/>
         <source>Confusable voices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="620"/>
+        <location filename="../views/bootstrap.py" line="630"/>
         <source>Save draft</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="621"/>
+        <location filename="../views/bootstrap.py" line="631"/>
         <source>Approve and write to memory…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="635"/>
+        <location filename="../views/bootstrap.py" line="645"/>
         <source>No seed draft yet. Generate it in step 5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="675"/>
-        <location filename="../views/bootstrap.py" line="680"/>
+        <location filename="../views/bootstrap.py" line="685"/>
+        <location filename="../views/bootstrap.py" line="690"/>
         <source>Seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="680"/>
+        <location filename="../views/bootstrap.py" line="690"/>
         <source>Draft saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="684"/>
-        <location filename="../views/bootstrap.py" line="689"/>
+        <location filename="../views/bootstrap.py" line="694"/>
+        <location filename="../views/bootstrap.py" line="699"/>
         <source>Approve seed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="685"/>
+        <location filename="../views/bootstrap.py" line="695"/>
         <source>Write these characters, pronoun pairs, glossary terms and voices to memory? They are locked (only you can change them later).</source>
         <translation type="unfinished"></translation>
     </message>

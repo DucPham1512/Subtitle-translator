@@ -137,3 +137,38 @@ def test_crop_view_places_what_ocr_read_in_the_band(project):
     assert (view[:, x0:x0 + 20] == band[:, x0:x0 + 20]).all()        # original pixels at their place
     assert (view[:, 300:] == 128).all()                              # the prop was not read: grey
     assert (crop_view(band, np.zeros((0, 0), np.uint8), 1.0, 0) == 128).all()
+
+
+def test_symmetric_span_trims_the_far_side_beyond_half_a_line(project):
+    from subagent.stages.ocr import symmetric_span
+
+    assert symmetric_span((100, 0, 300, 40), 200, 0.5) == (100, 0, 300, 40)    # already centred
+    assert symmetric_span((40, 0, 300, 40), 200, 0.5) == (80, 0, 300, 40)     # left 160 vs right 100: keep 100+20
+    assert symmetric_span((90, 0, 300, 40), 200, 0.5) == (90, 0, 300, 40)     # 10 px apart: within half a line
+    assert symmetric_span((100, 0, 360, 40), 200, 0.5) == (100, 0, 320, 40)   # the right side trimmed alike
+    assert symmetric_span((210, 0, 300, 40), 200, 0.5) is None                # wholly on one side: not a subtitle
+
+
+def test_symmetric_crop_cuts_a_stray_beside_the_line(project):
+    config, _ = project
+    cfg = config.ocr
+    cfg.preprocess, cfg.recognize, cfg.mask_image, cfg.mask_scale = "mask", "line", "original", 1.0
+    band = np.full((48, 400), 120, np.uint8)
+    for x in (110, 160, 200, 240):                             # a stray look-alike at 110, then the centred line
+        cv2.rectangle(band, (x - 3, 7), (x + 25, 41), 0, -1)
+        cv2.rectangle(band, (x, 10), (x + 22, 38), 255, -1)
+    center = (160 + 263) / 2                                   # the frame's centre column: the middle of the line
+    assert prepare(band, cfg, center_x=center)[2][1] == 107    # off: the stray joins the line and widens the crop
+    cfg.symmetric_crop = True
+    image, _, pad = prepare(band, cfg, center_x=center)
+    assert pad[1] == 142 and pad[1] > 133                      # on: the crop starts after the stray
+    assert prepare(band, cfg, center_x=60)[0].size == 0        # the line does not reach the centre: nothing read
+
+
+def test_band_centres_by_widening_the_short_side():
+    from subagent.config import Band
+
+    b = Band(top=0.8, bottom=0.9, left=0.2, right=0.7).centered()
+    assert (b.left, b.right, b.top, b.bottom) == (0.2, 0.8, 0.8, 0.9)
+    b = Band(top=0.8, bottom=0.9, left=0.6, right=0.9).centered()
+    assert (b.left, b.right) == (0.1, 0.9)                    # drawn right of the centre: nothing selected is lost

@@ -82,7 +82,7 @@ def project(tmp_path: Path, monkeypatch) -> tuple[Config, Paths]:
     # model stages that would load real models are off; their own tests turn them on with fakes
     data.setdefault("cast", {})["enabled"] = False
     # OCR pre-processing needs a calibrated series style; tests that cover it switch it on themselves
-    for key in ("preprocess", "recognize", "mask_image", "mask_scale"):
+    for key in ("preprocess", "recognize", "mask_image", "mask_scale", "symmetric_crop", "symmetric_crop_tolerance"):
         data.setdefault("ocr", {}).pop(key, None)
     data.setdefault("video", {})["band_frames"] = 1
     data["llm"]["prices"] = {"deepseek-chat": {"input": 0.27, "input_cached": 0.07, "output": 1.1},

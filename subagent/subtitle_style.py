@@ -307,10 +307,12 @@ def labels_near(labels: np.ndarray, ring: np.ndarray) -> np.ndarray:
     return np.where(ring, grown, 0)
 
 
-def style_preview(bands: list[np.ndarray], style: SubtitleStyle, ocr_cfg) -> np.ndarray:
+def style_preview(bands: list[np.ndarray], style: SubtitleStyle, ocr_cfg,
+                  center_x: float | None = None) -> np.ndarray:
     """Rows of three per band: the band, its segmentation mask (black = kept as subtitle), and the crop OCR reads
-    (original pixels at their position; grey where nothing is read)."""
-    from subagent.stages.ocr import line_span
+    (original pixels at their position; grey where nothing is read). `center_x`: the frame's centre column in
+    the band, for `ocr.symmetric_crop`."""
+    from subagent.stages.ocr import line_span, symmetric_span
 
     rows = []
     for b in bands:
@@ -319,6 +321,8 @@ def style_preview(bands: list[np.ndarray], style: SubtitleStyle, ocr_cfg) -> np.
                             min_stable=ocr_cfg.seg_min_stable, max_width=ocr_cfg.seg_max_width)
         crop_row = np.full(b.shape, 128, np.uint8)
         span = line_span(mask, ocr_cfg)
+        if span is not None and ocr_cfg.symmetric_crop and center_x is not None:
+            span = symmetric_span(span, center_x, ocr_cfg.symmetric_crop_tolerance)
         if span is not None:
             g = ocr_cfg.isolate_grow_px
             x0, x1 = max(0, span[0] - g), min(b.shape[1], span[2] + g)

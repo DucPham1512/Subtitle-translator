@@ -44,6 +44,13 @@ class Band(_Section):
         h = min(h, height - y)
         return x, y, w, h
 
+    def centered(self) -> Band:
+        """Symmetric around the frame's vertical centre line (subtitles are centred): the side closer to the centre
+        grows to match the other, so nothing selected is lost; top and bottom are kept."""
+        half = max(0.5 - self.left, self.right - 0.5)
+        return self.model_copy(update={"left": round(max(0.0, 0.5 - half), 4),
+                                       "right": round(min(1.0, 0.5 + half), 4)})
+
 
 class VideoConfig(_Section):
     sample_fps: float = 4
@@ -94,6 +101,10 @@ class OcrConfig(_Section):
     recognize: Literal["detect", "line"] = "detect"
     line_min_height: float = 0.4             # a group lower than this share of the band is specks, not a line
     line_crop_vertical: bool = False         # also crop the line top to bottom (letters fill more of the reader)
+    # subtitles are centred on the frame: trim the side of the line crop farther from the frame's centre to the
+    # other side's length (strays next to one end); a line not spanning the centre is read as nothing
+    symmetric_crop: bool = False
+    symmetric_crop_tolerance: float = 0.5    # ...leaving this much difference, in line heights (a missed end letter)
     # segment (5.4a): tolerances around the calibrated style (data/bootstrap/subtitle_style.json)
     seg_stroke_tolerance: float = 0.6        # stroke width within this share of the series' stroke width
     seg_outline_share: float = 0.4           # share of a component's surrounding ring that must be outline

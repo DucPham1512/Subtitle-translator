@@ -405,7 +405,8 @@ class Pipeline:
         style = calibrate(bands, stable_range=v.stable_range, source=ctx.episode.id)
         path = save_style(self.paths.bootstrap, style)
         out = ctx.artifact("calibration") / "style.png"
-        imwrite_png(out, style_preview(bands[:: max(1, len(bands) // 12)][:12], style, self.config.ocr))
+        center_x = info.width / 2 - crop[0]               # the frame's centre column in the band
+        imwrite_png(out, style_preview(bands[:: max(1, len(bands) // 12)][:12], style, self.config.ocr, center_x))
         return style, path, out
 
     # -- internals ----------------------------------------------------------------------------------

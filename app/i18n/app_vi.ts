@@ -344,372 +344,372 @@
         <translation>Tập:</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="175" />
-        <source>Drag a rectangle over the subtitle line, then save. The position is the same in every episode, so this is done once.</source>
-        <translation>Kéo một hình chữ nhật bao quanh dòng phụ đề rồi lưu. Vị trí giống nhau ở mọi tập nên chỉ cần làm một lần.</translation>
-    </message>
-    <message>
-        <location filename="../views/bootstrap.py" line="183" />
+        <location filename="../views/bootstrap.py" line="185" />
         <source>Save subtitle band</source>
         <translation>Lưu vùng phụ đề</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="190" />
+        <location filename="../views/bootstrap.py" line="192" />
         <source>Subtitle style (OCR segmentation)</source>
         <translation>Kiểu phụ đề (tách chữ cho OCR)</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="193" />
+        <location filename="../views/bootstrap.py" line="195" />
         <source>Learns the subtitle's colours, outline and letter size from the episode above, inside the saved band. Done once per series; learning it again re-reads the subtitles of every episode run afterwards.</source>
         <translation>Học màu chữ, viền và cỡ chữ của phụ đề từ tập ở trên, trong vùng phụ đề đã lưu. Chỉ làm một lần cho mỗi bộ phim; học lại thì mọi tập chạy sau đó sẽ được đọc lại phụ đề.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="200" />
+        <location filename="../views/bootstrap.py" line="202" />
         <source>Learn subtitle style from this episode</source>
         <translation>Học kiểu phụ đề từ tập này</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="202" />
+        <location filename="../views/bootstrap.py" line="204" />
         <source>Show style preview</source>
         <translation>Xem trước kiểu phụ đề</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="218" />
+        <location filename="../views/bootstrap.py" line="220" />
         <source>The saved subtitle style cannot be read: {error}</source>
         <translation>Không đọc được kiểu phụ đề đã lưu: {error}</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="222" />
+        <location filename="../views/bootstrap.py" line="224" />
         <source>OCR segmentation is on, so learn the style before running episodes.</source>
         <translation>Tách chữ cho OCR đang bật, nên hãy học kiểu phụ đề trước khi chạy các tập.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="224" />
+        <location filename="../views/bootstrap.py" line="226" />
         <source>Only needed when OCR pre-processing is set to segmentation.</source>
         <translation>Chỉ cần khi tiền xử lý OCR được đặt là tách chữ.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="225" />
+        <location filename="../views/bootstrap.py" line="227" />
         <source>No subtitle style learned yet.</source>
         <translation>Chưa học kiểu phụ đề.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="227" />
+        <location filename="../views/bootstrap.py" line="229" />
         <source>none</source>
         <translation>không có</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="229" />
+        <location filename="../views/bootstrap.py" line="231" />
         <source>Learned from {episode} on {date}: {polarity} text, fill grey {fill_min}–{fill_max}, outline {outline}, stroke {stroke:.3f} and letter height {height:.2f} of the band.</source>
         <translation>Học từ {episode} ngày {date}: chữ {polarity}, độ xám nền chữ {fill_min}–{fill_max}, viền {outline}, nét chữ {stroke:.3f} và chiều cao chữ {height:.2f} so với vùng phụ đề.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="232" />
+        <location filename="../views/bootstrap.py" line="234" />
         <source>light</source>
         <translation>sáng</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="232" />
+        <location filename="../views/bootstrap.py" line="234" />
         <source>dark</source>
         <translation>tối</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="261" />
-        <location filename="../views/bootstrap.py" line="267" />
-        <location filename="../views/bootstrap.py" line="560" />
+        <location filename="../views/bootstrap.py" line="263" />
+        <location filename="../views/bootstrap.py" line="269" />
+        <location filename="../views/bootstrap.py" line="570" />
         <source>Subtitle style</source>
         <translation>Kiểu phụ đề</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="262" />
+        <location filename="../views/bootstrap.py" line="264" />
         <source>Replace the saved subtitle style with one learned from {episode}? Episodes run afterwards read their subtitles again with the new style.</source>
         <translation>Thay kiểu phụ đề đã lưu bằng kiểu học từ {episode}? Các tập chạy sau đó sẽ đọc lại phụ đề theo kiểu mới.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="270" />
+        <location filename="../views/bootstrap.py" line="272" />
         <source>Learning the subtitle style from {episode}…</source>
         <translation>Đang học kiểu phụ đề từ {episode}…</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="277" />
+        <location filename="../views/bootstrap.py" line="279" />
         <source>Subtitle style preview</source>
         <translation>Xem trước kiểu phụ đề</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="280" />
+        <location filename="../views/bootstrap.py" line="282" />
         <source>Each pair: the subtitle band, then what segmentation keeps for OCR.</source>
         <translation>Mỗi cặp: vùng phụ đề, rồi phần mà bước tách chữ giữ lại cho OCR.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="306" />
-        <location filename="../views/bootstrap.py" line="320" />
-        <location filename="../views/bootstrap.py" line="322" />
+        <location filename="../views/bootstrap.py" line="316" />
+        <location filename="../views/bootstrap.py" line="330" />
+        <location filename="../views/bootstrap.py" line="332" />
         <source>Calibrate</source>
         <translation>Căn chỉnh</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="322" />
+        <location filename="../views/bootstrap.py" line="332" />
         <source>Subtitle band saved.</source>
         <translation>Đã lưu vùng phụ đề.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="329" />
+        <location filename="../views/bootstrap.py" line="339" />
         <source>List the characters (Chinese name, who they are), their relationships and how they address each other, and a short synopsis.</source>
         <translation>Liệt kê các nhân vật (tên tiếng Trung, họ là ai), quan hệ và cách xưng hô với nhau, cùng một đoạn tóm tắt ngắn.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="334" />
+        <location filename="../views/bootstrap.py" line="344" />
         <source>Import file…</source>
         <translation>Nhập tệp…</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="335" />
+        <location filename="../views/bootstrap.py" line="345" />
         <source>Save</source>
         <translation>Lưu</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="352" />
+        <location filename="../views/bootstrap.py" line="362" />
         <source>Import cast list</source>
         <translation>Nhập danh sách nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="353" />
+        <location filename="../views/bootstrap.py" line="363" />
         <source>Text (*.md *.txt);;All files (*)</source>
         <translation>Văn bản (*.md *.txt);;Mọi tệp (*)</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="359" />
+        <location filename="../views/bootstrap.py" line="369" />
         <source>Cast</source>
         <translation>Nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="359" />
+        <location filename="../views/bootstrap.py" line="369" />
         <source>Saved.</source>
         <translation>Đã lưu.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="367" />
-        <location filename="../views/bootstrap.py" line="466" />
+        <location filename="../views/bootstrap.py" line="377" />
+        <location filename="../views/bootstrap.py" line="476" />
         <source>Character id:</source>
         <translation>Mã nhân vật:</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="376" />
+        <location filename="../views/bootstrap.py" line="386" />
         <source>Mark in</source>
         <translation>Đánh dấu đầu</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="377" />
+        <location filename="../views/bootstrap.py" line="387" />
         <source>Mark out</source>
         <translation>Đánh dấu cuối</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="379" />
+        <location filename="../views/bootstrap.py" line="389" />
         <source>Save clip</source>
         <translation>Lưu đoạn</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="380" />
+        <location filename="../views/bootstrap.py" line="390" />
         <source>Import WAV files…</source>
         <translation>Nhập tệp WAV…</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="394" />
+        <location filename="../views/bootstrap.py" line="404" />
         <source>Play</source>
         <translation>Phát</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="395" />
-        <location filename="../views/bootstrap.py" line="454" />
+        <location filename="../views/bootstrap.py" line="405" />
+        <location filename="../views/bootstrap.py" line="464" />
         <source>Delete clip</source>
         <translation>Xóa đoạn</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="415" />
+        <location filename="../views/bootstrap.py" line="425" />
         <source>in {a} · out {b}</source>
         <translation>đầu {a} · cuối {b}</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="422" />
-        <location filename="../views/bootstrap.py" line="428" />
+        <location filename="../views/bootstrap.py" line="432" />
+        <location filename="../views/bootstrap.py" line="438" />
         <source>Voice clips</source>
         <translation>Mẫu giọng nói</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="423" />
+        <location filename="../views/bootstrap.py" line="433" />
         <source>Choose a character, then mark the start and end of a line spoken only by that character.</source>
         <translation>Chọn nhân vật, rồi đánh dấu đầu và cuối một câu chỉ do nhân vật đó nói.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="434" />
+        <location filename="../views/bootstrap.py" line="444" />
         <source>Import voice clips</source>
         <translation>Nhập mẫu giọng nói</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="435" />
+        <location filename="../views/bootstrap.py" line="445" />
         <source>Audio (*.wav *.mp3 *.flac *.m4a *.ogg)</source>
         <translation>Âm thanh (*.wav *.mp3 *.flac *.m4a *.ogg)</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="450" />
+        <location filename="../views/bootstrap.py" line="460" />
         <source>{n} clips (3–5 recommended)</source>
         <translation>{n} đoạn (nên có 3–5)</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="454" />
+        <location filename="../views/bootstrap.py" line="464" />
         <source>Delete {name}?</source>
         <translation>Xóa {name}?</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="463" />
+        <location filename="../views/bootstrap.py" line="473" />
         <source>The sprite check is turned off in Settings; templates are not used.</source>
         <translation>Kiểm tra hình nhân vật đang tắt trong Cài đặt; các mẫu hình sẽ không được dùng.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="471" />
+        <location filename="../views/bootstrap.py" line="481" />
         <source>Grab paused frame</source>
         <translation>Lấy khung hình đang dừng</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="473" />
+        <location filename="../views/bootstrap.py" line="483" />
         <source>Save template</source>
         <translation>Lưu mẫu hình</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="497" />
-        <location filename="../views/bootstrap.py" line="505" />
+        <location filename="../views/bootstrap.py" line="507" />
+        <location filename="../views/bootstrap.py" line="515" />
         <source>Sprites</source>
         <translation>Hình nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="506" />
+        <location filename="../views/bootstrap.py" line="516" />
         <source>Grab a frame, drag a rectangle around the character, and choose the character id.</source>
         <translation>Lấy một khung hình, kéo hình chữ nhật quanh nhân vật và chọn mã nhân vật.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="529" />
+        <location filename="../views/bootstrap.py" line="539" />
         <source>Drafts characters (Hán-Việt names), pronoun pairs and glossary terms from the cast list, and computes the voice bank from the clips. Nothing is written to memory until you approve the seed in step 6.</source>
         <translation>Soạn nháp nhân vật (tên Hán-Việt), cặp xưng hô và thuật ngữ từ danh sách nhân vật, và tính kho giọng nói từ các đoạn mẫu. Chưa có gì được ghi vào bộ nhớ cho đến khi bạn duyệt ở bước 6.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="532" />
         <location filename="../views/bootstrap.py" line="542" />
-        <location filename="../views/bootstrap.py" line="547" />
+        <location filename="../views/bootstrap.py" line="552" />
+        <location filename="../views/bootstrap.py" line="557" />
         <source>Generate seed</source>
         <translation>Tạo dữ liệu khởi đầu</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="542" />
+        <location filename="../views/bootstrap.py" line="552" />
         <source>Write the cast list first (step 2).</source>
         <translation>Hãy viết danh sách nhân vật trước (bước 2).</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="267" />
-        <location filename="../views/bootstrap.py" line="547" />
-        <location filename="../views/bootstrap.py" line="689" />
+        <location filename="../views/bootstrap.py" line="269" />
+        <location filename="../views/bootstrap.py" line="557" />
+        <location filename="../views/bootstrap.py" line="699" />
         <source>Another job is running.</source>
         <translation>Đang có tác vụ khác chạy.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="569" />
-        <location filename="../views/bootstrap.py" line="575" />
+        <location filename="../views/bootstrap.py" line="175" />
+        <source>Drag a rectangle over the subtitle line, then save. Subtitles are centred, so the band widens to be symmetric around the middle of the frame. The position is the same in every episode, so this is done once.</source>
+        <translation>Kéo một hình chữ nhật bao quanh dòng phụ đề rồi lưu. Phụ đề nằm giữa khung hình, nên vùng chọn sẽ được nới rộng cho cân đối hai bên quanh đường giữa khung hình. Vị trí giống nhau ở mọi tập nên chỉ cần làm một lần.</translation>
+    </message>
+    <message>
+        <location filename="../views/bootstrap.py" line="579" />
+        <location filename="../views/bootstrap.py" line="585" />
         <source>Bootstrap</source>
         <translation>Khởi tạo</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="572" />
+        <location filename="../views/bootstrap.py" line="582" />
         <source>Seed ready. Review it in step 6.</source>
         <translation>Dữ liệu khởi đầu đã sẵn sàng. Hãy duyệt ở bước 6.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="575" />
+        <location filename="../views/bootstrap.py" line="585" />
         <source>Memory seeded. You can run episode 1 now.</source>
         <translation>Đã khởi tạo bộ nhớ. Bây giờ có thể chạy tập 1.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="584" />
+        <location filename="../views/bootstrap.py" line="594" />
         <source>Characters</source>
         <translation>Nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="584" />
+        <location filename="../views/bootstrap.py" line="594" />
         <source>Pronoun pairs</source>
         <translation>Cặp xưng hô</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="585" />
+        <location filename="../views/bootstrap.py" line="595" />
         <source>Glossary</source>
         <translation>Thuật ngữ</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="595" />
+        <location filename="../views/bootstrap.py" line="605" />
         <source>Add row</source>
         <translation>Thêm dòng</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="596" />
+        <location filename="../views/bootstrap.py" line="606" />
         <source>Remove row</source>
         <translation>Xóa dòng</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="605" />
+        <location filename="../views/bootstrap.py" line="615" />
         <source>Character A</source>
         <translation>Nhân vật A</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="605" />
+        <location filename="../views/bootstrap.py" line="615" />
         <source>Character B</source>
         <translation>Nhân vật B</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="606" />
+        <location filename="../views/bootstrap.py" line="616" />
         <source>Similarity</source>
         <translation>Độ giống</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="611" />
+        <location filename="../views/bootstrap.py" line="621" />
         <source>Voices that sound alike (read-only). Double-click a name to hear a clip.</source>
         <translation>Các giọng nghe giống nhau (chỉ xem). Nhấp đúp vào tên để nghe một đoạn mẫu.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="613" />
+        <location filename="../views/bootstrap.py" line="623" />
         <source>Confusable voices</source>
         <translation>Giọng dễ nhầm</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="620" />
+        <location filename="../views/bootstrap.py" line="630" />
         <source>Save draft</source>
         <translation>Lưu bản nháp</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="621" />
+        <location filename="../views/bootstrap.py" line="631" />
         <source>Approve and write to memory…</source>
         <translation>Duyệt và ghi vào bộ nhớ…</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="635" />
+        <location filename="../views/bootstrap.py" line="645" />
         <source>No seed draft yet. Generate it in step 5.</source>
         <translation>Chưa có bản nháp. Hãy tạo ở bước 5.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="675" />
-        <location filename="../views/bootstrap.py" line="680" />
+        <location filename="../views/bootstrap.py" line="685" />
+        <location filename="../views/bootstrap.py" line="690" />
         <source>Seed</source>
         <translation>Dữ liệu khởi đầu</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="680" />
+        <location filename="../views/bootstrap.py" line="690" />
         <source>Draft saved.</source>
         <translation>Đã lưu bản nháp.</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="684" />
-        <location filename="../views/bootstrap.py" line="689" />
+        <location filename="../views/bootstrap.py" line="694" />
+        <location filename="../views/bootstrap.py" line="699" />
         <source>Approve seed</source>
         <translation>Duyệt dữ liệu khởi đầu</translation>
     </message>
     <message>
-        <location filename="../views/bootstrap.py" line="685" />
+        <location filename="../views/bootstrap.py" line="695" />
         <source>Write these characters, pronoun pairs, glossary terms and voices to memory? They are locked (only you can change them later).</source>
         <translation>Ghi các nhân vật, cặp xưng hô, thuật ngữ và giọng nói này vào bộ nhớ? Chúng sẽ bị khóa (chỉ bạn mới sửa được sau này).</translation>
     </message>
