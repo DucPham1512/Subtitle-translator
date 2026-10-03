@@ -15,7 +15,9 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
+    QDialog,
     QFileDialog,
+    QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
@@ -25,6 +27,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QSlider,
     QStackedWidget,
     QTableWidget,
@@ -100,7 +103,9 @@ class BootstrapView(QWidget):
         self.pages.setCurrentIndex(row)
         self.picker.setVisible(row in (0, 2, 3))
         self.preview.setVisible(row in (2, 3))
-        if row == 1:
+        if row == 0:
+            self._show_style()
+        elif row == 1:
             self._load_cast()
         elif row == 2:
             self._fill_characters(self.voice_char)
@@ -133,6 +138,7 @@ class BootstrapView(QWidget):
         return path if path.is_file() else None
 
     def _episode_changed(self, *_: object) -> None:
+        self._show_style()
         source = self._source()
         if source is None:
             return
@@ -180,7 +186,104 @@ class BootstrapView(QWidget):
         row.addWidget(self.cal_time)
         row.addWidget(save)
         layout.addLayout(row)
+        # the series' subtitle style, learned once for OCR segmentation (5.4a)
+        style_box = QGroupBox(self.tr("Subtitle style (OCR segmentation)"))
+        style_layout = QVBoxLayout(style_box)
+        style_layout.addWidget(QLabel(self.tr(
+            "Learns the subtitle's colours, outline and letter size from the episode above, inside the saved band. "
+            "Done once per series; learning it again re-reads the subtitles of every episode run afterwards.")))
+        self.style_info = QLabel()
+        self.style_info.setWordWrap(True)
+        self.style_info.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        style_layout.addWidget(self.style_info)
+        style_row = QHBoxLayout()
+        self.style_btn = QPushButton(self.tr("Learn subtitle style from this episode"))
+        self.style_btn.clicked.connect(self._learn_style)
+        self.style_preview_btn = QPushButton(self.tr("Show style preview"))
+        self.style_preview_btn.clicked.connect(self._show_style_preview)
+        style_row.addWidget(self.style_btn)
+        style_row.addWidget(self.style_preview_btn)
+        style_row.addStretch(1)
+        style_layout.addLayout(style_row)
+        layout.addWidget(style_box)
+        self._show_style()
         return page
+
+    def _show_style(self) -> None:
+        from subagent.subtitle_style import load_style
+
+        try:
+            style = load_style(self.services.paths.bootstrap)
+        except Exception as exc:  # noqa: BLE001 - a damaged file is shown, not raised
+            self.style_info.setText(self.tr("The saved subtitle style cannot be read: {error}").format(error=exc))
+            style = None
+        else:
+            if style is None:
+                note = (self.tr("OCR segmentation is on, so learn the style before running episodes.")
+                        if self.services.config.ocr.preprocess == "segment" else
+                        self.tr("Only needed when OCR pre-processing is set to segmentation."))
+                self.style_info.setText(self.tr("No subtitle style learned yet.") + " " + note)
+            else:
+                outline = (str(style.outline_level) if style.outline_level is not None else self.tr("none"))
+                self.style_info.setText(self.tr(
+                    "Learned from {episode} on {date}: {polarity} text, fill grey {fill_min}–{fill_max}, outline "
+                    "{outline}, stroke {stroke:.3f} and letter height {height:.2f} of the band.").format(
+                    episode=style.calibrated_from or "?", date=style.calibrated_at[:10] or "?",
+                    polarity=self.tr("light") if style.polarity == "light" else self.tr("dark"),
+                    fill_min=style.fill_min, fill_max=style.fill_max, outline=outline, stroke=style.stroke,
+                    height=style.letter_height))
+        self.style_preview_btn.setEnabled(self._style_preview_path() is not None)
+
+    def _style_preview_path(self) -> Path | None:
+        """The preview made by the last calibration on the selected episode, else on the episode the style
+        was learned from (deleted by that episode's cleanup)."""
+        from subagent.subtitle_style import load_style
+
+        ids = [self.episode_box.currentData()]
+        with contextlib.suppress(Exception):
+            style = load_style(self.services.paths.bootstrap)
+            ids.append(style.calibrated_from if style else None)
+        for ep_id in ids:
+            if ep_id:
+                path = self.services.paths.episode_dir(ep_id) / "calibration" / "style.png"
+                if path.is_file():
+                    return path
+        return None
+
+    def _learn_style(self) -> None:
+        ep_id = self.episode_box.currentData()
+        if not ep_id:
+            return
+        from subagent.subtitle_style import load_style
+
+        with contextlib.suppress(Exception):
+            if load_style(self.services.paths.bootstrap) is not None and not confirm(
+                    self, self.tr("Subtitle style"),
+                    self.tr("Replace the saved subtitle style with one learned from {episode}? Episodes run "
+                            "afterwards read their subtitles again with the new style.").format(episode=ep_id)):
+                return
+        self._job = "calibrate --style"
+        if not self.main.jobs.start("calibrate --style", ["calibrate", ep_id, "--style"]):
+            show_error(self, self.tr("Subtitle style"), self.tr("Another job is running."))
+            return
+        self.style_btn.setEnabled(False)
+        self.style_info.setText(self.tr("Learning the subtitle style from {episode}…").format(episode=ep_id))
+
+    def _show_style_preview(self) -> None:
+        path = self._style_preview_path()
+        if path is None:
+            return
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self.tr("Subtitle style preview"))
+        dialog.resize(900, 640)
+        box = QVBoxLayout(dialog)
+        box.addWidget(QLabel(self.tr("Each pair: the subtitle band, then what segmentation keeps for OCR.")))
+        image = QLabel()
+        image.setPixmap(QPixmap(str(path)))
+        scroll = QScrollArea()
+        scroll.setWidget(image)
+        box.addWidget(scroll, 1)
+        dialog.exec()
 
     def _band_rect(self) -> QRectF:
         b = self.services.config.video.subtitle_band
@@ -448,9 +551,19 @@ class BootstrapView(QWidget):
             self.gen_log.appendPlainText(line)
 
     def _job_finished(self, name: str, code: int, error: dict) -> None:
+        from app.messages import error_message
+
+        if name == "calibrate --style":
+            self.style_btn.setEnabled(True)
+            self._show_style()
+            if code != 0:
+                show_error(self, self.tr("Subtitle style"),
+                           error_message(error.get("error_code"), error.get("message", "")))
+            else:
+                self._show_style_preview()
+            return
         if name not in ("bootstrap", "bootstrap --approve"):
             return
-        from app.messages import error_message
 
         if code != 0:
             show_error(self, self.tr("Bootstrap"), error_message(error.get("error_code"), error.get("message", "")))

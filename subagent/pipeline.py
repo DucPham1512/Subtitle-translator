@@ -56,6 +56,17 @@ def _source_key(ctx: EpisodeContext) -> object:
     return ctx.episode.source_fingerprint
 
 
+def _style_key(ctx: EpisodeContext) -> object:
+    """Segmentation reads the series' calibrated subtitle style (5.4a), so a new calibration re-runs OCR. Only the
+    values segmentation uses count; recalibrating to the same values changes nothing."""
+    if ctx.config.ocr.preprocess != "segment":
+        return None
+    from subagent.subtitle_style import load_style
+
+    style = load_style(ctx.paths.bootstrap)
+    return style.model_dump(exclude={"regions", "calibrated_from", "calibrated_at"}) if style else None
+
+
 def _review_run(ctx: EpisodeContext) -> dict:
     from subagent.stages.review import gate
 
@@ -76,7 +87,7 @@ def _lazy(module: str) -> Callable[[EpisodeContext], dict]:
 
 STAGES: list[StageDef] = [
     StageDef("ingest", _lazy("ingest"), [], ["video"], ["bands", "changes.jsonl", "video.json"], extra=_source_key),
-    StageDef("ocr", _lazy("ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"]),
+    StageDef("ocr", _lazy("ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"], extra=_style_key),
     StageDef("events", _lazy("events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
     StageDef("ocr_fix", _lazy("ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
              prompts=["ocr_fix_system"], llm_roles=["utility"]),
@@ -135,8 +146,9 @@ class Runner:
         }
         if stage.name == "review":
             parts["mode"] = self.mode
-        if stage.extra:
-            parts["extra"] = stage.extra(self.ctx)
+        extra = stage.extra(self.ctx) if stage.extra else None
+        if extra is not None:          # nothing extra: earlier hashes stay valid
+            parts["extra"] = extra
         return sha256_json(parts)
 
     def output_hash(self, stage: StageDef) -> str:

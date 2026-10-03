@@ -530,3 +530,43 @@ def test_greyscale_images_can_be_shown(qapp):
     view = BandView()
     view.show_band(grey, (0, 0, 300, 48))                 # what the review screen does with an OCR crop
     assert view.has_image()
+
+
+def test_bootstrap_learns_the_subtitle_style_as_a_job(qapp, project, monkeypatch):
+    import numpy as np
+
+    from app.main_window import MainWindow
+    from app.services import Services
+    from subagent.media import imwrite_png
+    from subagent.subtitle_style import SubtitleStyle, save_style
+
+    config, paths = project
+    register_episode(paths, 5)
+    window = MainWindow(Services(paths.root))
+    view = window.go("bootstrap")
+    view.steps.setCurrentRow(0)
+    settle(qapp)
+    assert "No subtitle style" in view.style_info.text()
+    assert not view.style_preview_btn.isEnabled()
+    started, shown = [], []
+    monkeypatch.setattr(window.jobs, "start", lambda name, args: started.append((name, args)) or True)
+    monkeypatch.setattr(view, "_show_style_preview", lambda: shown.append(True))
+    view._learn_style()
+    assert started == [("calibrate --style", ["calibrate", "ep005", "--style"])]
+    assert not view.style_btn.isEnabled()
+    # what the job writes: the series' style and the preview on the episode
+    save_style(paths.bootstrap, SubtitleStyle(polarity="light", fill_min=168, fill_max=255, outline_level=72,
+                                              stroke=0.125, stroke_spread=0.5, letter_height=0.77,
+                                              calibrated_from="ep005", calibrated_at="2026-10-03T00:00:00"))
+    imwrite_png(paths.episode_dir("ep005") / "calibration" / "style.png", np.zeros((20, 40), np.uint8))
+    window.jobs.finished.emit("calibrate --style", 0, {})
+    assert view.style_btn.isEnabled()
+    assert "ep005" in view.style_info.text() and "168" in view.style_info.text()
+    assert shown and view.style_preview_btn.isEnabled()
+    # replacing a learned style asks first
+    monkeypatch.setattr("app.views.bootstrap.confirm", lambda *a, **k: False)
+    started.clear()
+    view._learn_style()
+    assert started == []
+    window.close()
+    settle(qapp)

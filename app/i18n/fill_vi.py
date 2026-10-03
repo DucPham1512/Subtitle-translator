@@ -522,6 +522,29 @@ VI = {
     "Speaker set by partial review": "Người nói do duyệt một phần đặt",
     "New NPC": "NPC mới",
     "OCR read": "OCR đã đọc",
+    "Subtitle style (OCR segmentation)": "Kiểu phụ đề (tách chữ cho OCR)",
+    "Learns the subtitle's colours, outline and letter size from the episode above, inside the saved band. Done once per series; learning it again re-reads the subtitles of every episode run afterwards.":
+        "Học màu chữ, viền và cỡ chữ của phụ đề từ tập ở trên, trong vùng phụ đề đã lưu. Chỉ làm một lần cho mỗi bộ phim; học lại thì mọi tập chạy sau đó sẽ được đọc lại phụ đề.",
+    "Learn subtitle style from this episode": "Học kiểu phụ đề từ tập này",
+    "Show style preview": "Xem trước kiểu phụ đề",
+    "The saved subtitle style cannot be read: {error}": "Không đọc được kiểu phụ đề đã lưu: {error}",
+    "OCR segmentation is on, so learn the style before running episodes.":
+        "Tách chữ cho OCR đang bật, nên hãy học kiểu phụ đề trước khi chạy các tập.",
+    "Only needed when OCR pre-processing is set to segmentation.":
+        "Chỉ cần khi tiền xử lý OCR được đặt là tách chữ.",
+    "No subtitle style learned yet.": "Chưa học kiểu phụ đề.",
+    "none": "không có",
+    "light": "sáng",
+    "dark": "tối",
+    "Learned from {episode} on {date}: {polarity} text, fill grey {fill_min}–{fill_max}, outline {outline}, stroke {stroke:.3f} and letter height {height:.2f} of the band.":
+        "Học từ {episode} ngày {date}: chữ {polarity}, độ xám nền chữ {fill_min}–{fill_max}, viền {outline}, nét chữ {stroke:.3f} và chiều cao chữ {height:.2f} so với vùng phụ đề.",
+    "Subtitle style": "Kiểu phụ đề",
+    "Replace the saved subtitle style with one learned from {episode}? Episodes run afterwards read their subtitles again with the new style.":
+        "Thay kiểu phụ đề đã lưu bằng kiểu học từ {episode}? Các tập chạy sau đó sẽ đọc lại phụ đề theo kiểu mới.",
+    "Learning the subtitle style from {episode}…": "Đang học kiểu phụ đề từ {episode}…",
+    "Subtitle style preview": "Xem trước kiểu phụ đề",
+    "Each pair: the subtitle band, then what segmentation keeps for OCR.":
+        "Mỗi cặp: vùng phụ đề, rồi phần mà bước tách chữ giữ lại cho OCR.",
     "Script review: OCR error in the Chinese (fix suggested)": "Rà soát kịch bản: lỗi OCR trong chữ Hán (có gợi ý sửa)",
     "What OCR read for this line after pre-processing (segmentation and cropping), at its position in the band; grey was not read":
         "Phần OCR đã đọc cho dòng này sau tiền xử lý (phân vùng và cắt), ở đúng vị trí trong dải phụ đề; "

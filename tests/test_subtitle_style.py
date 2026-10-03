@@ -73,3 +73,28 @@ def test_unstable_components_are_dropped():
     kw = dict(stroke_tolerance=0.6, outline_share=0.5, max_height=1.3, min_stable=0.6)
     assert (segment_mask(bands[0], style, stable=still, **kw)[10:38, 117:124] == 0).any()
     assert (segment_mask(bands[0], style, stable=moving, **kw)[:, 100:260] == 255).all()
+
+
+def test_a_new_style_reruns_ocr_only_with_segmentation(project):
+    from subagent.context import EpisodeContext
+    from subagent.pipeline import _BY_NAME, Runner
+    from tests.conftest import register_episode
+
+    config, paths = project
+    ep = register_episode(paths, 1)
+    style = SubtitleStyle(polarity="light", fill_min=200, fill_max=255, outline_level=40, stroke=0.12,
+                          stroke_spread=0.3, letter_height=0.7, calibrated_from="ep001")
+
+    def ocr_hash(cfg) -> str:
+        return Runner(EpisodeContext(cfg, paths, ep), "auto").input_hash(_BY_NAME["ocr"])
+
+    plain = ocr_hash(config)
+    save_style(paths.bootstrap, style)
+    assert ocr_hash(config) == plain                  # without segmentation the style is never read
+    seg = config.model_copy(deep=True)
+    seg.ocr.preprocess = "segment"
+    first = ocr_hash(seg)
+    save_style(paths.bootstrap, style.model_copy(update={"calibrated_at": "later", "regions": 99}))
+    assert ocr_hash(seg) == first                     # only the bookkeeping changed: nothing to read again
+    save_style(paths.bootstrap, style.model_copy(update={"outline_level": 72}))
+    assert ocr_hash(seg) != first                     # a new style re-runs OCR
