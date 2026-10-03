@@ -279,3 +279,7 @@ output:
   on_exists: ask
 cleanup:
   auto: true
+baseline:
+  # the ep001-ep016 replay from the bootstrap memory (2026-10-04): each finished review is copied to
+  # <work>/_baseline/replay-2026-10/ as gold for benchmarks
+  name: replay-2026-10
