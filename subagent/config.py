@@ -242,6 +242,11 @@ class ScriptReviewConfig(_Section):
     example_limit: int = 30               # reviewer decisions shown to the model, per kind
     memory_auto_remove_min: int = 2       # a short text you removed this often and never kept is removed
     memory_max_han: int = 2               # "short": at most this many Chinese characters
+    fix_max_change_share: float = 0.5     # an OCR fix may change at most this share of the line's characters
+                                          # (more is a rewrite, not a correction); at least ocr_fix.max_char_changes
+    # a 7 the model turns into 了 is kept a number (the fix becomes a flag) when it touches another digit, follows
+    # 第, or is followed by one of these measure words / units
+    measure_words: str = "斤个天年月日号块元万千百米分秒点岁次条只位名人层倍级度两寸里"
 
 
 class AuditConfig(_Section):

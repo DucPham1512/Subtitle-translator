@@ -200,12 +200,14 @@ class ScriptDecision(BaseModel):
     """Whole-script review verdict on one line (script_review.jsonl)."""
 
     event_id: str
-    action: Literal["remove", "flag"]
-    reason: Literal["repeat", "noise", "unrelated", "other"]
+    action: Literal["remove", "flag", "fix"]       # fix: real dialogue whose Chinese has an OCR error
+    reason: Literal["repeat", "noise", "unrelated", "other", "ocr"]
     source: Literal["rule", "memory", "llm"]
     confidence: float = 1.0
     note: str = ""
     keep_id: str | None = None   # repeats: the line that stays (a merged one takes over the removed line's time)
+    zh_fix: str | None = None    # fix: the suggested corrected Chinese (never applied automatically)
+    evidence: str = ""           # fix: the model's context check behind it
 
 
 class Window(BaseModel):

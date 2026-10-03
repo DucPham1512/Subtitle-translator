@@ -51,42 +51,42 @@
 <context>
     <name>Agent</name>
     <message>
-        <location filename="../messages.py" line="78" />
+        <location filename="../messages.py" line="79" />
         <source>Translator</source>
         <translation>Dịch</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="79" />
+        <location filename="../messages.py" line="80" />
         <source>Evaluator</source>
         <translation>Đánh giá</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="80" />
+        <location filename="../messages.py" line="81" />
         <source>Script reviewer</source>
         <translation>Duyệt toàn kịch bản</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="81" />
+        <location filename="../messages.py" line="82" />
         <source>OCR correction</source>
         <translation>Sửa lỗi OCR</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="82" />
+        <location filename="../messages.py" line="83" />
         <source>Pinyin (polyphones)</source>
         <translation>Pinyin (chữ đa âm)</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="83" />
+        <location filename="../messages.py" line="84" />
         <source>Memory briefing</source>
         <translation>Tóm tắt bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="84" />
+        <location filename="../messages.py" line="85" />
         <source>Bootstrap</source>
         <translation>Khởi tạo</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="85" />
+        <location filename="../messages.py" line="86" />
         <source>Dreaming</source>
         <translation>Tổng hợp</translation>
     </message>
@@ -629,67 +629,67 @@
 <context>
     <name>CastPanel</name>
     <message>
-        <location filename="../views/cast_panel.py" line="273" />
+        <location filename="../views/cast_panel.py" line="275" />
         <source>Box</source>
         <translation>Khung</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="273" />
+        <location filename="../views/cast_panel.py" line="275" />
         <source>Recognised as</source>
         <translation>Nhận ra là</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="273" />
+        <location filename="../views/cast_panel.py" line="275" />
         <source>Talking</source>
         <translation>Đang nói</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="274" />
+        <location filename="../views/cast_panel.py" line="276" />
         <source>Correct to</source>
         <translation>Sửa thành</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="316" />
+        <location filename="../views/cast_panel.py" line="318" />
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking. Drag a box to move it, drag a corner to resize, drag on empty space to draw a box around a missed character (Delete removes a drawn box). Your corrections teach the sprite bank when you finish the review.</source>
         <translation>Xanh lá: đã nhận ra · cam: chưa nhận ra · xanh dương: do bạn vẽ · viền đỏ: đang nói. Kéo khung để di chuyển, kéo góc để đổi kích thước, kéo trên chỗ trống để vẽ khung quanh nhân vật bị bỏ sót (Delete xoá khung bạn vẽ). Khi hoàn tất duyệt, các chỉnh sửa này sẽ dạy lại kho hình nhân vật.</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="320" />
+        <location filename="../views/cast_panel.py" line="322" />
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking.</source>
         <translation>Xanh lá: đã nhận ra · cam: chưa nhận ra · xanh dương: do bạn vẽ · viền đỏ: đang nói.</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="342" />
+        <location filename="../views/cast_panel.py" line="344" />
         <source>not a character</source>
         <translation>không phải nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="351" />
+        <location filename="../views/cast_panel.py" line="353" />
         <source>unknown ({id})</source>
         <translation>chưa rõ ({id})</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="359" />
+        <location filename="../views/cast_panel.py" line="361" />
         <source>drawn by you</source>
         <translation>do bạn vẽ</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="373" />
+        <location filename="../views/cast_panel.py" line="375" />
         <source>(as recognised)</source>
         <translation>(như đã nhận ra)</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="373" />
+        <location filename="../views/cast_panel.py" line="375" />
         <source>(choose a character)</source>
         <translation>(chọn nhân vật)</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="378" />
+        <location filename="../views/cast_panel.py" line="380" />
         <source>Remove this box</source>
         <translation>Xoá khung này</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="381" />
+        <location filename="../views/cast_panel.py" line="383" />
         <source>Not a character</source>
         <translation>Không phải nhân vật</translation>
     </message>
@@ -1201,102 +1201,102 @@ Bị thay thế: {files}</translation>
 <context>
     <name>Errors</name>
     <message>
-        <location filename="../messages.py" line="92" />
+        <location filename="../messages.py" line="93" />
         <source>A required program (ffmpeg, ffprobe or git) is not installed. Install it and restart the app.</source>
         <translation>Thiếu một chương trình cần thiết (ffmpeg, ffprobe hoặc git). Hãy cài đặt rồi mở lại ứng dụng.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="93" />
+        <location filename="../messages.py" line="94" />
         <source>The episode's video file was moved or deleted. Use Relink to point to its new location.</source>
         <translation>Tệp video của tập đã bị di chuyển hoặc xóa. Dùng Liên kết lại để chỉ tới vị trí mới.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="94" />
+        <location filename="../messages.py" line="95" />
         <source>The LLM budget for this episode was reached. Raise the budget in Settings, then Resume.</source>
         <translation>Đã hết ngân sách LLM cho tập này. Tăng ngân sách trong Cài đặt rồi bấm Tiếp tục.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="95" />
+        <location filename="../messages.py" line="96" />
         <source>The AI model returned invalid output twice. Resume to try again.</source>
         <translation>Mô hình AI trả kết quả không hợp lệ hai lần. Bấm Tiếp tục để thử lại.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="96" />
+        <location filename="../messages.py" line="97" />
         <source>The AI service could not be reached. Check your internet connection and API keys, then Resume.</source>
         <translation>Không kết nối được dịch vụ AI. Kiểm tra kết nối mạng và khóa API rồi bấm Tiếp tục.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="97" />
+        <location filename="../messages.py" line="98" />
         <source>An API key is missing. Enter it in Settings &gt; API keys.</source>
         <translation>Thiếu khóa API. Hãy nhập trong Cài đặt &gt; Khóa API.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="98" />
+        <location filename="../messages.py" line="99" />
         <source>The output folder is not set or not writable. Choose one in Settings &gt; Files.</source>
         <translation>Chưa đặt thư mục đầu ra hoặc không ghi được. Hãy chọn trong Cài đặt &gt; Tệp.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="99" />
+        <location filename="../messages.py" line="100" />
         <source>The output video already exists. Choose Overwrite or Keep both.</source>
         <translation>Video đầu ra đã tồn tại. Hãy chọn Ghi đè hoặc Giữ cả hai.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="100" />
+        <location filename="../messages.py" line="101" />
         <source>The review is not complete: every line must be approved and have Vietnamese text.</source>
         <translation>Chưa duyệt xong: mọi dòng phải được duyệt và có bản dịch tiếng Việt.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="101" />
+        <location filename="../messages.py" line="102" />
         <source>Another job is already running for this episode.</source>
         <translation>Đang có tác vụ khác chạy cho tập này.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="102" />
+        <location filename="../messages.py" line="103" />
         <source>Memory is being written by another job. Try again in a moment.</source>
         <translation>Bộ nhớ đang được tác vụ khác ghi. Hãy thử lại sau giây lát.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="103" />
+        <location filename="../messages.py" line="104" />
         <source>Not allowed while a job is running. Wait for it to finish.</source>
         <translation>Không thể làm khi đang có tác vụ chạy. Hãy chờ tác vụ kết thúc.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="104" />
+        <location filename="../messages.py" line="105" />
         <source>The settings are invalid. Fix them in Settings.</source>
         <translation>Cài đặt không hợp lệ. Hãy sửa trong Cài đặt.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="105" />
+        <location filename="../messages.py" line="106" />
         <source>A required model package is not installed. See README for the install command.</source>
         <translation>Chưa cài gói mô hình cần thiết. Xem README để biết lệnh cài đặt.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="106" />
+        <location filename="../messages.py" line="107" />
         <source>No subtitle font was found in the fonts folder. Add NotoSans-Regular.ttf there.</source>
         <translation>Không tìm thấy phông phụ đề trong thư mục fonts. Hãy thêm NotoSans-Regular.ttf vào đó.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="107" />
+        <location filename="../messages.py" line="108" />
         <source>Rendering failed. See the log for details, then try Render again.</source>
         <translation>Xuất video thất bại. Xem nhật ký để biết chi tiết rồi thử Xuất video lại.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="108" />
+        <location filename="../messages.py" line="109" />
         <source>This episode is not registered.</source>
         <translation>Tập này chưa được đăng ký.</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="109" />
+        <location filename="../messages.py" line="110" />
         <source>Write the cast list and synopsis first (Bootstrap step 2).</source>
         <translation>Hãy viết danh sách nhân vật và tóm tắt trước (Khởi tạo bước 2).</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="110" />
+        <location filename="../messages.py" line="111" />
         <source>Generate the seed first (Bootstrap step 5).</source>
         <translation>Hãy tạo dữ liệu khởi đầu trước (Khởi tạo bước 5).</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="111" />
+        <location filename="../messages.py" line="112" />
         <source>The job was cancelled. Resume to continue where it stopped.</source>
         <translation>Tác vụ đã bị hủy. Bấm Tiếp tục để chạy tiếp từ chỗ dừng.</translation>
     </message>
@@ -1340,91 +1340,96 @@ Bị thay thế: {files}</translation>
     </message>
     <message>
         <location filename="../messages.py" line="55" />
+        <source>Script review: OCR error in the Chinese (fix suggested)</source>
+        <translation>Rà soát kịch bản: lỗi OCR trong chữ Hán (có gợi ý sửa)</translation>
+    </message>
+    <message>
+        <location filename="../messages.py" line="56" />
         <source>Removed: repeat of another line</source>
         <translation>Đã bỏ: lặp lại dòng khác</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="56" />
+        <location filename="../messages.py" line="57" />
         <source>Removed: OCR noise</source>
         <translation>Đã bỏ: nhiễu OCR</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="57" />
+        <location filename="../messages.py" line="58" />
         <source>Removed: not part of the story</source>
         <translation>Đã bỏ: không thuộc nội dung phim</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="58" />
+        <location filename="../messages.py" line="59" />
         <source>Removed by script review</source>
         <translation>Đã bỏ khi duyệt toàn kịch bản</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="59" />
+        <location filename="../messages.py" line="60" />
         <source>Check pinyin</source>
         <translation>Kiểm tra pinyin</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="60" />
+        <location filename="../messages.py" line="61" />
         <source>Missing translation</source>
         <translation>Thiếu bản dịch</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="61" />
+        <location filename="../messages.py" line="62" />
         <source>Line too long</source>
         <translation>Dòng quá dài</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="62" />
+        <location filename="../messages.py" line="63" />
         <source>Reading speed too high</source>
         <translation>Tốc độ đọc quá nhanh</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="63" />
+        <location filename="../messages.py" line="64" />
         <source>Glossary term not used</source>
         <translation>Chưa dùng đúng thuật ngữ</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="64" />
+        <location filename="../messages.py" line="65" />
         <source>Pronoun mismatch</source>
         <translation>Xưng hô không khớp</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="65" />
+        <location filename="../messages.py" line="66" />
         <source>Invalid speaker</source>
         <translation>Người nói không hợp lệ</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="66" />
+        <location filename="../messages.py" line="67" />
         <source>Speaker differs from voice</source>
         <translation>Người nói khác với giọng nhận dạng</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="67" />
+        <location filename="../messages.py" line="68" />
         <source>Low OCR confidence</source>
         <translation>Độ tin cậy OCR thấp</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="68" />
+        <location filename="../messages.py" line="69" />
         <source>Not evaluated</source>
         <translation>Chưa được đánh giá</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="69" />
+        <location filename="../messages.py" line="70" />
         <source>Rule warnings</source>
         <translation>Cảnh báo quy tắc</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="70" />
+        <location filename="../messages.py" line="71" />
         <source>Partial review suggests another speaker</source>
         <translation>Duyệt một phần gợi ý người nói khác</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="71" />
+        <location filename="../messages.py" line="72" />
         <source>Speaker set by partial review</source>
         <translation>Người nói do duyệt một phần đặt</translation>
     </message>
     <message>
-        <location filename="../messages.py" line="72" />
+        <location filename="../messages.py" line="73" />
         <source>Speaker changed: check the pronouns</source>
         <translation>Đã đổi người nói: kiểm tra xưng hô</translation>
     </message>

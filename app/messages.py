@@ -52,6 +52,7 @@ def flag_label(flag: str) -> str:
         "ocr_uncertain": QCoreApplication.translate("Flag", "OCR uncertain"),
         "ocr_fragment": QCoreApplication.translate("Flag", "One-frame OCR fragment"),
         "script_suspect": QCoreApplication.translate("Flag", "Script review: check this line"),
+        "script_ocr": QCoreApplication.translate("Flag", "Script review: OCR error in the Chinese (fix suggested)"),
         "script_repeat": QCoreApplication.translate("Flag", "Removed: repeat of another line"),
         "script_noise": QCoreApplication.translate("Flag", "Removed: OCR noise"),
         "script_unrelated": QCoreApplication.translate("Flag", "Removed: not part of the story"),

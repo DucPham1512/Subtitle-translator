@@ -81,10 +81,13 @@ def memory_removals(events: Iterable[SubtitleEvent], decisions: dict[str, LineDe
 
 class ReviewedVerdict(BaseModel):
     event_id: str
-    action: Literal["remove", "check"] = Field(description="remove: low value; check: the reviewer should look")
-    reason: Literal["repeat", "noise", "unrelated", "other"]
-    confidence: float = Field(description="0..1, how sure you are that removing it is right")
+    action: Literal["remove", "check", "fix"] = Field(
+        description="remove: low value; check: the reviewer should look; fix: real dialogue with an OCR error")
+    reason: Literal["repeat", "noise", "unrelated", "other", "ocr"]
+    confidence: float = Field(description="0..1, how sure you are that your verdict (removal or fix) is right")
     note: str = Field(default="", description="one short sentence for the reviewer")
+    zh_fix: str = Field(default="", description="fix only: the line's Chinese with the OCR error corrected")
+    evidence: str = Field(default="", description="fix only: the context check that supports the fix")
 
     @field_validator("confidence")
     @classmethod
@@ -131,10 +134,20 @@ def model_pass(ctx: EpisodeContext, events: list[SubtitleEvent], translations: d
     messages = build_messages(static, examples_block(memory, cfg.example_limit),
                               script_payload(events, translations, decided))
     resp: ScriptReviewResponse = ctx.llm.call(cfg.role, messages, ScriptReviewResponse, task="script_review")  # type: ignore[assignment]
-    known = {e.id for e in events}
+    known = {e.id: e for e in events}
     out = []
     for v in resp.lines:
         if v.event_id not in known or v.event_id in decided:
+            continue
+        if v.action == "fix" or v.reason == "ocr":
+            fix = plausible_fix(known[v.event_id].zh, v.zh_fix, ctx.config) if v.evidence.strip() else None
+            if fix is not None:
+                out.append(ScriptDecision(event_id=v.event_id, action="fix", reason="ocr", source="llm",
+                                          confidence=v.confidence, note=v.note, zh_fix=fix,
+                                          evidence=v.evidence.strip()))
+            else:                      # no fix, or a rewrite rather than a correction: only ask to check
+                out.append(ScriptDecision(event_id=v.event_id, action="flag", reason="ocr", source="llm",
+                                          confidence=v.confidence, note=v.note))
             continue
         remove = v.action == "remove" and v.confidence >= cfg.remove_confidence
         out.append(ScriptDecision(event_id=v.event_id, action="remove" if remove else "flag", reason=v.reason,
@@ -149,6 +162,44 @@ def model_pass(ctx: EpisodeContext, events: list[SubtitleEvent], translations: d
             d.action = "flag"
             d.note = (d.note + " (not removed: over the safety cap)").strip()
     return out
+
+
+def plausible_fix(zh: str, zh_fix: str, config) -> str | None:
+    """The model's corrected Chinese when it is a correction of this line: different, not empty, and changing
+    at most `fix_max_change_share` of the characters (at least `ocr_fix.max_char_changes`)."""
+    from subagent.textutil import edit_distance, normalize_zh
+
+    fix = (zh_fix or "").strip()
+    if not fix or normalize_zh(fix) == normalize_zh(zh):
+        return None
+    limit = max(config.ocr_fix.max_char_changes, int(config.script_review.fix_max_change_share * len(zh)))
+    if edit_distance(normalize_zh(fix), normalize_zh(zh)) > limit:
+        return None
+    if seven_is_a_number(zh, fix, config.script_review.measure_words):
+        return None
+    if "7了" in fix and "7了" not in zh:
+        return None                  # 了 added next to the 7 instead of replacing it
+    return fix
+
+
+def seven_is_a_number(zh: str, fix: str, measure_words: str) -> bool:
+    """The fix treats a 7 wrongly: it deletes it (a 7 is either 了 or a real number), or replaces a 7 that reads
+    as a number in the original (next to another digit, after 第, or before a measure word)."""
+    import difflib
+
+    for op, i1, i2, _, _ in difflib.SequenceMatcher(None, zh, fix, autojunk=False).get_opcodes():
+        if op not in ("replace", "delete"):
+            continue
+        for i in range(i1, i2):
+            if zh[i] != "7":
+                continue
+            if op == "delete":
+                return True          # a 7 is either the particle 了 or a real number: never just dropped
+            before = zh[i - 1] if i > 0 else ""
+            after = zh[i + 1] if i + 1 < len(zh) else ""
+            if before.isdigit() or after.isdigit() or before == "第" or (after and after in measure_words):
+                return True
+    return False
 
 
 def run(ctx: EpisodeContext) -> dict[str, int]:
@@ -167,7 +218,8 @@ def run(ctx: EpisodeContext) -> dict[str, int]:
         decisions[d.event_id] = d
     ordered = sorted(decisions.values(), key=lambda d: d.event_id)
     write_jsonl(ctx.artifact("script_review.jsonl"), ordered)
-    counts = {"removed": sum(d.action == "remove" for d in ordered), "flagged": sum(d.action == "flag" for d in ordered)}
+    counts = {"removed": sum(d.action == "remove" for d in ordered), "flagged": sum(d.action == "flag" for d in ordered),
+              "ocr_fixes": sum(d.action == "fix" for d in ordered)}
     for source in ("rule", "memory", "llm"):
         counts[f"removed_by_{source}"] = sum(d.action == "remove" and d.source == source for d in ordered)
     return counts

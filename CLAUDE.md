@@ -246,12 +246,14 @@ class CastLine(BaseModel):              # cast.jsonl
 
 class ScriptDecision(BaseModel):        # script_review.jsonl (5.13a)
     event_id: str
-    action: Literal["remove", "flag"]
-    reason: Literal["repeat", "noise", "unrelated", "other"]
+    action: Literal["remove", "flag", "fix"]       # fix: real dialogue whose Chinese has an OCR error
+    reason: Literal["repeat", "noise", "unrelated", "other", "ocr"]
     source: Literal["rule", "memory", "llm"]
     confidence: float = 1.0
     note: str = ""
     keep_id: str | None = None          # repeats: the line that stays and takes over the removed line's time
+    zh_fix: str | None = None           # fix: the suggested corrected Chinese (never applied automatically)
+    evidence: str = ""                  # fix: the model's context check
 
 class LineTranslation(BaseModel):
     event_id: str
@@ -620,6 +622,8 @@ script_review:                        # whole-script pass before review (5.13a)
   example_limit: 30                   # reviewer decisions shown to the model, per kind
   memory_auto_remove_min: 2           # a short text removed this often and never kept is removed
   memory_max_han: 2                   # "short": at most this many Chinese characters
+  fix_max_change_share: 0.5           # an OCR fix changes at most this share of the line (at least ocr_fix.max_char_changes)
+  measure_words: "斤个天年月日号块元万千百米分秒点岁次条只位名人层倍级度两寸里"   # a 7 before these is a number
 audit:                                # accuracy measured on a sample (6.11)
   sample_size: 20                     # random lines per audited episode
   min_per_stratum: 3                  # at least this many flagged and unflagged lines when available
@@ -886,7 +890,9 @@ Values above are the code defaults (`config.py`), except `number_patterns` (code
   - A similar line (≥ `repeat_similarity`) within `repeat_window_ms` is only flagged.
 - **Memory:** a text with at most `memory_max_han` Chinese characters that the reviewer removed ≥ `memory_auto_remove_min` times and never kept is removed (reason `noise`, source `memory`). Counts come from the `line_decisions` table.
 - **Model pass:** one call per episode (`script_review.role`, task `script_review`, prompt `prompts/script_review_system.md`) with the whole script (zh, vi, speaker, time) and the reviewer's past decisions (`example_limit` per kind). It returns only lines to remove or check. A removal needs confidence ≥ `remove_confidence`, otherwise it becomes a flag. At most `max_remove_share` of the episode's lines (min 1) are removed; the most confident are kept and the rest become flags.
-- **Output:** `script_review.jsonl` (`ScriptDecision`). The review draft applies it (5.14): removed lines arrive deleted (restorable) with flag `script_<reason>`; flagged lines get `script_suspect` and the note is shown in the editor. In auto mode removed lines are left out of the video.
+- **OCR errors in real dialogue** (same call; user decision 2026-10-03): a line that is real dialogue but whose Chinese has an OCR error is not noise. The model returns `action: fix`, `reason: ocr`, the whole corrected line (`zh_fix`) and its context check (`evidence`); the prompt spells out the checks: a 7 becomes 了 only where the particle fits the grammar and a number does not (never deleted, never kept beside an added 了); a character such as 楚 / 姬 / 史 is stray screen text only at the edge of the line, outside its grammar, with the line complete without it, while the same character inside the sentence is the show's wording (euphemism, slang, a name); similar-looking characters and edge doubles only when the context makes the word clear. When it cannot write the corrected line it returns `check` / `ocr`. Code accepts a fix only with evidence, changing at most `fix_max_change_share` of the line, and refuses a 7 that is dropped, kept beside an added 了, or reads as a number (next to a digit, after 第, before one of `measure_words`); a refused fix becomes a `check` flag. Fixes are never applied: the line gets flag `script_ocr` and the editor's notes show the suggested Chinese and the evidence; the reviewer edits the Chinese (pinyin follows) and checks the Vietnamese, which was translated from the wrong text.
+- **Measured** (12 human-reviewed episodes, against the OCR answer key, 142 of 1,761 lines with wrong Chinese after OCR correction): the old prompt pointed at 41 of them as noise / suspect, with no fix. The new one suggests 46 fixes, 38 exactly right (83%), 1 harmful (a correct line "fixed"), plus 16 OCR check flags; accepting every fix raises correct Chinese from 1,619 to 1,656 lines. Without the context checks it suggested more (51 right) but damaged 8 correct lines (puns and euphemisms such as 鸡道, 史). It removed 37 lines the reviewer also deleted and 2 the reviewer retyped (garbage readings of 不好 and 也太……). About $0.005 per episode.
+- **Output:** `script_review.jsonl` (`ScriptDecision`). The review draft applies it (5.14): removed lines arrive deleted (restorable) with flag `script_<reason>`; flagged lines get `script_suspect`, fixes `script_ocr`, and the note is shown in the editor. In auto mode removed lines are left out of the video; fixes are only listed.
 - **Its memory:** after each finished review, the Memory Manager counts per normalized text what the reviewer removed and kept (`record_line_decisions`). Lossless repeat merges are not the reviewer's decision; short lines kept and pre-deleted lines restored count as kept. Locked rows (edited in the Memory screen) are not changed.
 
 ### 5.14 Review gate and review data (`stages/review.py`)
@@ -1108,7 +1114,7 @@ Three regions:
 
 - **Line list (left):** columns: state (approved / flagged / pending), time, speaker → listener, zh, vi.
   - Order: always chronological (user decision). Flagged lines are found with the flag filter.
-  - Filters: flag group (`retry_cap`, `sprite_unresolved`, `low_speaker_conf`, `non_dialogue_suspect`, `script_suspect`, `ocr_uncertain`, `check_pinyin`, rule warnings), deleted, speaker, unapproved only. Search across zh and vi.
+  - Filters: flag group (`retry_cap`, `sprite_unresolved`, `low_speaker_conf`, `non_dialogue_suspect`, `script_ocr`, `script_suspect`, `ocr_uncertain`, `check_pinyin`, rule warnings), deleted, speaker, unapproved only. Search across zh and vi.
   - Header counter: flagged remaining (deleted lines excluded), approved / total, deleted.
 - **Preview (top right):** mpv player showing the video with the mask applied and the draft subtitles rendered (6.5). Selecting a line seeks to 0.5 s before its start and plays it once. Controls: timeline slider (click or drag), back / forward 5 s, previous / next frame, play / pause, replay line, loop line, speed 0.5× / 1×.
 - **Editor (bottom right):**
@@ -1229,6 +1235,7 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 - **Run:** a sandbox `<work>/_ocr_benchmark/<timestamp>-<label>/` reruns ingest → OCR → events with today's code and config (bands are deleted afterwards; `events_raw.jsonl`, `ocr_raw.jsonl`, `ocr_samples/` are kept). `--existing` scores the OCR already on disk instead (instant).
 - **Scores:** each approved line takes the event overlapping it most in time. Line accuracy (exact text), character error rate (a missed line counts all its characters), missed lines, junk events (events overlapping no approved line for half their time). `report.md` lists every wrong line; `summary.json`; one line per run in `_ocr_benchmark/history.jsonl`.
 - **Measured** (against the key): today's OCR 86.6% lines / CER 2.71% (12 episodes); detection capped at 960 px 86.3% / 2.58% but 26 lines missed; on ep001, ep006, ep012: today's OCR 81.4% / 3.94%, line crop of the original pixels 87.8% / 2.05%, line crop of the mask 74.1% / 4.59%, isolated 75.0% / 4.68% (binarised glyphs lose strokes: 于→无, 青→四). All 12 episodes (2026-10-03): line crop 88.9% / 1.98% (7 missed); show-tuned mask (stroke ≤ 0.14, fill mean ≥ 238) 89.9% / 1.80%, with `band_frames: 5` 90.1% / 1.75%; generic segmentation (5.4a) with outline level 14 and share 0.5: 82.9% / 2.75% (101 lines cut at the start or end: end letters failed the outline test), with outline level 72 and share 0.4: 89.3% / 1.82%, with `band_frames: 5` 90.0% / 1.73% (5 missed). Show-tuned gains are the same on episodes never looked at while tuning (+3.2 to +3.5 over today's OCR). Largest remaining error for every method: 了 read as 7 (about half of the wrong lines).
+- **End to end** (2026-10-03, 11 episodes, sandbox with today's memory; before = the episodes' old OCR + the old script review, after = generic segmentation with fusion + the Round 3 script review; both through OCR correction, voice, cast, translation and evaluation, script review): Chinese right after OCR correction 90.8% → 93.7% (95.5% with the script review's fixes accepted); lines translated from wrong Chinese 140 → 91; on the 90 lines whose Vietnamese the reviewer rewrote, similarity to the reviewer's text 0.80 → 0.84; speaker on named characters 92.3% both; evaluator first-pass 92.0% → 92.2%; same cost. The new OCR also reads about 35 lines the old one missed or garbled to noise the reviewer deleted (是我赢了 read as 丰音, 号称肿脸仙人咩 as 女): they are absent from the answer key, so key-based scores understate it and count them as junk.
 
 ### 6.10 Interface language (i18n)
 

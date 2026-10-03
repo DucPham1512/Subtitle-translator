@@ -21,7 +21,7 @@ from subagent.util import read_jsonl, write_jsonl
 log = logging.getLogger(__name__)
 
 # Flag groups for the review filter and the flagged counter; anything else is a "rule warning".
-FLAG_ORDER = ["retry_cap", "sprite_unresolved", "low_speaker_conf", "non_dialogue_suspect", "script_suspect",
+FLAG_ORDER = ["retry_cap", "sprite_unresolved", "low_speaker_conf", "non_dialogue_suspect", "script_ocr", "script_suspect",
               "ocr_uncertain",
               "check_pinyin"]
 RULE_WARNING_FLAGS = ["partial_speaker", "partial_suggestion", "check_pronouns", "script_repeat", "script_noise", "script_unrelated", "script_other", "ocr_fragment", "missing_translation", "line_too_long", "cps_exceeded", "glossary_mismatch",
@@ -93,6 +93,8 @@ def apply_script_review(lines: list[ReviewedLine], decisions: list[ScriptDecisio
             if d.reason == "repeat" and kept is not None and not kept.deleted:
                 kept.start_ms = min(kept.start_ms, line.start_ms)
                 kept.end_ms = max(kept.end_ms, line.end_ms)
+        elif d.action == "fix":       # a suggested Chinese correction, shown in the notes; the reviewer edits the zh by hand
+            line.flags = list(dict.fromkeys(line.flags + ["script_ocr"]))
         else:
             line.flags = list(dict.fromkeys(line.flags + ["script_suspect"]))
     return lines

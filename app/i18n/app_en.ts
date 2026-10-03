@@ -52,42 +52,42 @@
 <context>
     <name>Agent</name>
     <message>
-        <location filename="../messages.py" line="78"/>
+        <location filename="../messages.py" line="79"/>
         <source>Translator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="79"/>
+        <location filename="../messages.py" line="80"/>
         <source>Evaluator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="80"/>
+        <location filename="../messages.py" line="81"/>
         <source>Script reviewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="81"/>
+        <location filename="../messages.py" line="82"/>
         <source>OCR correction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="82"/>
+        <location filename="../messages.py" line="83"/>
         <source>Pinyin (polyphones)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="83"/>
+        <location filename="../messages.py" line="84"/>
         <source>Memory briefing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="84"/>
+        <location filename="../messages.py" line="85"/>
         <source>Bootstrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="85"/>
+        <location filename="../messages.py" line="86"/>
         <source>Dreaming</source>
         <translation type="unfinished"></translation>
     </message>
@@ -629,67 +629,67 @@
 <context>
     <name>CastPanel</name>
     <message>
-        <location filename="../views/cast_panel.py" line="273"/>
+        <location filename="../views/cast_panel.py" line="275"/>
         <source>Box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="273"/>
+        <location filename="../views/cast_panel.py" line="275"/>
         <source>Recognised as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="273"/>
+        <location filename="../views/cast_panel.py" line="275"/>
         <source>Talking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="274"/>
+        <location filename="../views/cast_panel.py" line="276"/>
         <source>Correct to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="316"/>
+        <location filename="../views/cast_panel.py" line="318"/>
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking. Drag a box to move it, drag a corner to resize, drag on empty space to draw a box around a missed character (Delete removes a drawn box). Your corrections teach the sprite bank when you finish the review.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="320"/>
+        <location filename="../views/cast_panel.py" line="322"/>
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="342"/>
+        <location filename="../views/cast_panel.py" line="344"/>
         <source>not a character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="351"/>
+        <location filename="../views/cast_panel.py" line="353"/>
         <source>unknown ({id})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="359"/>
+        <location filename="../views/cast_panel.py" line="361"/>
         <source>drawn by you</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="373"/>
+        <location filename="../views/cast_panel.py" line="375"/>
         <source>(as recognised)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="373"/>
+        <location filename="../views/cast_panel.py" line="375"/>
         <source>(choose a character)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="378"/>
+        <location filename="../views/cast_panel.py" line="380"/>
         <source>Remove this box</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="381"/>
+        <location filename="../views/cast_panel.py" line="383"/>
         <source>Not a character</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1194,102 +1194,102 @@ Replaced: {files}</source>
 <context>
     <name>Errors</name>
     <message>
-        <location filename="../messages.py" line="92"/>
+        <location filename="../messages.py" line="93"/>
         <source>A required program (ffmpeg, ffprobe or git) is not installed. Install it and restart the app.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="93"/>
+        <location filename="../messages.py" line="94"/>
         <source>The episode&apos;s video file was moved or deleted. Use Relink to point to its new location.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="94"/>
+        <location filename="../messages.py" line="95"/>
         <source>The LLM budget for this episode was reached. Raise the budget in Settings, then Resume.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="95"/>
+        <location filename="../messages.py" line="96"/>
         <source>The AI model returned invalid output twice. Resume to try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="96"/>
+        <location filename="../messages.py" line="97"/>
         <source>The AI service could not be reached. Check your internet connection and API keys, then Resume.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="97"/>
+        <location filename="../messages.py" line="98"/>
         <source>An API key is missing. Enter it in Settings &gt; API keys.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="98"/>
+        <location filename="../messages.py" line="99"/>
         <source>The output folder is not set or not writable. Choose one in Settings &gt; Files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="99"/>
+        <location filename="../messages.py" line="100"/>
         <source>The output video already exists. Choose Overwrite or Keep both.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="100"/>
+        <location filename="../messages.py" line="101"/>
         <source>The review is not complete: every line must be approved and have Vietnamese text.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="101"/>
+        <location filename="../messages.py" line="102"/>
         <source>Another job is already running for this episode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="102"/>
+        <location filename="../messages.py" line="103"/>
         <source>Memory is being written by another job. Try again in a moment.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="103"/>
+        <location filename="../messages.py" line="104"/>
         <source>Not allowed while a job is running. Wait for it to finish.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="104"/>
+        <location filename="../messages.py" line="105"/>
         <source>The settings are invalid. Fix them in Settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="105"/>
+        <location filename="../messages.py" line="106"/>
         <source>A required model package is not installed. See README for the install command.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="106"/>
+        <location filename="../messages.py" line="107"/>
         <source>No subtitle font was found in the fonts folder. Add NotoSans-Regular.ttf there.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="107"/>
+        <location filename="../messages.py" line="108"/>
         <source>Rendering failed. See the log for details, then try Render again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="108"/>
+        <location filename="../messages.py" line="109"/>
         <source>This episode is not registered.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="109"/>
+        <location filename="../messages.py" line="110"/>
         <source>Write the cast list and synopsis first (Bootstrap step 2).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="110"/>
+        <location filename="../messages.py" line="111"/>
         <source>Generate the seed first (Bootstrap step 5).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messages.py" line="111"/>
+        <location filename="../messages.py" line="112"/>
         <source>The job was cancelled. Resume to continue where it stopped.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1333,91 +1333,96 @@ Replaced: {files}</source>
     </message>
     <message>
         <location filename="../messages.py" line="55"/>
-        <source>Removed: repeat of another line</source>
+        <source>Script review: OCR error in the Chinese (fix suggested)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="56"/>
-        <source>Removed: OCR noise</source>
+        <source>Removed: repeat of another line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="57"/>
-        <source>Removed: not part of the story</source>
+        <source>Removed: OCR noise</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="58"/>
-        <source>Removed by script review</source>
+        <source>Removed: not part of the story</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="59"/>
-        <source>Check pinyin</source>
+        <source>Removed by script review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="60"/>
-        <source>Missing translation</source>
+        <source>Check pinyin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="61"/>
-        <source>Line too long</source>
+        <source>Missing translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="62"/>
-        <source>Reading speed too high</source>
+        <source>Line too long</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="63"/>
-        <source>Glossary term not used</source>
+        <source>Reading speed too high</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="64"/>
-        <source>Pronoun mismatch</source>
+        <source>Glossary term not used</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="65"/>
-        <source>Invalid speaker</source>
+        <source>Pronoun mismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="66"/>
-        <source>Speaker differs from voice</source>
+        <source>Invalid speaker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="67"/>
-        <source>Low OCR confidence</source>
+        <source>Speaker differs from voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="68"/>
-        <source>Not evaluated</source>
+        <source>Low OCR confidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="69"/>
-        <source>Rule warnings</source>
+        <source>Not evaluated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="70"/>
-        <source>Partial review suggests another speaker</source>
+        <source>Rule warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="71"/>
-        <source>Speaker set by partial review</source>
+        <source>Partial review suggests another speaker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messages.py" line="72"/>
+        <source>Speaker set by partial review</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../messages.py" line="73"/>
         <source>Speaker changed: check the pronouns</source>
         <translation type="unfinished"></translation>
     </message>

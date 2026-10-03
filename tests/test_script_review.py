@@ -131,3 +131,35 @@ def test_pipeline_records_what_the_reviewer_removed_and_kept(project):
     assert removed == ["你以为我吊你啊"]                                            # the merged repeat is not counted
     assert sorted(kept) == ["哼", "楚"]
     assert isinstance(final[0], ReviewedLine)
+
+
+def test_ocr_fixes_are_checked_before_they_are_suggested(project):
+    ctx = _ctx(project)
+    events = [_ev(0, "怎么可能姬", 0, 1000), _ev(1, "太多7", 2000, 3000), _ev(2, "第7个", 4000, 5000),
+              _ev(3, "来7", 6000, 7000), _ev(4, "我知道7", 8000, 9000), _ev(5, "你以为我吊你啊", 10000, 11000)]
+    write_jsonl(ctx.artifact("events.jsonl"), events)
+    fix = lambda i, zh, ev="context checked": {  # noqa: E731
+        "event_id": f"ep001:{i:04d}", "action": "fix", "reason": "ocr", "confidence": 0.9, "zh_fix": zh,
+        "evidence": ev, "note": "OCR"}
+
+    def utility(messages):
+        return {"lines": [
+            fix(0, "怎么可能"),                    # stray character at the edge: suggested
+            fix(1, "太多了"),                      # 7 as the particle: suggested
+            fix(2, "第了个"),                      # 7 after 第 is a number: refused, flagged
+            fix(3, "来"),                          # a 7 is never just dropped: refused
+            fix(4, "我知道7了"),                    # 了 added next to the 7: refused
+            fix(5, "你以为我钓你啊", ev=""),         # no context check given: refused
+        ]}
+
+    ctx.llm_override, _ = make_llm(ctx.config, ctx.paths, {"utility": utility})
+    counts = script_review.run(ctx)
+    d = {x.event_id: x for x in read_jsonl(ctx.artifact("script_review.jsonl"), ScriptDecision)}
+    assert d["ep001:0000"].action == "fix" and d["ep001:0000"].zh_fix == "怎么可能"
+    assert d["ep001:0001"].zh_fix == "太多了" and d["ep001:0001"].evidence == "context checked"
+    assert all(d[f"ep001:{i:04d}"].action == "flag" and d[f"ep001:{i:04d}"].reason == "ocr" for i in (2, 3, 4, 5))
+    assert counts["ocr_fixes"] == 2
+    lines = [ReviewedLine(event_id=e.id, start_ms=e.start_ms, end_ms=e.end_ms, speaker=None, listener=None,
+                          zh=e.zh, pinyin="", vi="x") for e in events]
+    flagged = {x.event_id: x for x in review.apply_script_review(lines, list(d.values()))}
+    assert "script_ocr" in flagged["ep001:0000"].flags and flagged["ep001:0000"].zh == "怎么可能姬"   # never applied

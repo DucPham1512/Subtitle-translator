@@ -522,6 +522,7 @@ VI = {
     "Speaker set by partial review": "Người nói do duyệt một phần đặt",
     "New NPC": "NPC mới",
     "OCR read": "OCR đã đọc",
+    "Script review: OCR error in the Chinese (fix suggested)": "Rà soát kịch bản: lỗi OCR trong chữ Hán (có gợi ý sửa)",
     "What OCR read for this line after pre-processing (segmentation and cropping), at its position in the band; grey was not read":
         "Phần OCR đã đọc cho dòng này sau tiền xử lý (phân vùng và cắt), ở đúng vị trí trong dải phụ đề; "
         "phần màu xám không được đọc",

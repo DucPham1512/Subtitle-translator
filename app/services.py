@@ -56,6 +56,14 @@ class ReviewData:
     partial: dict[str, PartialSuggestion] = field(default_factory=dict)
 
 
+def script_note(d: ScriptDecision) -> str:
+    """The script review's note for a line; an OCR fix adds the suggested Chinese and the model's context check."""
+    if d.action == "fix" and d.zh_fix:
+        parts = [d.note, f"→ {d.zh_fix}", f"({d.evidence})" if d.evidence else ""]
+        return " ".join(p for p in parts if p)
+    return d.note
+
+
 class Services:
     def __init__(self, root: Path):
         self.root = root
@@ -158,7 +166,7 @@ class Services:
             events={e.id: e for e in read_jsonl(work / "events.jsonl", SubtitleEvent)},
             translations={t.event_id: t for t in read_jsonl(work / "translations.jsonl", LineTranslation)},
             evaluations=evaluations, video=video, read_only=ro,
-            script_notes={d.event_id: d.note for d in read_jsonl(work / "script_review.jsonl", ScriptDecision)},
+            script_notes={d.event_id: script_note(d) for d in read_jsonl(work / "script_review.jsonl", ScriptDecision)},
             cast={c.event_id: c for c in read_jsonl(work / "cast.jsonl", CastLine)},
             partial=self.partial_suggestions(ep_id),
         )
