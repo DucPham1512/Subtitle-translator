@@ -267,6 +267,9 @@ class ReviewedLine(BaseModel):
     cast_boxes: dict[str, list[float]] = Field(default_factory=dict)   # moved/resized detected boxes, by position
     cast_added: list[CastBoxEdit] = Field(default_factory=list)        # boxes drawn around missed characters
     cast_talking: str | None = None    # reviewer's talking sprite: position, "a<i>" (drawn box) or "none"
+    # the reviewer checked this line's On screen view: every box and the talking mark are right as they now stand
+    # (a box left alone is confirmed, not unchecked); the gold for benchmarking character identification
+    cast_checked: bool = False
 
 
 class EditRecord(BaseModel):

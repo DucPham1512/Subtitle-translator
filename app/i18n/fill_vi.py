@@ -522,6 +522,11 @@ VI = {
     "Speaker set by partial review": "Người nói do duyệt một phần đặt",
     "New NPC": "NPC mới",
     "OCR read": "OCR đã đọc",
+    "On screen checked: every box and the talking mark are right":
+        "Đã kiểm tra Trên màn hình: mọi khung và dấu đang nói đều đúng",
+    "Tick after correcting this line's boxes, names and talking mark. A box you left alone then counts as confirmed, which makes the line usable for measuring character recognition.":
+        "Đánh dấu sau khi sửa khung, tên và dấu đang nói của câu này. Khi đó khung bạn không sửa được tính là đã xác nhận, nên câu này dùng được để đo độ chính xác nhận diện nhân vật.",
+    "On screen checked (tick / untick)": "Đã kiểm tra Trên màn hình (bật / tắt)",
     "Use this line": "Dùng câu này",
     "Make this line the speaker's sample: its voice, and the character marked talking in On screen as the picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only.":
         "Lấy câu này làm mẫu của người nói: giọng của câu, và nhân vật được đánh dấu đang nói ở mục Trên màn hình làm hình (không ai được đánh dấu đang nói: không có hình, ví dụ người dẫn chuyện). Chỉ thay đổi thẻ nhân vật.",

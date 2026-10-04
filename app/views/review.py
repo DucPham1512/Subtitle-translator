@@ -290,6 +290,7 @@ class ReviewView(QWidget):
             "undo": self._undo,
             "redo": self._redo,
             "search": lambda: (self.search.setFocus(), self.search.selectAll()),
+            "cast_checked": self.cast_panel.toggle_checked,
         }
         for action, slot in actions.items():
             sc = QShortcut(shortcuts.sequence(action), self)
@@ -1125,7 +1126,8 @@ class ReviewView(QWidget):
         missing = "" if self.data and self.data.cast else self.tr(
             "No cast data for this episode (the Characters on screen stage did not run).")
         review = {"cast_labels": line.cast_labels, "cast_boxes": line.cast_boxes,
-                  "cast_added": [a.model_dump() for a in line.cast_added], "cast_talking": line.cast_talking}
+                  "cast_added": [a.model_dump() for a in line.cast_added], "cast_talking": line.cast_talking,
+                  "cast_checked": line.cast_checked}
         if analysed is not None:     # the exact frame the stage analysed: boxes line up even on moving characters
             self.cast_panel.show_line(analysed, cast, review, self.characters, analysed.shape[1], editable, missing,
                                       rgb=True)
@@ -1152,7 +1154,7 @@ class ReviewView(QWidget):
         line = self.lines[self.current]
         updates = {"cast_labels": review["cast_labels"], "cast_boxes": review["cast_boxes"],
                    "cast_added": [CastBoxEdit(**a) for a in review["cast_added"]],
-                   "cast_talking": review["cast_talking"]}
+                   "cast_talking": review["cast_talking"], "cast_checked": review.get("cast_checked", False)}
         if all(getattr(line, k) == v for k, v in updates.items()):
             return
         self._push_undo(line.event_id, "cast")

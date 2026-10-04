@@ -298,11 +298,12 @@ class ReviewedLine(BaseModel):
     cast_boxes: dict[str, list[float]] = {}   # moved/resized detected boxes, by position (cast-frame coordinates)
     cast_added: list[CastBoxEdit] = []        # boxes drawn around missed characters: {box, character}
     cast_talking: str | None = None           # reviewer's talking sprite: position, "a<i>" (drawn box) or "none"
+    cast_checked: bool = False                # reviewer checked On screen: boxes left alone are confirmed (gold)
 
 class EditRecord(BaseModel):   # edits.jsonl
     edit_id: str               # "<event_id>:<field>"
     event_id: str
-    field: str                 # zh | pinyin | vi | speaker | listener | line_type | deleted | cast_labels | cast_boxes | cast_added | cast_talking
+    field: str                 # zh | pinyin | vi | speaker | listener | line_type | deleted | cast_labels | cast_boxes | cast_added | cast_talking | cast_checked
     before: str | None
     after: str | None
 
@@ -1138,7 +1139,7 @@ Three regions:
   - **New NPC:** gives the line's speaker the next free automatic id of the episode (`npc_<ep>_<n>`, after the voice stage's new voices), shown as "(new NPC)"; nothing is written to memory. The reviewer uses the same id on the character's other lines; at finish it is treated like a new voice of the episode and goes on probation (5.15b) when it speaks ≥ `memory.probation_min_lines` approved lines. The speaker / listener dropdowns also offer candidates on probation that may come back in this episode ("on probation since ep005"), so a return the voice stage missed can be assigned by hand.
   - **Original:** under the Chinese field, the original subtitle pixels (the subtitle band of the frame the cast stage used: the line's middle on the `cast.sample_fps` grid, `video.subtitle_band`), unmasked, to check the OCR text. Loaded in a worker (`Services.line_frame`), the last 40 lines cached; shows why when the video is missing. Below it, **OCR read**: what the recognizer read for the line after pre-processing (`Services.line_ocr_crop`: the line's first reading with the line's raw text, from `ocr_crops/`), at its position in the band, grey where nothing was read; after cleanup or without pre-processing it says so.
   - Read-only context: flags with reasons, script review note, evaluator feedback per attempt, glossary terms found in the line with their required vi forms, and the pronoun pair for the chosen speaker → listener.
-- **Right side views** (tabs): **Line** (preview player + editor, as above) and **On screen** (5.8b), where the frame the cast stage used fills the player's place and the recognition table the editor's place (same split sizes). The frame shows every character box: green recognised, orange unknown sprite (`u…`), red outline the talking sprite, each labelled with its position and name. Each table row shows the box's recognised name and similarity, a Talking checkbox (one at most; unticking records "nobody on screen talks"), and a "Correct to" dropdown (as recognised / a character / Not a character). On the picture (boxes drawn at screen scale, labels 11 px): drag a box to move it, a corner to resize it, empty space to draw a box around a missed character (blue, row "A1": choose its character; "Remove this box" or Delete removes it). All of it is one editable part of the line (`cast_labels`, `cast_boxes`, `cast_added`, `cast_talking`: autosaved, one undo step per change, edits.jsonl) and teaches the sprite bank at finish review. The picture is the saved analysed frame when present. The action buttons stay below both views.
+- **Right side views** (tabs): **Line** (preview player + editor, as above) and **On screen** (5.8b), where the frame the cast stage used fills the player's place and the recognition table the editor's place (same split sizes). The frame shows every character box: green recognised, orange unknown sprite (`u…`), red outline the talking sprite, each labelled with its position and name. Each table row shows the box's recognised name and similarity, a Talking checkbox (one at most; unticking records "nobody on screen talks"), and a "Correct to" dropdown (as recognised / a character / Not a character). On the picture (boxes drawn at screen scale, labels 11 px): drag a box to move it, a corner to resize it, empty space to draw a box around a missed character (blue, row "A1": choose its character; "Remove this box" or Delete removes it). All of it is one editable part of the line (`cast_labels`, `cast_boxes`, `cast_added`, `cast_talking`: autosaved, one undo step per change, edits.jsonl) and teaches the sprite bank at finish review. **On screen checked** (checkbox under the table, Ctrl+K; `cast_checked`, an edit like the others): the reviewer confirms the line's boxes, names and talking mark as they now stand, so a box left alone counts as confirmed rather than unchecked; such lines are the gold for measuring character recognition (user decision 2026-10-04: checked on every line of 5 replay episodes, the other 11 kept for tests and tuning). The picture is the saved analysed frame when present. The action buttons stay below both views.
   - Live rule checks while typing (line length, CPS, glossary terms, pronoun terms), shown as warnings.
 - **Actions:**
   - Approve and next; Approve all remaining non-flagged lines (with confirmation); Finish review (enabled when every non-deleted line is approved; validates, then starts memory update, voice learning and render as a job).
@@ -1160,6 +1161,7 @@ Keyboard shortcuts (defaults; configurable in Settings). The whole review is doa
 | Focus vi field | Ctrl+E |
 | Undo / redo | Ctrl+Z / Ctrl+Y |
 | Search | Ctrl+F |
+| On screen checked (tick / untick) | Ctrl+K |
 
 ### 6.4b Partial review (`partial_review.py`, `python -m subagent partial-review EPISODE`)
 
@@ -1258,7 +1260,7 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 ### 6.11d Baseline (`baseline.py`, `baseline.name`, `python -m subagent baseline freeze`)
 
 - **Why:** a benchmark suite needs gold that later reruns cannot overwrite (user decision 2026-10-03: ep001–ep016 replayed from the bootstrap memory and re-reviewed in episode order, as the baseline for future experiments).
-- While `baseline.name` is set, `finish_review` copies the finished episode to `<work>/_baseline/<name>/<episode>/`: `approved.jsonl`, `edits.jsonl`, `events.jsonl`, `events_raw.jsonl`, `ocr_raw.jsonl`, `translations.jsonl`, `evaluations.jsonl`, `speakers.jsonl`, `new_voices.json`, `cast.jsonl`, `script_review.jsonl`, `pinyin.jsonl`, `video.json`, `state.json`; `manifest.json` records per episode the date, the files, the code and memory git commits and a config hash. Finishing again replaces the copy; a failed copy is reported (`baseline_failed`) and never fails the episode. `baseline freeze NAME [EPISODE...]` copies finished episodes by hand.
+- While `baseline.name` is set, `finish_review` copies the finished episode to `<work>/_baseline/<name>/<episode>/`: `approved.jsonl`, `edits.jsonl`, `events.jsonl`, `events_raw.jsonl`, `ocr_raw.jsonl`, `translations.jsonl`, `evaluations.jsonl`, `speakers.jsonl`, `new_voices.json`, `cast.jsonl`, `script_review.jsonl`, `pinyin.jsonl`, `video.json`, `state.json`; `manifest.json` records per episode the date, the files, the code and memory git commits and a config hash. Finishing again replaces the copy; a failed copy is reported (`baseline_failed`) and never fails the episode. Character recognition gold: the lines with `cast_checked` (On screen checked on every line of 5 of the 16 episodes). `baseline freeze NAME [EPISODE...]` copies finished episodes by hand.
 
 ### 6.10 Interface language (i18n)
 

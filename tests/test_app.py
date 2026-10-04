@@ -687,3 +687,31 @@ def test_use_this_line_pins_the_card_sample(qapp, project, monkeypatch):
     assert (paths.data / "character_cards" / "lin_yuan" / "pin.json").is_file()
     window.close()
     settle(qapp)
+
+
+def test_on_screen_checked_mark(qapp):
+    import numpy as np
+
+    from app.views.cast_panel import CastPanel
+    from subagent.models import CastDetection, CastLine, ReviewedLine
+    from subagent.stages.review import compute_edits
+
+    line = CastLine(event_id="ep001:0000", talking=0, detections=[
+        CastDetection(index=0, box=[100, 50, 300, 400], score=0.5, label="c", character="lin_yuan", similarity=0.81)])
+    panel = CastPanel()
+    got = []
+    panel.review_changed.connect(got.append)
+    panel.show_line(np.zeros((540, 960, 3), np.uint8), line, {}, {"lin_yuan": "Lâm Uyên"}, 960, True, rgb=True)
+    assert panel.checked.isEnabled() and not panel.checked.isChecked()
+    panel.toggle_checked()                                   # Ctrl+K
+    assert got[-1]["cast_checked"] is True and got[-1]["cast_talking"] is None   # nothing else changed
+    panel.show_line(None, None, {"cast_checked": True}, {}, 960, True)
+    assert panel.checked.isChecked() and not panel.checked.isEnabled()          # no cast data: nothing to check
+    readonly = CastPanel()
+    readonly.show_line(np.zeros((540, 960, 3), np.uint8), line, {}, {}, 960, False, rgb=True)
+    assert not readonly.checked.isEnabled()
+
+    base = ReviewedLine(event_id="ep001:0000", start_ms=0, end_ms=1000, speaker="lin_yuan", listener=None, zh="字",
+                        pinyin="", vi="x")
+    edits = compute_edits([base], [base.model_copy(update={"cast_checked": True})])
+    assert [(e.field, e.before, e.after) for e in edits] == [("cast_checked", "false", "true")]

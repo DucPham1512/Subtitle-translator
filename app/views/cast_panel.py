@@ -289,12 +289,19 @@ class CastPanel(QWidget):
         lower_layout.setContentsMargins(0, 0, 0, 0)
         lower_layout.addWidget(self.note)
         lower_layout.addWidget(self.table, 1)
+        self.checked = QCheckBox(self.tr("On screen checked: every box and the talking mark are right"))
+        self.checked.setToolTip(self.tr(
+            "Tick after correcting this line's boxes, names and talking mark. A box you left alone then counts as "
+            "confirmed, which makes the line usable for measuring character recognition."))
+        self.checked.toggled.connect(self._checked_toggled)
+        lower_layout.addWidget(self.checked)
         self.split.addWidget(lower)
         self.split.setSizes([380, 420])
         layout.addWidget(self.split, 1)
         self._cast: CastLine | None = None
         self._names: dict[str, str] = {}
-        self._review: dict = {"cast_labels": {}, "cast_boxes": {}, "cast_added": [], "cast_talking": None}
+        self._review: dict = {"cast_labels": {}, "cast_boxes": {}, "cast_added": [], "cast_talking": None,
+                              "cast_checked": False}
         self._editable = False
         self._loading = False
 
@@ -307,7 +314,12 @@ class CastPanel(QWidget):
         self._review = {"cast_labels": dict(review.get("cast_labels") or {}),
                         "cast_boxes": {k: list(v) for k, v in (review.get("cast_boxes") or {}).items()},
                         "cast_added": [dict(a) for a in (review.get("cast_added") or [])],
-                        "cast_talking": review.get("cast_talking")}
+                        "cast_talking": review.get("cast_talking"),
+                        "cast_checked": bool(review.get("cast_checked"))}
+        self.checked.blockSignals(True)
+        self.checked.setChecked(self._review["cast_checked"])
+        self.checked.setEnabled(editable and cast is not None)
+        self.checked.blockSignals(False)
         self.image.frame_width = frame_width
         self.image.editable = editable and frame is not None
         self.image.set_pixmap(to_pixmap(frame, rgb=rgb) if frame is not None else None, missing)
@@ -392,11 +404,23 @@ class CastPanel(QWidget):
         return {"cast_labels": dict(self._review["cast_labels"]),
                 "cast_boxes": {k: list(v) for k, v in self._review["cast_boxes"].items()},
                 "cast_added": [dict(a) for a in self._review["cast_added"]],
-                "cast_talking": self._review["cast_talking"]}
+                "cast_talking": self._review["cast_talking"],
+                "cast_checked": self._review["cast_checked"]}
 
     def _emit(self) -> None:
         self._refresh()
         self.review_changed.emit(self.review())
+
+    def _checked_toggled(self, on: bool) -> None:
+        if self._loading or not self._editable:
+            return
+        self._review["cast_checked"] = on
+        self._emit()
+
+    def toggle_checked(self) -> None:
+        """Keyboard: tick / untick "On screen checked"."""
+        if self.checked.isEnabled():
+            self.checked.setChecked(not self.checked.isChecked())
 
     # -- edits ---------------------------------------------------------------------------------------
 

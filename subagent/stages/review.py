@@ -27,7 +27,7 @@ FLAG_ORDER = ["retry_cap", "sprite_unresolved", "low_speaker_conf", "non_dialogu
 RULE_WARNING_FLAGS = ["partial_speaker", "partial_suggestion", "check_pronouns", "script_repeat", "script_noise", "script_unrelated", "script_other", "ocr_fragment", "missing_translation", "line_too_long", "cps_exceeded", "glossary_mismatch",
                       "pronoun_mismatch", "speaker_invalid", "speaker_override", "ocr_low_conf", "not_evaluated"]
 EDITABLE_FIELDS = ("zh", "pinyin", "vi", "speaker", "listener", "line_type", "deleted", "cast_labels", "cast_boxes",
-                   "cast_added", "cast_talking")
+                   "cast_added", "cast_talking", "cast_checked")
 
 
 def flag_group(flags: list[str]) -> int | None:
