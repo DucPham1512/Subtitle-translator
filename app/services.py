@@ -278,6 +278,13 @@ class Services:
         card = card_info(self.paths, self.config, char_id, current=ep_id, draft=draft)
         return card_media(self.paths, self.config, card) if media else card
 
+    def pin_character_card(self, ep_id: str, line: ReviewedLine, cast: CastLine | None):
+        """"Use this line": the line's voice and the box shown as talking in On screen (none: no picture) become
+        its speaker's card sample. The card only; memory learns nothing from it."""
+        from subagent.character_card import pin_card, shown_talking_box
+
+        return pin_card(self.paths, self.config, line.speaker, ep_id, line, shown_talking_box(line, cast))
+
     def line_ocr_crop(self, ep_id: str, event: SubtitleEvent | None):
         """What OCR read for a line (band-sized grey image; ocr_crops/, temporary): the line's first reading whose
         text is the line's raw OCR text, else its first reading. None when no crop was saved."""

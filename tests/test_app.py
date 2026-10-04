@@ -646,3 +646,44 @@ def test_character_browser_lists_cards_and_assigns(qapp):
     assert dialog.choice == ("listener", "lin_yuan")
     readonly = CharacterBrowser(parent, {"lin_yuan": "Lâm Uyên"}, cards.__getitem__, ClipPlayer(), read_only=True)
     assert not readonly.speaker_btn.isEnabled() and not readonly.listener_btn.isEnabled()
+
+
+def test_use_this_line_pins_the_card_sample(qapp, project, monkeypatch):
+    import subagent.media as media
+    from app.main_window import MainWindow
+    from app.services import Services
+
+    config, paths = project
+    seed_memory(config, paths)
+    ep = register_episode(paths, 1)
+    work = paths.episode_dir(ep.id)
+    events = sample_events()
+    write_events(work, events)
+    write_jsonl(work / "pinyin.jsonl", [PinyinLine(event_id=e.id, pinyin="x") for e in events])
+    write_jsonl(work / "translations.jsonl", [
+        LineTranslation(event_id=e.id, speaker="lin_yuan", listener=None, speaker_conf=0.5, vi="Câu.", attempts=1)
+        for e in events])
+    gate(work, "human")
+    Registry(paths).set_status(ep.id, "awaiting_review")
+
+    def clip(path, start, end, out, sample_rate=16000):
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(b"RIFF")
+        return out
+
+    monkeypatch.setattr(media, "extract_clip", clip)
+    window = MainWindow(Services(paths.root))
+    window.show_review(ep.id)
+    settle(qapp)
+    review = window.views["review"]
+    review._select(events[0].id)
+    settle(qapp)
+    assert "no reviewed line yet" in review.card_strip.text.text()       # the unreviewed draft is not used
+    assert review.card_strip.use_btn.isEnabled()
+    review.card_strip.use_btn.click()
+    settle(qapp)
+    assert "sample chosen by you" in review.card_strip.text.text()
+    assert review.card_strip.card.clip is not None and review.card_strip.card.picture is None   # no talker: no picture
+    assert (paths.data / "character_cards" / "lin_yuan" / "pin.json").is_file()
+    window.close()
+    settle(qapp)

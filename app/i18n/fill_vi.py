@@ -522,6 +522,12 @@ VI = {
     "Speaker set by partial review": "Người nói do duyệt một phần đặt",
     "New NPC": "NPC mới",
     "OCR read": "OCR đã đọc",
+    "Use this line": "Dùng câu này",
+    "Make this line the speaker's sample: its voice, and the character marked talking in On screen as the picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only.":
+        "Lấy câu này làm mẫu của người nói: giọng của câu, và nhân vật được đánh dấu đang nói ở mục Trên màn hình làm hình (không ai được đánh dấu đang nói: không có hình, ví dụ người dẫn chuyện). Chỉ thay đổi thẻ nhân vật.",
+    "Saving the sample…": "Đang lưu mẫu…",
+    "sample chosen by you": "mẫu do bạn chọn",
+    "no reviewed line yet": "chưa có câu đã duyệt",
     "Browse characters": "Duyệt nhân vật",
     "Browse characters…": "Duyệt nhân vật…",
     "Pictures and voice samples come from a line each character speaks in an episode you reviewed. Pick the one who speaks here.":

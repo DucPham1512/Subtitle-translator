@@ -42,6 +42,10 @@ def describe(widget: QWidget, card) -> str:
         parts.append(widget.tr("first seen {ep}").format(ep=card.first_episode))
     if card.description:
         parts.append(card.description)
+    if card.source == "pinned":
+        parts.append(widget.tr("sample chosen by you"))
+    elif card.source == "none":
+        parts.append(widget.tr("no reviewed line yet"))
     return " · ".join(parts)
 
 
@@ -63,9 +67,14 @@ class CharacterStrip(QWidget):
         self.play_btn.setFixedWidth(36)
         self.play_btn.setToolTip(self.tr("Play a line this character speaks in an earlier episode"))
         self.play_btn.clicked.connect(self._play)
+        self.use_btn = QPushButton(self.tr("Use this line"))
+        self.use_btn.setToolTip(self.tr(
+            "Make this line the speaker's sample: its voice, and the character marked talking in On screen as the "
+            "picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only."))
         row.addWidget(self.picture)
         row.addWidget(self.text, 1)
         row.addWidget(self.play_btn)
+        row.addWidget(self.use_btn)
         self.clear()
 
     def clear(self, text: str = "") -> None:

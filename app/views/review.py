@@ -178,6 +178,7 @@ class ReviewView(QWidget):
         self.card_strip.setToolTip(self.tr("Who the speaker is: picture, first episode, description and a voice "
                                            "sample from an episode you reviewed"))
         form.addRow("", self.card_strip)
+        self.card_strip.use_btn.clicked.connect(self._pin_card)
         self._card_for: str | None = None
         form_layout.addLayout(form)
         self.warnings = QLabel()
@@ -382,12 +383,15 @@ class ReviewView(QWidget):
             box.blockSignals(False)
 
     def _fill_character_boxes(self) -> None:
-        for box in (self.speaker, self.listener):
+        line = self.lines.get(self.current) if self.current else None
+        for box, value in ((self.speaker, line.speaker if line else None),
+                           (self.listener, line.listener if line else None)):
             box.blockSignals(True)
             box.clear()
             box.addItem("—", None)
             for cid, name in sorted(self.characters.items(), key=lambda kv: kv[1]):
                 box.addItem(f"{name} ({cid})", cid)
+            box.setCurrentIndex(max(0, box.findData(value)))    # refilling keeps the line's choice shown
             box.blockSignals(False)
 
     def _new_character(self) -> None:
@@ -408,6 +412,7 @@ class ReviewView(QWidget):
     def _show_card(self) -> None:
         """The speaker's card under the speaker row (picture, first episode, description, voice sample)."""
         cid = self.speaker.currentData()
+        self.card_strip.use_btn.setEnabled(bool(cid) and self.data is not None and not self.data.read_only)
         if cid == self._card_for:
             return
         self._card_for = cid
@@ -422,6 +427,24 @@ class ReviewView(QWidget):
                 self.card_strip.show_card(card)
 
         run_async(lambda: load(cid), done, lambda exc: self.card_strip.clear(str(exc)))
+
+    def _pin_card(self) -> None:
+        """"Use this line": the current line becomes its speaker's card sample (voice + the talking box shown in On
+        screen, none: no picture). The card only; memory learns nothing from it."""
+        if self.data is None or self.data.read_only or self.current is None:
+            return
+        line = self.lines[self.current].model_copy(deep=True)
+        if not line.speaker:
+            return
+        ep_id, cast = self.data.episode.id, self.data.cast.get(line.event_id)
+
+        def done(_) -> None:
+            self._card_for = None                  # reload the card with the new sample
+            self._show_card()
+
+        self.card_strip.clear(self.tr("Saving the sample…"))
+        run_async(lambda: self.services.pin_character_card(ep_id, line, cast), done,
+                  lambda exc: show_error(self, self.tr("Use this line"), exc))
 
     def _browse_characters(self) -> None:
         from app.views.character_browser import CharacterBrowser
