@@ -173,3 +173,30 @@ def test_a_review_npc_goes_on_probation_at_finish(project, monkeypatch):
     pipe._memory_update(ctx)
     (cand,) = MemoryManager(paths, config).store.candidates()
     assert (cand.id, cand.n_lines, cand.first_episode) == ("npc_006_01", 3, "ep006")
+
+
+def test_in_human_mode_the_picture_cannot_veto_a_return_the_reviewer_assigned(project):
+    config, paths = project
+    seed_memory(config, paths)
+    for n in (5, 6):
+        register_episode(paths, n)
+    m = MemoryManager(paths, config)
+    w5 = paths.episode_dir("ep005")
+    w5.mkdir(parents=True, exist_ok=True)
+    write_jsonl(w5 / "cast.jsonl", [CastLine(event_id=f"ep005:{i:04d}", talking=0, detections=[
+        CastDetection(index=0, box=[0, 0, 1, 1], score=0.5, label="c")]) for i in (1, 2, 3)])
+    np.save(w5 / "cast_embeddings.npy", np.stack([_unit(2)]))
+    _finish(m, paths, "ep005", _lines("ep005", [1, 2, 3], "npc_005_01"),
+            [NewVoice(id="npc_005_01", event_ids=["ep005:0001"], cohesion=0.8)])
+    assert m.store.get_row("characters", "npc_005_01") is None
+    assert m.store.candidate_sprites("npc_005_01")                      # a look was remembered in ep005
+    w6 = paths.episode_dir("ep006")
+    w6.mkdir(parents=True, exist_ok=True)
+    write_jsonl(w6 / "cast.jsonl", list(_talks("shi_zun").values()))    # the picture says shi_zun is talking
+    np.save(w6 / "cast_embeddings.npy", np.stack([_unit(4)]))
+    back = [NewVoice(id="npc_005_01", event_ids=["ep006:0004"], cohesion=0.8, returning_from="ep005")]
+    r6 = _finish(m, paths, "ep006", _lines("ep006", [4], "npc_005_01"), back)          # human mode
+    assert r6.probation["promoted"] == 1
+    assert "assigned by the reviewer" in m.store.get_row("characters", "npc_005_01")["description"] or \
+        "assigned by the reviewer" in (m.store.candidates("promoted")[0].status_note or "")
+    assert not [e for e in m.store.sprite_exemplars() if e.character_id == "npc_005_01"]   # disputed look not kept

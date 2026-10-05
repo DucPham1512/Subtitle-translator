@@ -600,11 +600,14 @@ class MemoryManager:
                     sprites = [np.frombuffer(s["embedding"], dtype=np.float16).astype(np.float32) for s in
                                conn.execute("SELECT embedding FROM candidate_sprites WHERE candidate_id=?", (cid,))]
                     check = pb.check_return(lines, cast, cast_embs, sprites, self.config.cast.match_similarity)
-                    if not check.promote:
+                    if not check.promote and mode != "human":
                         log.info("probation: %s is back in %s but its look disagrees: %s", cid, episode_id,
                                  check.describe())
                         continue
-                    self._promote(conn, r, episode_id, check.describe(), now)
+                    # human mode: the reviewer assigned these lines, so the picture cannot veto the return; a look
+                    # the picture disagrees with is not copied into the sprite bank (sprite learning relearns it)
+                    evidence = check.describe() if check.promote else f"assigned by the reviewer; {check.describe()}"
+                    self._promote(conn, r, episode_id, evidence, now, with_look=check.promote)
                     known.add(cid)
                     counts["promoted"] += 1
                     for d in json.loads(r["pending_json"] or "[]"):
@@ -679,8 +682,10 @@ class MemoryManager:
                 raise
         return keep, counts, released
 
-    def _promote(self, conn: sqlite3.Connection, cand: dict, episode_id: str, evidence: str, now: str) -> None:
-        """A candidate that came back becomes a character, with its voice, look and first appearance."""
+    def _promote(self, conn: sqlite3.Connection, cand: dict, episode_id: str, evidence: str, now: str,
+                 with_look: bool = True) -> None:
+        """A candidate that came back becomes a character, with its voice, look (unless `with_look` is false)
+        and first appearance."""
         cid = cand["id"]
         row = {"id": cid, "name_zh": cand["name_zh"] or cid, "name_vi": cand["name_vi"] or cid,
                "description": cand["description"] or f"Voice found automatically in {cand['first_episode']}; "
@@ -691,7 +696,9 @@ class MemoryManager:
         self._log(conn, "insert", "characters", cid, None, row, None, cand["n_lines"], source="system", reason=reason)
         if cand["embedding"] and _fetch(conn, "voice_bank", cid) is None:
             conn.execute("INSERT INTO voice_bank VALUES (?,?,?,?)", (cid, cand["embedding"], cand["n_lines"], now))
-        for s in conn.execute("SELECT * FROM candidate_sprites WHERE candidate_id=?", (cid,)).fetchall():
+        looks = conn.execute("SELECT * FROM candidate_sprites WHERE candidate_id=?", (cid,)).fetchall() \
+            if with_look else []
+        for s in looks:
             conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, wrong, added_at) "
                          "VALUES (?,?,?,?,0,0,?)", (cid, s["embedding"], s["episode_id"], s["event_id"], now))
         conn.execute("INSERT OR REPLACE INTO appearances (character_id, episode_id, lines) VALUES (?,?,?)",
