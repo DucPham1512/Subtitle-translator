@@ -251,8 +251,13 @@ def cmd_bench(args, config, paths, progress) -> int:
     else:
         from subagent.bench_run import run
 
+        resume = None
+        if args.resume:
+            resume = Path(args.resume)
+            if not resume.is_absolute() and not resume.exists():
+                resume = paths.work / suite.FOLDER / args.resume
         r = run(config, paths, folder, mode=args.mode, from_stage=args.from_stage, episodes=eps,
-                label=args.label or "", use_cache=not args.no_cache, progress=progress)
+                label=args.label or "", use_cache=not args.no_cache, progress=progress, resume=resume)
         out = Path(r.system).parent
         if r.run.get("prefix_changed"):
             print(f"prompt memory prefix differs from the replay in: {', '.join(r.run['prefix_changed'])}")
@@ -634,6 +639,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--from", dest="from_stage", help="run: first stage to rerun (default: ocr_fix)")
     p.add_argument("--label", help="a name for this run")
     p.add_argument("--no-cache", action="store_true", help="run: bypass the LLM response cache")
+    p.add_argument("--resume", help="run: continue a stopped run (its folder, or its name under <work>/_suite/); "
+                                    "its own settings are used")
     p.set_defaults(func=cmd_bench)
 
     p = sub.add_parser("partial-review", parents=[common],

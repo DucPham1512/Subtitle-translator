@@ -220,3 +220,42 @@ def test_run_works_in_a_sandbox_and_learns_from_the_gold_in_chain_mode(project, 
     assert sorted(p.name for p in out.iterdir()) == ["ep002"] and r.translation["exact"]["right"] == 0
     assert not paths.episode_dir("ep002").exists()                 # nothing real was written
     assert (out.parent / "report.md").is_file() and (paths.work / "_suite" / "history.jsonl").is_file()
+
+
+def test_a_stopped_chain_run_resumes_where_it_stopped(project, monkeypatch):
+    import subagent.baseline as baseline_mod
+
+    config, paths = project
+    folder = paths.work / "_baseline" / "b"
+    for n in (1, 2, 3):
+        register_episode(paths, n)
+        make_baseline(folder, f"ep00{n}")
+    checkouts, learned, ran = [], [], []
+    monkeypatch.setattr(bench_run, "checkout_memory", lambda real, sp, sha: checkouts.append(sha))
+    monkeypatch.setattr(suite, "characters_at", lambda memory, sha, cache=None: {"co_tu"})
+    monkeypatch.setattr(baseline_mod, "_git_head", lambda path: f"after-{learned[-1]}" if learned else None)
+    stop = {"at": "ep002"}
+
+    def stage(name, ctx):
+        ran.append((ctx.episode.id, name))
+        if name == "translate" and ctx.episode.id == stop["at"]:
+            raise KeyboardInterrupt                         # the job is stopped in the middle of ep002
+
+    def learner(cfg, sp, ctx):
+        learned.append(ctx.episode.id)
+        return 0.0
+
+    with pytest.raises(KeyboardInterrupt):
+        bench_run.run(config, paths, folder, mode="chain", from_stage="translate", label="r",
+                      stage_runner=stage, learner=learner)
+    run_dir = next((paths.work / "_suite").glob("*-r"))
+    state = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+    assert state["done"] == ["ep001"] and state["memory"] == {"ep001": "after-ep001"}
+    stop["at"] = None
+    checkouts.clear()
+    r = bench_run.run(config, paths, folder, mode="snapshot", resume=run_dir, stage_runner=stage, learner=learner)
+    assert r.run["mode"] == "chain"                         # the run's own settings, not the arguments
+    assert checkouts == ["after-ep001"]                     # memory as it was after the last finished episode
+    assert learned == ["ep001", "ep002"]                    # ep001 is not learned twice; ep003 is the last
+    assert sorted(p.name for p in (run_dir / "out").iterdir()) == ["ep001", "ep002", "ep003"]
+    assert json.loads((run_dir / "run.json").read_text(encoding="utf-8"))["done"] == ["ep001", "ep002", "ep003"]

@@ -33,7 +33,7 @@ from subagent.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 STAGES = ("ingest", "ocr", "events")
 KEY_FILE = "answer_key.json"
 # the OCR model returns some characters in their traditional form; scoring treats them as the same character
-VARIANTS = str.maketrans("別爭沒將脫掙靜眞黃屆戸個說這們麼會來對時見", "别争没将脱挣静真黄届户个说这们么会来对时见")
+VARIANTS = str.maketrans("別爭沒將脫掙靜眞黃屆戸個說這們麼會來對時見淨溫題決懶臥", "别争没将脱挣静真黄届户个说这们么会来对时见净温题决懒卧")
 FOLDER = "_ocr_benchmark"
 KEEP = ("events_raw.jsonl", "ocr_raw.jsonl", "ocr_samples", "video.json")   # the rest of a sandbox is deleted
 
