@@ -89,27 +89,72 @@ def remap_ids(old: dict[str, tuple[int, int]], new_events: list[SubtitleEvent]) 
 def remap_key(paths: Paths, archive: Path) -> tuple[dict, list[str]]:
     """Move the answer key in `archive` (answer_key.json + each episode's old events.jsonl, as archived before a
     re-run) onto today's event ids, and save it as the current key. Returns the key and the ids that found no
-    new event (left out)."""
+    new event (left out).
+
+    Several old events can land on one new line (fragments merged by the new OCR). An exclusion moves only when
+    the old excluded events together cover at least half of the new line: one about a fragment ("the sampled
+    frame shows the previous line") says nothing about the whole line. Corrections that disagree keep the one
+    whose old event overlaps the new line most. Both are listed in the key's `remapped` note."""
     key = json.loads((archive / KEY_FILE).read_text(encoding="utf-8"))
     lost: list[str] = []
     mapping: dict[str, str] = {}
+    old_span: dict[str, tuple[int, int]] = {}
+    new_span: dict[str, tuple[int, int]] = {}
     episodes = {eid.split(":")[0] for part in ("corrections", "excluded") for eid in key.get(part, {})}
     for ep in sorted(episodes):
         old = {e.id: (e.start_ms, e.end_ms) for e in read_jsonl(archive / ep / "events.jsonl", SubtitleEvent)}
-        mapping.update(remap_ids(old, read_jsonl(paths.episode_dir(ep) / "events.jsonl", SubtitleEvent)))
-    new = {k: v for k, v in key.items() if k not in ("corrections", "excluded")}
-    for part in ("corrections", "excluded"):
-        new[part] = {}
-        for eid, value in key.get(part, {}).items():
-            if eid in mapping:
-                new[part][mapping[eid]] = value
-            else:
-                lost.append(eid)
-    new["remapped"] = {"from": str(archive), "at": now_iso(), "lost": lost}
+        events = read_jsonl(paths.episode_dir(ep) / "events.jsonl", SubtitleEvent)
+        old_span.update(old)
+        new_span.update({e.id: (e.start_ms, e.end_ms) for e in events})
+        mapping.update(remap_ids(old, events))
+    new = {k: v for k, v in key.items() if k not in ("corrections", "excluded", "remapped")}
+    dropped: list[str] = []
+    conflicts: list[str] = []
+    best: dict[str, int] = {}
+    new["corrections"] = {}
+    for eid, value in key.get("corrections", {}).items():
+        if eid not in mapping:
+            lost.append(eid)
+            continue
+        target = mapping[eid]
+        overlap = _overlap(*old_span[eid], *new_span[target])
+        if target in new["corrections"] and new["corrections"][target] != value:
+            conflicts.append(eid)
+            if overlap <= best[target]:
+                continue
+        new["corrections"][target] = value
+        best[target] = max(best.get(target, 0), overlap)
+    groups: dict[str, list[str]] = {}
+    for eid in key.get("excluded", {}):
+        if eid in mapping:
+            groups.setdefault(mapping[eid], []).append(eid)
+        else:
+            lost.append(eid)
+    new["excluded"] = {}
+    for target, eids in groups.items():
+        start, end = new_span[target]
+        covered = _covered(start, end, [old_span[e] for e in eids])
+        if covered * 2 >= max(1, end - start):
+            new["excluded"][target] = key["excluded"][eids[0]]
+        else:
+            dropped.extend(eids)
+    new["remapped"] = {"from": str(archive), "at": now_iso(), "lost": lost,
+                       "exclusions_dropped": dropped, "conflicting_corrections": conflicts}
     out = paths.work / FOLDER / KEY_FILE
     out.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_text(out, json.dumps(new, ensure_ascii=False, indent=1))
     return new, lost
+
+
+def _covered(start: int, end: int, spans: list[tuple[int, int]]) -> int:
+    """Milliseconds of [start, end) covered by the union of spans."""
+    total, reach = 0, start
+    for a, b in sorted(spans):
+        a, b = max(a, reach), min(b, end)
+        if b > a:
+            total += b - a
+            reach = b
+    return total
 
 
 def load_key(paths: Paths) -> dict:

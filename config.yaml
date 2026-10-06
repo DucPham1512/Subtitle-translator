@@ -280,6 +280,9 @@ output:
 cleanup:
   auto: true
 baseline:
-  # the ep001-ep016 replay from the bootstrap memory (2026-10-04): each finished review is copied to
-  # <work>/_baseline/replay-2026-10/ as gold for benchmarks
-  name: replay-2026-10
+  # the ep001-ep016 replay (2026-10-04..06) is frozen in <work>/_baseline/replay-2026-10/; freezing is off
+  # since 2026-10-06 so finishing an episode again cannot overwrite that gold
+  name: null
+bench:
+  # the benchmark suite's gold (6.11e): 16 episodes re-reviewed in order, OCR answer key remapped onto them
+  baseline: replay-2026-10

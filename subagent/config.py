@@ -359,6 +359,11 @@ class BaselineConfig(_Section):
     name: str | None = None
 
 
+class BenchConfig(_Section):
+    # the frozen baseline the benchmark suite scores against (6.11e); null: the one baseline.name freezes into
+    baseline: str | None = None
+
+
 class Config(_Section):
     show: ShowConfig = Field(default_factory=ShowConfig)
     device: Literal["auto", "cuda", "cpu"] = "auto"
@@ -386,6 +391,7 @@ class Config(_Section):
     output: OutputConfig = Field(default_factory=OutputConfig)
     cleanup: CleanupConfig = Field(default_factory=CleanupConfig)
     baseline: BaselineConfig = Field(default_factory=BaselineConfig)
+    bench: BenchConfig = Field(default_factory=BenchConfig)
 
     def section(self, name: str) -> dict:
         """JSON-able dump of one top-level section (used in stage input hashes)."""

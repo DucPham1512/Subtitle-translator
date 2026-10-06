@@ -201,3 +201,17 @@ def test_answer_key_moves_to_renumbered_events_by_time(project):
     assert key["corrections"] == {"ep001:0002": "对的"} and key["excluded"] == {"ep001:0001": "garbled"}
     assert lost == ["ep001:0002"] and key["made"] == "2026-10-02"
     assert load_key(paths)["corrections"] == {"ep001:0002": "对的"}               # saved as today's key
+
+    # fragments merged into one long line: an exclusion about one fragment does not exclude the whole line
+    (archive / "answer_key.json").write_text(json.dumps({
+        "corrections": {"ep001:0001": "长句", "ep001:0002": "长句子"},
+        "excluded": {"ep001:0000": "frame shows the previous line", "ep001:0003": "unreadable",
+                     "ep001:0004": "unreadable"}}, ensure_ascii=False), encoding="utf-8")
+    write_jsonl(archive / "ep001" / "events.jsonl", [
+        ev("ep001:0000", 0, 200), ev("ep001:0001", 1000, 1300), ev("ep001:0002", 1300, 2000),
+        ev("ep001:0003", 3000, 3600), ev("ep001:0004", 3600, 4000)])
+    write_jsonl(new_dir / "events.jsonl", [ev("ep001:0000", 0, 2000), ev("ep001:0001", 3000, 4000)])
+    key, lost = remap_key(paths, archive)
+    assert key["corrections"] == {"ep001:0000": "长句子"} and key["excluded"] == {"ep001:0001": "unreadable"}
+    assert key["remapped"]["exclusions_dropped"] == ["ep001:0000"]
+    assert key["remapped"]["conflicting_corrections"] == ["ep001:0002"] and lost == []
