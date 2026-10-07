@@ -1428,7 +1428,7 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 - NFR-M3: Unit tests for every stage with small fixtures; LLM calls mocked in tests via a fake client in `tests/conftest.py`. Tests never download or load ML models (stages that need them are off in the test config or get fakes).
 
 ## 9. Rules for Claude Code
-
+- Every change or decision must have a note in `knowledge_vault/decisions/`; do not modify `data/memory/` through the vault.
 - Implement in stage order. Each stage must have tests and run on a real short clip before starting the next.
 - Never write to memory outside `memory/manager.py`.
 - `subagent/` must never import `app/` or PySide6.
@@ -1440,6 +1440,7 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 - Use Pydantic models from `models.py` for every artifact; do not pass raw dicts between stages.
 - Prefer small pure functions; keep I/O at the stage boundary.
 - When a design question is not answered by this file, ask instead of guessing.
+- Follow section 12 for every change
 
 ## 10. Implementation order
 
@@ -1490,3 +1491,13 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 | Working files | Temporary files auto-deleted when an episode is done | 5.23 |
 
 Still to measure on the first real episode: subtitle band fractions, change and OCR thresholds, voice-match thresholds, non-dialogue thresholds, and per-episode cost.
+
+## 12. Knowledge vault
+
+`knowledge_vault/` is an Obsidian vault for the human owner: a decision log, not pipeline memory.
+
+- Claude Code is the only writer of `knowledge_vault/`.
+- Every change or decision gets a note in `decisions/`: date, decision, reason, measurement if any. Add a line to `changelog/` for each session.
+- A fact lives in one place. Thresholds and current behavior stay in `config.yaml` and this file; the vault holds the reasoning and links to them.
+- Never modify `data/memory/` through the vault.
+- When a section of this file is trimmed, move the history (measurements, dated decisions) to `decisions/` and leave a one-line link.
