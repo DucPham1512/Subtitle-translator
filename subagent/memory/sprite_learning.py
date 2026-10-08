@@ -221,15 +221,20 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
         embed = _frame_embedder(config, paths, episode_id)
     lines, embs, raw = apply_review_edits(lines, embs, reviewed, speakers, embed)
     labels = {e: {k: v for k, v in lab.items() if v in known or v == NOT_A_CHARACTER} for e, lab in raw.items()}
-    stats = {e.id: (e.right, e.wrong) for e in store.sprite_exemplars()}
-    additions, new_stats, removals, result = plan(lines, embs, speakers, build_bank(store), stats, config, episode_id,
-                                                  labels)
+    # learning this episode again (a re-finished review) first takes back what it did last time
+    prev = store.sprite_feedback(episode_id)
+    prev_added = {ex for ex, (_, _, was_added) in prev.items() if was_added}
+    stats = {e.id: (e.right - prev.get(e.id, (0, 0, False))[0], e.wrong - prev.get(e.id, (0, 0, False))[1])
+             for e in store.sprite_exemplars() if e.id not in prev_added}
+    additions, new_stats, removals, result = plan(lines, embs, speakers, build_bank(store, prev_added), stats,
+                                                  config, episode_id, labels)
     generic = {c.id for c in store.characters() if c.generic}
     additions = [a for a in additions if a[0] not in generic]     # many looks under one name: never learned
-    if not (additions or new_stats or removals):
+    if not (additions or new_stats or removals or prev):
         return result
     with manager.locked():
-        counts = manager.write_sprites(additions, new_stats, removals, max_per_character=config.cast.max_exemplars)
+        counts = manager.write_sprites(additions, new_stats, removals, max_per_character=config.cast.max_exemplars,
+                                       episode_id=episode_id, base=stats, undo=prev)
         result.added, result.removed = counts["added"], counts["removed"]
         manager.commit(f"sprites from {episode_id}: +{result.added}, -{result.removed}, "
                        f"{len(result.named)} new names, {result.corrected} corrections")

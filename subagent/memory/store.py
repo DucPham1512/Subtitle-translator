@@ -91,6 +91,14 @@ CREATE TABLE IF NOT EXISTS sprite_bank (       -- how each character looks (5.8b
   wrong INTEGER NOT NULL DEFAULT 0,          -- times it named someone else
   added_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS sprite_feedback (   -- what one episode's learning did to an exemplar (re-finish safe)
+  exemplar_id INTEGER NOT NULL,
+  episode_id TEXT NOT NULL,
+  right INTEGER NOT NULL DEFAULT 0,          -- votes this episode added
+  wrong INTEGER NOT NULL DEFAULT 0,
+  added INTEGER NOT NULL DEFAULT 0,          -- 1: this episode's learning added the exemplar
+  PRIMARY KEY (exemplar_id, episode_id)
+);
 CREATE TABLE IF NOT EXISTS line_decisions (
   zh TEXT PRIMARY KEY,                       -- normalized Chinese text of a line
   remove_count INTEGER NOT NULL DEFAULT 0,   -- times the reviewer removed a line with this text
@@ -98,6 +106,13 @@ CREATE TABLE IF NOT EXISTS line_decisions (
   last_episode TEXT,
   locked INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS line_decision_episodes (   -- one episode's share of line_decisions (re-finish safe)
+  zh TEXT NOT NULL,
+  episode_id TEXT NOT NULL,
+  removed INTEGER NOT NULL DEFAULT 0,
+  kept INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (zh, episode_id)
 );
 CREATE TABLE IF NOT EXISTS candidates (        -- new characters on probation (5.15b)
   id TEXT PRIMARY KEY,                       -- npc_005_02, or the id the translator proposed
@@ -177,6 +192,7 @@ class SpriteExemplar:
     embedding: np.ndarray
     right: int = 0
     wrong: int = 0
+    episode_id: str | None = None
 
 
 class GlossaryEntry(BaseModel):
@@ -290,7 +306,12 @@ class MemoryStore:
         rows = self._rows("SELECT * FROM sprite_bank ORDER BY character_id, id")
         return [SpriteExemplar(id=r["id"], character_id=r["character_id"],
                                embedding=np.frombuffer(r["embedding"], dtype=np.float16).astype(np.float32),
-                               right=r["right"], wrong=r["wrong"]) for r in rows]
+                               right=r["right"], wrong=r["wrong"], episode_id=r["episode_id"]) for r in rows]
+
+    def sprite_feedback(self, episode_id: str) -> dict[int, tuple[int, int, bool]]:
+        """What one episode's sprite learning did: exemplar id -> (right votes, wrong votes, added by it)."""
+        rows = self._rows("SELECT * FROM sprite_feedback WHERE episode_id=?", (episode_id,))
+        return {r["exemplar_id"]: (r["right"], r["wrong"], bool(r["added"])) for r in rows}
 
     def unmatchable_ids(self) -> set[str]:
         """Characters left out of voice and picture matching and learning: archived or generic."""

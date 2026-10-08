@@ -140,7 +140,12 @@ def test_human_mode_then_finish_review(project, stubs, calls):
         line.approved = True
     draft[1].vi = "Tốt lắm. Con không làm vi sư thất vọng."
     review_stage.save_draft(work, draft)
+    pipe.config.baseline.name = "base1"
     assert pipe.finish_review("ep001") == "done"
+    frozen = paths.work / "_baseline" / "base1"
+    assert (frozen / "ep001" / "approved.jsonl").read_bytes() == (work / "approved.jsonl").read_bytes()
+    manifest = json.loads((frozen / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["episodes"]["ep001"]["memory_commit"] and "edits.jsonl" in manifest["episodes"]["ep001"]["files"]
 
     ep = reg.get("ep001")
     assert ep.status == "done" and ep.output_path.endswith("ep01_vi.mp4")

@@ -17,6 +17,7 @@ DEFAULTS = {
     "redo": "Ctrl+Y",
     "search": "Ctrl+F",
     "delete_line": "Ctrl+Delete",
+    "cast_checked": "Ctrl+K",
 }
 
 
@@ -33,6 +34,7 @@ def label(action: str) -> str:
         "redo": QCoreApplication.translate("Shortcuts", "Redo (line)"),
         "search": QCoreApplication.translate("Shortcuts", "Search"),
         "delete_line": QCoreApplication.translate("Shortcuts", "Delete / restore line"),
+        "cast_checked": QCoreApplication.translate("Shortcuts", "On screen checked (tick / untick)"),
     }.get(action, action)
 
 

@@ -737,49 +737,120 @@
         <translation>Sửa thành</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="318" />
+        <location filename="../views/cast_panel.py" line="292" />
+        <source>On screen checked: every box and the talking mark are right</source>
+        <translation>Đã kiểm tra Trên màn hình: mọi khung và dấu đang nói đều đúng</translation>
+    </message>
+    <message>
+        <location filename="../views/cast_panel.py" line="294" />
+        <source>Tick after correcting this line's boxes, names and talking mark. A box you left alone then counts as confirmed, which makes the line usable for measuring character recognition.</source>
+        <translation>Đánh dấu sau khi sửa khung, tên và dấu đang nói của câu này. Khi đó khung bạn không sửa được tính là đã xác nhận, nên câu này dùng được để đo độ chính xác nhận diện nhân vật.</translation>
+    </message>
+    <message>
+        <location filename="../views/cast_panel.py" line="330" />
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking. Drag a box to move it, drag a corner to resize, drag on empty space to draw a box around a missed character (Delete removes a drawn box). Your corrections teach the sprite bank when you finish the review.</source>
         <translation>Xanh lá: đã nhận ra · cam: chưa nhận ra · xanh dương: do bạn vẽ · viền đỏ: đang nói. Kéo khung để di chuyển, kéo góc để đổi kích thước, kéo trên chỗ trống để vẽ khung quanh nhân vật bị bỏ sót (Delete xoá khung bạn vẽ). Khi hoàn tất duyệt, các chỉnh sửa này sẽ dạy lại kho hình nhân vật.</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="322" />
+        <location filename="../views/cast_panel.py" line="334" />
         <source>Green: recognised · orange: not recognised · blue: drawn by you · red outline: talking.</source>
         <translation>Xanh lá: đã nhận ra · cam: chưa nhận ra · xanh dương: do bạn vẽ · viền đỏ: đang nói.</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="344" />
+        <location filename="../views/cast_panel.py" line="356" />
         <source>not a character</source>
         <translation>không phải nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="353" />
+        <location filename="../views/cast_panel.py" line="365" />
         <source>unknown ({id})</source>
         <translation>chưa rõ ({id})</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="361" />
+        <location filename="../views/cast_panel.py" line="373" />
         <source>drawn by you</source>
         <translation>do bạn vẽ</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="375" />
+        <location filename="../views/cast_panel.py" line="387" />
         <source>(as recognised)</source>
         <translation>(như đã nhận ra)</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="375" />
+        <location filename="../views/cast_panel.py" line="387" />
         <source>(choose a character)</source>
         <translation>(chọn nhân vật)</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="380" />
+        <location filename="../views/cast_panel.py" line="392" />
         <source>Remove this box</source>
         <translation>Xoá khung này</translation>
     </message>
     <message>
-        <location filename="../views/cast_panel.py" line="383" />
+        <location filename="../views/cast_panel.py" line="395" />
         <source>Not a character</source>
         <translation>Không phải nhân vật</translation>
+    </message>
+</context>
+<context>
+    <name>CharacterBrowser</name>
+    <message>
+        <location filename="../views/character_browser.py" line="107" />
+        <source>Browse characters</source>
+        <translation>Duyệt nhân vật</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="113" />
+        <source>Pictures and voice samples come from a line each character speaks in an episode you reviewed. Pick the one who speaks here.</source>
+        <translation>Hình và mẫu giọng lấy từ một câu thoại của mỗi nhân vật trong tập bạn đã duyệt. Hãy chọn người đang nói ở đây.</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="116" />
+        <source>Picture</source>
+        <translation>Hình</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="116" />
+        <source>Character</source>
+        <translation>Nhân vật</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="116" />
+        <source>Voice</source>
+        <translation>Giọng</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="136" />
+        <source>Use as speaker</source>
+        <translation>Dùng làm người nói</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="137" />
+        <source>Use as listener</source>
+        <translation>Dùng làm người nghe</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="138" />
+        <source>Close</source>
+        <translation>Đóng</translation>
+    </message>
+</context>
+<context>
+    <name>CharacterStrip</name>
+    <message>
+        <location filename="../views/character_browser.py" line="68" />
+        <source>Play a line this character speaks in an earlier episode</source>
+        <translation>Phát một câu nhân vật này nói ở tập trước</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="70" />
+        <source>Use this line</source>
+        <translation>Dùng câu này</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="72" />
+        <source>Make this line the speaker's sample: its voice, and the character marked talking in On screen as the picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only.</source>
+        <translation>Lấy câu này làm mẫu của người nói: giọng của câu, và nhân vật được đánh dấu đang nói ở mục Trên màn hình làm hình (không ai được đánh dấu đang nói: không có hình, ví dụ người dẫn chuyện). Chỉ thay đổi thẻ nhân vật.</translation>
     </message>
 </context>
 <context>
@@ -2248,19 +2319,19 @@ Tải libmpv cho Windows (mpv-dev-x86_64 từ trang mpv), đặt libmpv-2.dll c�
     </message>
     <message>
         <location filename="../views/review.py" line="103" />
-        <location filename="../views/review.py" line="167" />
+        <location filename="../views/review.py" line="172" />
         <source>Speaker → listener</source>
         <translation>Người nói → người nghe</translation>
     </message>
     <message>
         <location filename="../views/review.py" line="104" />
-        <location filename="../views/review.py" line="157" />
+        <location filename="../views/review.py" line="162" />
         <source>Chinese</source>
         <translation>Tiếng Trung</translation>
     </message>
     <message>
         <location filename="../views/review.py" line="104" />
-        <location filename="../views/review.py" line="166" />
+        <location filename="../views/review.py" line="171" />
         <source>Vietnamese</source>
         <translation>Tiếng Việt</translation>
     </message>
@@ -2305,27 +2376,27 @@ Tải libmpv cho Windows (mpv-dev-x86_64 từ trang mpv), đặt libmpv-2.dll c�
         <translation>Thêm nhân vật vào bộ nhớ và gán cho dòng này</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="159" />
+        <location filename="../views/review.py" line="164" />
         <source>The original subtitle in the video at this line (the preview hides it)</source>
         <translation>Phụ đề gốc trong video ở dòng này (bản xem trước đã che nó)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="160" />
+        <location filename="../views/review.py" line="165" />
         <source>Original</source>
         <translation>Bản gốc</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="165" />
+        <location filename="../views/review.py" line="170" />
         <source>Pinyin</source>
         <translation>Pinyin</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="204" />
+        <location filename="../views/review.py" line="219" />
         <source>On screen</source>
         <translation>Trên hình</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="177" />
+        <location filename="../views/review.py" line="192" />
         <source>Approve and next</source>
         <translation>Duyệt và sang dòng sau</translation>
     </message>
@@ -2340,161 +2411,191 @@ Tải libmpv cho Windows (mpv-dev-x86_64 từ trang mpv), đặt libmpv-2.dll c�
         <translation>Đặt cho người nói của dòng này một mã tự động mới (npc_&lt;tập&gt;_&lt;số&gt;) mà không lưu gì vào bộ nhớ. Dùng cùng mã đó cho các dòng khác của nhân vật: khi hoàn tất duyệt, nếu nói ít nhất 3 dòng đã duyệt, nhân vật được đưa vào diện thử thách, và chỉ trở thành nhân vật chính thức nếu nói lại trong 2 tập kế tiếp.</translation>
     </message>
     <message>
+        <location filename="../views/review.py" line="151" />
+        <source>Browse characters…</source>
+        <translation>Duyệt nhân vật…</translation>
+    </message>
+    <message>
         <location filename="../views/review.py" line="152" />
+        <source>See every character's picture, first episode and voice sample, and assign one to this line</source>
+        <translation>Xem hình, tập xuất hiện đầu tiên và mẫu giọng của mọi nhân vật, rồi gán một nhân vật cho câu này</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="157" />
         <source>Use the speaker Partial review suggests (the line is then flagged so you check its pronouns)</source>
         <translation>Dùng người nói mà Duyệt một phần gợi ý (dòng sẽ được đánh dấu để bạn kiểm tra xưng hô)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="162" />
+        <location filename="../views/review.py" line="167" />
         <source>What OCR read for this line after pre-processing (segmentation and cropping), at its position in the band; grey was not read</source>
         <translation>Phần OCR đã đọc cho dòng này sau tiền xử lý (phân vùng và cắt), ở đúng vị trí trong dải phụ đề; phần màu xám không được đọc</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="164" />
+        <location filename="../views/review.py" line="169" />
         <source>OCR read</source>
         <translation>OCR đã đọc</translation>
     </message>
     <message>
         <location filename="../views/review.py" line="178" />
+        <source>Who the speaker is: picture, first episode, description and a voice sample from an episode you reviewed</source>
+        <translation>Người nói là ai: hình, tập xuất hiện đầu tiên, mô tả và mẫu giọng từ một tập bạn đã duyệt</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="193" />
         <source>Approve all remaining non-flagged…</source>
         <translation>Duyệt mọi dòng còn lại không có cờ…</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="179" />
+        <location filename="../views/review.py" line="194" />
         <source>Finish review…</source>
         <translation>Hoàn tất duyệt…</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="181" />
+        <location filename="../views/review.py" line="196" />
         <source>Reset line</source>
         <translation>Khôi phục dòng</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="182" />
+        <location filename="../views/review.py" line="197" />
         <source>Undo every review change to this line (back to the pipeline's version)</source>
         <translation>Bỏ mọi thay đổi khi duyệt dòng này (trở về bản do quy trình tạo)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="183" />
-        <location filename="../views/review.py" line="598" />
+        <location filename="../views/review.py" line="198" />
+        <location filename="../views/review.py" line="675" />
         <source>Delete line</source>
         <translation>Xóa dòng</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="184" />
+        <location filename="../views/review.py" line="199" />
         <source>Remove this line from the video (e.g. OCR noise). It can be restored.</source>
         <translation>Bỏ dòng này khỏi video (ví dụ chữ nhiễu do OCR). Có thể khôi phục lại.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="185" />
+        <location filename="../views/review.py" line="200" />
         <source>Discard review…</source>
         <translation>Hủy toàn bộ duyệt…</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="186" />
-        <location filename="../views/review.py" line="875" />
+        <location filename="../views/review.py" line="201" />
+        <location filename="../views/review.py" line="952" />
         <source>Partial review…</source>
         <translation>Duyệt một phần…</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="188" />
+        <location filename="../views/review.py" line="203" />
         <source>Learn from the lines you approved so far (speakers, talking marks, character boxes, voices) and re-check the remaining lines. Nothing is saved to memory until you finish the review.</source>
         <translation>Học từ các dòng bạn đã duyệt (người nói, dấu đang nói, khung nhân vật, giọng nói) rồi kiểm tra lại các dòng còn lại. Không có gì được lưu vào bộ nhớ cho đến khi bạn hoàn tất duyệt.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="203" />
+        <location filename="../views/review.py" line="218" />
         <source>Line</source>
         <translation>Dòng</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="302" />
+        <location filename="../views/review.py" line="319" />
         <source>No episode is waiting for review. Run an episode in human mode first.</source>
         <translation>Không có tập nào chờ duyệt. Hãy chạy một tập ở chế độ người duyệt trước.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="320" />
+        <location filename="../views/review.py" line="337" />
         <source>(archived)</source>
         <translation>(đã lưu trữ)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="333" />
+        <location filename="../views/review.py" line="350" />
         <source>Review</source>
         <translation>Duyệt</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="359" />
-        <location filename="../views/review.py" line="363" />
+        <location filename="../views/review.py" line="376" />
+        <location filename="../views/review.py" line="380" />
         <source>All</source>
         <translation>Tất cả</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="390" />
+        <location filename="../views/review.py" line="423" />
+        <source>Loading…</source>
+        <translation>Đang tải…</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="446" />
+        <source>Saving the sample…</source>
+        <translation>Đang lưu mẫu…</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="448" />
+        <source>Use this line</source>
+        <translation>Dùng câu này</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="467" />
         <source>{id} (on probation since {ep})</source>
         <translation>{id} (đang thử thách từ {ep})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="392" />
+        <location filename="../views/review.py" line="469" />
         <source>{id} (new NPC)</source>
         <translation>{id} (NPC mới)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="428" />
-        <location filename="../views/review.py" line="440" />
+        <location filename="../views/review.py" line="505" />
+        <location filename="../views/review.py" line="517" />
         <source>New character</source>
         <translation>Nhân vật mới</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="494" />
+        <location filename="../views/review.py" line="571" />
         <source>No flags</source>
         <translation>Không có cờ</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="503" />
+        <location filename="../views/review.py" line="580" />
         <source>Deleted: not shown in the video</source>
         <translation>Đã xóa: không hiện trong video</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="514" />
+        <location filename="../views/review.py" line="591" />
         <source>Flagged remaining: {flagged} · Approved: {approved} / {total}</source>
         <translation>Còn dòng có cờ: {flagged} · Đã duyệt: {approved} / {total}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="517" />
+        <location filename="../views/review.py" line="594" />
         <source>Deleted: {n}</source>
         <translation>Đã xóa: {n}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="574" />
+        <location filename="../views/review.py" line="651" />
         <source>{id} (unknown)</source>
         <translation>{id} (không rõ)</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="583" />
+        <location filename="../views/review.py" line="660" />
         <source>Use {name}</source>
         <translation>Dùng {name}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="598" />
+        <location filename="../views/review.py" line="675" />
         <source>Restore line</source>
         <translation>Khôi phục dòng đã xóa</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="706" />
+        <location filename="../views/review.py" line="783" />
         <source>Approve remaining lines</source>
         <translation>Duyệt các dòng còn lại</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="707" />
+        <location filename="../views/review.py" line="784" />
         <source>Approve all {n} remaining lines that have no flags?</source>
         <translation>Duyệt tất cả {n} dòng còn lại không có cờ?</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="742" />
+        <location filename="../views/review.py" line="819" />
         <source>Discard review</source>
         <translation>Hủy toàn bộ duyệt</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="743" />
+        <location filename="../views/review.py" line="820" />
         <source>Discard the whole review of {ep}?
 
 All edits, approvals and deletions ({n} lines) are replaced by the pipeline's output. This cannot be undone.</source>
@@ -2503,13 +2604,13 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline's ou
 Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được thay bằng bản do quy trình tạo. Không thể hoàn tác.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="765" />
-        <location filename="../views/review.py" line="785" />
+        <location filename="../views/review.py" line="842" />
+        <location filename="../views/review.py" line="862" />
         <source>Finish review</source>
         <translation>Hoàn tất duyệt</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="766" />
+        <location filename="../views/review.py" line="843" />
         <source>Finish the review of {ep}?
 
 {edited} edited lines will update memory (glossary changes are locked), then the video is rendered to the output folder.</source>
@@ -2518,122 +2619,122 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
 {edited} dòng đã sửa sẽ cập nhật bộ nhớ (thay đổi thuật ngữ sẽ bị khóa), sau đó video được xuất ra thư mục đầu ra.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="794" />
+        <location filename="../views/review.py" line="871" />
         <source>{marked} / {total} sampled lines marked</source>
         <translation>Đã đánh dấu {marked} / {total} dòng mẫu</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="850" />
+        <location filename="../views/review.py" line="927" />
         <source>Audit</source>
         <translation>Kiểm định</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="867" />
-        <location filename="../views/review.py" line="877" />
-        <location filename="../views/review.py" line="907" />
-        <location filename="../views/review.py" line="971" />
+        <location filename="../views/review.py" line="944" />
+        <location filename="../views/review.py" line="954" />
+        <location filename="../views/review.py" line="984" />
+        <location filename="../views/review.py" line="1048" />
         <source>Partial review</source>
         <translation>Duyệt một phần</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="867" />
+        <location filename="../views/review.py" line="944" />
         <source>Another job is running.</source>
         <translation>Đang có tác vụ khác chạy.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="871" />
+        <location filename="../views/review.py" line="948" />
         <source>Partial review running…</source>
         <translation>Đang duyệt một phần…</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="908" />
+        <location filename="../views/review.py" line="985" />
         <source>Re-checked the remaining lines with what you approved so far.
 {n} lines got a new speaker (flag: Speaker set by partial review). Check their pronouns; Undo on a line restores its speaker.</source>
         <translation>Đã kiểm tra lại các dòng còn lại dựa trên những gì bạn đã duyệt.
 {n} dòng được đổi người nói (cờ: Người nói do duyệt một phần đặt). Hãy kiểm tra xưng hô; Hoàn tác trên một dòng sẽ trả lại người nói cũ.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="946" />
+        <location filename="../views/review.py" line="1023" />
         <source>This line is not shown in the video. Use Restore line to bring it back.</source>
         <translation>Dòng này không hiện trong video. Dùng Khôi phục dòng đã xóa để đưa lại.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="947" />
+        <location filename="../views/review.py" line="1024" />
         <source>Deleted</source>
         <translation>Đã xóa</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="949" />
+        <location filename="../views/review.py" line="1026" />
         <source>Flags</source>
         <translation>Cờ</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="953" />
+        <location filename="../views/review.py" line="1030" />
         <source>Script review: {note}</source>
         <translation>Duyệt toàn kịch bản: {note}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="955" />
+        <location filename="../views/review.py" line="1032" />
         <source>Reasons</source>
         <translation>Lý do</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="962" />
+        <location filename="../views/review.py" line="1039" />
         <source>Suggested speaker: &lt;b&gt;{name}&lt;/b&gt; ({reason})</source>
         <translation>Người nói gợi ý: &lt;b&gt;{name}&lt;/b&gt; ({reason})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="965" />
+        <location filename="../views/review.py" line="1042" />
         <source>Talking on screen: {name}</source>
         <translation>Đang nói trên hình: {name}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="968" />
+        <location filename="../views/review.py" line="1045" />
         <source>Voice: {name} {score:.2f} ({status})</source>
         <translation>Giọng nói: {name} {score:.2f} ({status})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="976" />
+        <location filename="../views/review.py" line="1053" />
         <source>Evaluator (attempt {n})</source>
         <translation>Đánh giá (lần {n})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="983" />
+        <location filename="../views/review.py" line="1060" />
         <source>Glossary terms</source>
         <translation>Thuật ngữ</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="989" />
+        <location filename="../views/review.py" line="1066" />
         <source>No pronoun pair in memory yet</source>
         <translation>Bộ nhớ chưa có cặp xưng hô này</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="990" />
+        <location filename="../views/review.py" line="1067" />
         <source>Pronouns {speaker} → {listener}</source>
         <translation>Xưng hô {speaker} → {listener}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="993" />
+        <location filename="../views/review.py" line="1070" />
         <source>No notes for this line.</source>
         <translation>Dòng này không có ghi chú.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1020" />
+        <location filename="../views/review.py" line="1097" />
         <source>The video is not available: {error}</source>
         <translation>Không mở được video: {error}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1031" />
+        <location filename="../views/review.py" line="1108" />
         <source>Not saved: the episode's temporary files were cleaned up, or OCR ran without pre-processing</source>
         <translation>Không có: tệp tạm của tập đã được dọn, hoặc OCR chạy không có tiền xử lý</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1050" />
+        <location filename="../views/review.py" line="1127" />
         <source>No cast data for this episode (the Characters on screen stage did not run).</source>
         <translation>Tập này chưa có dữ liệu nhân vật (bước Nhân vật trên hình chưa chạy).</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1158" />
+        <location filename="../views/review.py" line="1236" />
         <source>Autosave failed</source>
         <translation>Tự động lưu thất bại</translation>
     </message>
@@ -3002,59 +3103,64 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
 <context>
     <name>Shortcuts</name>
     <message>
-        <location filename="../shortcuts.py" line="25" />
+        <location filename="../shortcuts.py" line="26" />
         <source>Approve and next</source>
         <translation>Duyệt và sang dòng sau</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="26" />
+        <location filename="../shortcuts.py" line="27" />
         <source>Next line</source>
         <translation>Dòng sau</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="27" />
+        <location filename="../shortcuts.py" line="28" />
         <source>Previous line</source>
         <translation>Dòng trước</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="28" />
+        <location filename="../shortcuts.py" line="29" />
         <source>Replay line</source>
         <translation>Phát lại dòng</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="29" />
+        <location filename="../shortcuts.py" line="30" />
         <source>Play / pause</source>
         <translation>Phát / dừng</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="30" />
+        <location filename="../shortcuts.py" line="31" />
         <source>Toggle loop</source>
         <translation>Bật / tắt lặp</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="31" />
+        <location filename="../shortcuts.py" line="32" />
         <source>Focus Vietnamese field</source>
         <translation>Chuyển tới ô tiếng Việt</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="32" />
+        <location filename="../shortcuts.py" line="33" />
         <source>Undo (line)</source>
         <translation>Hoàn tác (dòng)</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="33" />
+        <location filename="../shortcuts.py" line="34" />
         <source>Redo (line)</source>
         <translation>Làm lại (dòng)</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="34" />
+        <location filename="../shortcuts.py" line="35" />
         <source>Search</source>
         <translation>Tìm</translation>
     </message>
     <message>
-        <location filename="../shortcuts.py" line="35" />
+        <location filename="../shortcuts.py" line="36" />
         <source>Delete / restore line</source>
         <translation>Xóa / khôi phục dòng</translation>
+    </message>
+    <message>
+        <location filename="../shortcuts.py" line="37" />
+        <source>On screen checked (tick / untick)</source>
+        <translation>Đã kiểm tra Trên màn hình (bật / tắt)</translation>
     </message>
 </context>
 <context>
@@ -3201,6 +3307,29 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
         <location filename="../messages.py" line="16" />
         <source>Interrupted</source>
         <translation>Bị gián đoạn</translation>
+    </message>
+</context>
+<context>
+    <name>widget</name>
+    <message>
+        <location filename="../views/character_browser.py" line="40" />
+        <source>on probation</source>
+        <translation>đang thử thách</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="42" />
+        <source>first seen {ep}</source>
+        <translation>xuất hiện lần đầu {ep}</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="46" />
+        <source>sample chosen by you</source>
+        <translation>mẫu do bạn chọn</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="48" />
+        <source>no reviewed line yet</source>
+        <translation>chưa có câu đã duyệt</translation>
     </message>
 </context>
 </TS>

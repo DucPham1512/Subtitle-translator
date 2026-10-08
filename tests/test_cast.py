@@ -305,3 +305,28 @@ def test_picture_veto_disputes_the_voice(project):
     assert not [f for f in fails if f.code == "speaker_not_candidate"]     # disputed: blank is allowed
     fails, _ = rule_checks(blank, event, speakers["d"], rc)
     assert [f for f in fails if f.code == "speaker_not_candidate"]         # confusable: still must choose
+
+
+def test_learning_an_episode_again_replaces_what_it_learned(project):
+    config, paths = project
+    seed_memory(config, paths)
+    m = MemoryManager(paths, config)
+    m.write_sprites([("lin_yuan", _vec(LOOK["lin_yuan"]), "ep000", "x")], {}, [], max_per_character=60)
+    ep = register_episode(paths, 1)
+    work = paths.episode_dir(ep.id)
+    lines, embs = _lines([(["lin_yuan", "shi_zun"], 0)] * 3 + [(["lin_yuan", "shi_zun"], 1)] * 3)
+    write_jsonl(work / "cast.jsonl", lines)
+    np.save(work / "cast_embeddings.npy", embs)
+    write_jsonl(work / "approved.jsonl", [
+        ReviewedLine(event_id=ln.event_id, start_ms=0, end_ms=1000, speaker="lin_yuan" if ln.talking == 0 else "shi_zun",
+                     listener=None, zh="字", pinyin="", vi="x", approved=True) for ln in lines])
+    save_state(work, EpisodeState(episode_id=ep.id, mode="human"))
+
+    def bank() -> list:
+        return sorted((e.character_id, e.right, e.wrong, e.embedding.tobytes()) for e in m.store.sprite_exemplars())
+
+    learn_sprites(config, paths, ep.id)
+    once = bank()
+    assert any(right for _, right, _, _ in once)              # the old exemplar earned votes
+    learn_sprites(config, paths, ep.id)                        # the review finished again
+    assert bank() == once

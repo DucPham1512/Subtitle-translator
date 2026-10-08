@@ -173,12 +173,13 @@ def keep_boxes(dets: list[tuple[list[float], float, str]], cfg: CastConfig, w: i
     return keep
 
 
-def build_bank(store: MemoryStore) -> Bank:
-    """Sprite bank by character, leaving out archived characters (their art can be reused for new ones)."""
+def build_bank(store: MemoryStore, without: set[int] | None = None) -> Bank:
+    """Sprite bank by character, leaving out archived characters (their art can be reused for new ones) and the
+    exemplar ids in `without` (those an episode about to be learned again added last time)."""
     skip = store.unmatchable_ids()
     rows: dict[str, list] = {}
     for ex in store.sprite_exemplars():
-        if ex.character_id not in skip:
+        if ex.character_id not in skip and ex.id not in (without or set()):
             rows.setdefault(ex.character_id, []).append(ex)
     return {c: (np.stack([e.embedding for e in exs]), [e.id for e in exs]) for c, exs in rows.items()}
 
