@@ -5,8 +5,6 @@ tags: [map, pipeline]
 ---
 # Tổng quan pipeline
 
-Nguồn: [CLAUDE.md §3.2 Stage order and artifacts](../../CLAUDE.md#32-stage-order-and-artifacts). Ngưỡng và tham số: xem `config.yaml` và [CLAUDE.md §5](../../CLAUDE.md#5-components). Đầu ra nằm trong `work/<episode_id>/`.
-
 ## Trước tập 1
 
 - **Memory bootstrap** — soạn nhân vật, cặp đại từ, glossary gốc và voice bank từ cast list, clip giọng, sprite → `data/bootstrap/seed_draft.json`, sau khi duyệt ghi vào memory.
@@ -38,3 +36,14 @@ Bước 14–18 chạy trong `finish-review`, hoặc ngay sau bước 12 ở ch�
 ## Giữa các tập
 
 - **Dreaming** (offline) — gom sửa của reviewer thành đề xuất glossary, cặp đại từ, style rule, nén briefing → `data/memory/dream_proposals.json`
+
+# Các pipeline cơ bản
+## 1. Nhận diện người nói
+description....
+[[speaker detection.drawio]]
+## 2. Nhận diện hình ảnh
+[[sprite matching.drawio]]
+## 3. Nhận diện giọng nói
+[[voice matching.drawio]]
+## 4. Vòng lặp dịch
+[[translation loop.drawio]]
