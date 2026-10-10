@@ -63,11 +63,11 @@ Bản làm thử nằm sau cờ `cast.projection: off | lda` (mặc định tắ
 
 ### Kết quả
 
-| (ngưỡng tương đồng, margin) | Dàn chính đúng / không nhận ra / sai (1,076 box) | NPC đã có nhãn (110) | NPC chưa từng có nhãn (511) | Box không phải ai bị gọi tên (1,231) |
-|---|---|---|---|---|
-| Thô (0.70, 0.03), hiện tại | 590 / 453 / 33 | 63 / 44 / 3 | 0 / 412 / 99 | 218 |
-| Chiếu (0.60, 0.05), mặc định | 848 / 96 / 132 | 78 / 24 / 8 | 0 / 87 / 424 | 936 |
-| Chiếu, tốt nhất trong lưới (0.95, 0.02) | 499 / 570 / 7 | 46 / 64 / 0 | 0 / 404 / 107 | 195 |
+| (ngưỡng tương đồng, margin)             | Dàn chính đúng / không nhận ra / sai (1,076 box) | NPC đã có nhãn (110) | NPC chưa từng có nhãn (511) | Box không phải ai bị gọi tên (1,231) |
+| --------------------------------------- | ------------------------------------------------ | -------------------- | --------------------------- | ------------------------------------ |
+| Thô (0.70, 0.03), hiện tại              | 590 / 453 / 33                                   | 63 / 44 / 3          | 0 / 412 / 99                | 218                                  |
+| Chiếu (0.60, 0.05), mặc định            | 848 / 96 / 132                                   | 78 / 24 / 8          | 0 / 87 / 424                | 936                                  |
+| Chiếu, tốt nhất trong lưới (0.95, 0.02) | 499 / 570 / 7                                    | 46 / 64 / 0          | 0 / 404 / 107               | 195                                  |
 
 Theo điều kiện thắng (tổng tên đúng, khi số tên sai không quá 135 trên nhân vật và 218 trên box không phải ai):
 

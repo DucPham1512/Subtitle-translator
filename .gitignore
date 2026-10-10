@@ -9,3 +9,6 @@ cache/
 data/episodes/
 data/memory/
 libmpv-2.dll
+knowledge_vault/.obsidian/
+.claude/autoharness/
+knowledge_vault/.claude/
