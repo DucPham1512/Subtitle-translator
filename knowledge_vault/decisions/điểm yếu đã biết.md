@@ -30,7 +30,7 @@ tags: [weakness]
 
 ## Nhận diện hình
 
-- [ ] Tỷ lệ gọi đúng tên nhân vật thấp, nhiều box không nhận ra
+- [ ] Tỷ lệ gọi đúng tên nhân vật thấp, nhiều box không nhận ra (đã thử phép chiếu LDA, thất bại: [[2026-10-10 chiếu đặc trưng sprite theo nhãn reviewer]])
 - [ ] Talking sprite ít khi chỉ đúng speaker
 - [ ] Picture veto chỉ sai người nói ngang với số lần sửa đúng
 - [ ] Không tách được những cặp nhân vật luôn xuất hiện và cử động cùng nhau
