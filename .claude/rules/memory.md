@@ -9,6 +9,7 @@ paths:
 - **Write rules:**
   - A locked entry is changed only by a proposal with `source="human"`.
   - Proposals from `translator` and `updater` (5.15c) are applied only if their evidence lines were approved.
+  - A translator glossary proposal whose evidence line the reviewer edited so that the proposed `vi` is gone (`reviewed_glossary`): the reviewer's form of the term, read from the edit by `replaced_term`, is applied instead as a `human` proposal (locked; evidence = those edit ids); when no single form can be read (term deleted, line rewritten, edits disagree) the proposal is dropped. Without this, the machine's wrong term entered the glossary and was enforced in every later episode (2026-10-10: 5 such entries).
   - `updater` proposals replace what an unlocked entry says without the evidence comparison below; on a locked entry they are held for review (5.15c), never rejected.
   - Human edits create or update entries with `locked=1`.
   - A proposal that conflicts with an existing unlocked entry is applied only if it has more evidence than the current entry (`memory_log.evidence_count`); otherwise it is written to `data/memory/conflicts.json` / `conflicts.md` for review.
@@ -70,7 +71,7 @@ paths:
 ### 5.16 Human-edit mining (part of Memory Manager import step)
 
 - A changed `speaker`/`listener` → appended to `data/memory/speaker_corrections.jsonl` for dreaming (mining an episode again first drops its earlier entries).
-- A `vi` change where a glossary term's translation differs → glossary proposal with `source="human"`.
+- A `vi` change where a glossary term's translation differs → glossary proposal with `source="human"`. `replaced_term` follows the term's words through the word diff, so a partial edit counts ("Hàng lưỡi Thập Bát Điếu" → "Hàng Ngư Thập Bát Điếu"); the new words must share a word with the term or keep a neighbouring word of the line unchanged (a rewritten line gives no form).
 - Pronoun changes are not parsed in code; dreaming extracts them (5.18).
 
 ### 5.17 Memory bootstrap (`memory/bootstrap.py`, runs before episode 1)

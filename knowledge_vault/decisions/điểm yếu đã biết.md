@@ -43,6 +43,7 @@ tags: [weakness]
 - [ ] Tiêu chí speaker của evaluator bắt được ít speaker sai
 - [ ] Có dòng được dịch từ tiếng Trung sai
 - [ ] Partial review đổi speaker mà không dịch lại đại từ
+- [x] Glossary học thuật ngữ sai của máy dù reviewer đã sửa → [[2026-10-10 sửa lỗi glossary học từ bản dịch máy]]
 - [ ] Glossary chỉ có một nghĩa cho mỗi từ → [[2026-10-07 chia hai chế độ auto và human]]
 - [ ] Script review sửa nhầm dòng đúng (表 là từ của show)
 - [ ] Polyphone fallback chỉ áp dụng cho danh sách chữ ngắn

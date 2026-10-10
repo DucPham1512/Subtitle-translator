@@ -226,3 +226,38 @@ def test_mining_an_episode_again_replaces_its_speaker_corrections(project):
     mine("ep001")                                   # the review of ep001 finished again
     rows = [json.loads(ln) for ln in (paths.memory / "speaker_corrections.jsonl").read_text(encoding="utf-8").splitlines()]
     assert [r["episode"] for r in rows] == ["ep002", "ep001"]
+
+
+def test_replaced_term_follows_a_partial_edit_of_the_term():
+    assert replaced_term("Hàng lưỡi Thập Bát Điếu, điếu 7", "Hàng Ngư Thập Bát Điếu, thất điếu",
+                         "Hàng lưỡi Thập Bát Điếu") == "Hàng Ngư Thập Bát Điếu"
+    assert replaced_term("Ta đến tìm Cơ huynh theo lệnh", "Ta đến tìm Cơ lão theo lệnh", "Cơ huynh") == "Cơ lão"
+    assert replaced_term("Ta đến tìm Cơ huynh", "Ta đến tìm", "Cơ huynh") is None          # deleted: no new form
+
+
+def test_a_new_glossary_term_takes_the_form_the_reviewer_wrote(project):
+    config, paths = project
+    seed_memory(config, paths)
+    m = MemoryManager(paths, config)
+    approved = [
+        ReviewedLine(event_id="ep008:0043", start_ms=0, end_ms=1000, speaker="lin_yuan", listener="shi_zun",
+                     zh="降鱼十八钓第七钓", pinyin="", vi="Hàng Ngư Thập Bát Điếu, thất điếu", approved=True, edited=True),
+        ReviewedLine(event_id="ep008:0050", start_ms=0, end_ms=1000, speaker="lin_yuan", listener="shi_zun",
+                     zh="姬佬", pinyin="", vi="Đi thôi", approved=True, edited=True)]
+    translations = [
+        LineTranslation(event_id="ep008:0043", speaker="lin_yuan", listener="shi_zun", speaker_conf=0.9,
+                        vi="Hàng lưỡi Thập Bát Điếu, điếu 7", attempts=1, proposals=[
+                            P("glossary", {"zh": "降鱼十八钓", "vi": "Hàng lưỡi Thập Bát Điếu", "type": "technique"},
+                              evidence=["ep008:0043"])]),
+        LineTranslation(event_id="ep008:0050", speaker="lin_yuan", listener="shi_zun", speaker_conf=0.9,
+                        vi="Cơ huynh", attempts=1, proposals=[
+                            P("glossary", {"zh": "姬佬", "vi": "Cơ huynh", "type": "name"}, evidence=["ep008:0050"])])]
+    edits = [EditRecord(edit_id="ep008:0043:vi", event_id="ep008:0043", field="vi",
+                        before="Hàng lưỡi Thập Bát Điếu, điếu 7", after="Hàng Ngư Thập Bát Điếu, thất điếu"),
+             EditRecord(edit_id="ep008:0050:vi", event_id="ep008:0050", field="vi", before="Cơ huynh", after="Đi thôi")]
+    brief = {"summary_sentence": "x", "characters_introduced": [], "episode_markdown": "# ep008", "story_so_far": "x"}
+    llm, _ = make_llm(config, paths, {"utility": lambda msgs: brief})
+    m.episode_update("ep008", approved, translations, edits, llm)
+    row = m.store.get_row("glossary", "降鱼十八钓")
+    assert (row["vi"], row["locked"], row["source"]) == ("Hàng Ngư Thập Bát Điếu", 1, "human")
+    assert m.store.get_row("glossary", "姬佬") is None                 # the reviewer removed it: no form to learn
