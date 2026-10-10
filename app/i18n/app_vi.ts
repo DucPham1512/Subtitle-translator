@@ -2769,47 +2769,52 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
         <translation>Giọng nói: {name} {score:.2f} ({status})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1053" />
+        <location filename="../views/review.py" line="1055" />
+        <source>Evaluator suggests: &lt;b&gt;{vi}&lt;/b&gt;</source>
+        <translation>Evaluator đề xuất: &lt;b&gt;{vi}&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="1056" />
         <source>Evaluator (attempt {n})</source>
         <translation>Đánh giá (lần {n})</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1060" />
+        <location filename="../views/review.py" line="1062" />
         <source>Glossary terms</source>
         <translation>Thuật ngữ</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1066" />
+        <location filename="../views/review.py" line="1068" />
         <source>No pronoun pair in memory yet</source>
         <translation>Bộ nhớ chưa có cặp xưng hô này</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1067" />
+        <location filename="../views/review.py" line="1069" />
         <source>Pronouns {speaker} → {listener}</source>
         <translation>Xưng hô {speaker} → {listener}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1070" />
+        <location filename="../views/review.py" line="1072" />
         <source>No notes for this line.</source>
         <translation>Dòng này không có ghi chú.</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1097" />
+        <location filename="../views/review.py" line="1099" />
         <source>The video is not available: {error}</source>
         <translation>Không mở được video: {error}</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1108" />
+        <location filename="../views/review.py" line="1110" />
         <source>Not saved: the episode's temporary files were cleaned up, or OCR ran without pre-processing</source>
         <translation>Không có: tệp tạm của tập đã được dọn, hoặc OCR chạy không có tiền xử lý</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1127" />
+        <location filename="../views/review.py" line="1129" />
         <source>No cast data for this episode (the Characters on screen stage did not run).</source>
         <translation>Tập này chưa có dữ liệu nhân vật (bước Nhân vật trên hình chưa chạy).</translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1236" />
+        <location filename="../views/review.py" line="1238" />
         <source>Autosave failed</source>
         <translation>Tự động lưu thất bại</translation>
     </message>

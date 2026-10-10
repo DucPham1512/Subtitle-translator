@@ -1050,8 +1050,10 @@ class ReviewView(QWidget):
             last = evals[-1]
             scores = ", ".join(f"{k} {v}" for k, v in last.scores.items())
             feedback = html.escape(last.feedback).replace("\n", "<br>")
-            section(self.tr("Evaluator (attempt {n})").format(n=last.attempt),
-                    f"<p>{html.escape(scores)}</p><p>{feedback}</p>")
+            body = f"<p>{html.escape(scores)}</p><p>{feedback}</p>"
+            if last.suggestion and last.suggestion.strip() != line.vi.strip():
+                body = "<p>" + self.tr("Evaluator suggests: <b>{vi}</b>").format(vi=html.escape(last.suggestion))                     + "</p>" + body
+            section(self.tr("Evaluator (attempt {n})").format(n=last.attempt), body)
         if self.rules is not None:
             gl = self.rules.glossary_in(line.zh)
             if gl:

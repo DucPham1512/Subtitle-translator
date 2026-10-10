@@ -133,3 +133,15 @@ def test_reviewer_corrections_reach_both_prompts(project):
     expected = "- 青龙钓帝: “Thanh Long Câu Đế” → “Thanh Long Điếu Đế”"
     assert expected in clients["translator"].calls[0]["messages"][0]["content"]
     assert expected in clients["evaluator"].calls[0]["messages"][0]["content"]
+
+
+def test_a_passing_line_keeps_the_evaluators_suggestion_for_the_reviewer(project):
+    ctx = _translate_ctx(project)
+    vi = _translator(lambda x, m: GOOD[x["event_id"]][2])
+    ctx.llm_override, clients = make_llm(ctx.config, ctx.paths, {
+        "translator": vi, "evaluator": _rubric(lambda x: 3 if x["event_id"] == "ep001:0001" else 5)})
+    translate.run(ctx)
+    assert len(clients["translator"].calls) == 1          # a 3 passes (min_score 3): no retry
+    ev = next(e for e in read_jsonl(ctx.artifact("evaluations.jsonl"), Evaluation) if e.event_id == "ep001:0001")
+    assert ev.passed and ev.suggestion == "Bản sửa của evaluator"
+    assert "suggested: Bản sửa của evaluator" in ev.feedback

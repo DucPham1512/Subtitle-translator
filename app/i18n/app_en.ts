@@ -2752,47 +2752,52 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1053"/>
+        <location filename="../views/review.py" line="1055"/>
+        <source>Evaluator suggests: &lt;b&gt;{vi}&lt;/b&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="1056"/>
         <source>Evaluator (attempt {n})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1060"/>
+        <location filename="../views/review.py" line="1062"/>
         <source>Glossary terms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1066"/>
+        <location filename="../views/review.py" line="1068"/>
         <source>No pronoun pair in memory yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1067"/>
+        <location filename="../views/review.py" line="1069"/>
         <source>Pronouns {speaker} → {listener}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1070"/>
+        <location filename="../views/review.py" line="1072"/>
         <source>No notes for this line.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1097"/>
+        <location filename="../views/review.py" line="1099"/>
         <source>The video is not available: {error}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1108"/>
+        <location filename="../views/review.py" line="1110"/>
         <source>Not saved: the episode&apos;s temporary files were cleaned up, or OCR ran without pre-processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1127"/>
+        <location filename="../views/review.py" line="1129"/>
         <source>No cast data for this episode (the Characters on screen stage did not run).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1236"/>
+        <location filename="../views/review.py" line="1238"/>
         <source>Autosave failed</source>
         <translation type="unfinished"></translation>
     </message>

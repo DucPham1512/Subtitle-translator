@@ -691,6 +691,7 @@ VI = {
     "confirmed by you": "bạn đã xác nhận",
     "auto mode: lines not checked": "chế độ tự động: dòng chưa được kiểm tra",
     "Evidence:": "Bằng chứng:",
+    "Evaluator suggests: <b>{vi}</b>": "Evaluator đề xuất: <b>{vi}</b>",
 }
 
 _PH = re.compile(r"\{[a-z_]+\}")

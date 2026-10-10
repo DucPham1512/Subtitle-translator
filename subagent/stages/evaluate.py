@@ -51,15 +51,29 @@ class RuleContext:
         for p in self.store.pronoun_pairs():
             self._pairs.setdefault((p.speaker_id, p.listener_id), []).append(p)
         self._glossary_in = lru_cache(maxsize=4096)(self._find_glossary)
+        self._tokenizer = _word_tokenizer(self._glossary)
+
+    def _boundaries(self, zh: str) -> set[int]:
+        """Positions between words (jieba, glossary terms of 2+ characters kept whole). HMM joins runs of unknown
+        characters into one word, so the show's coinages count as words before they reach the glossary (降鱼钓法,
+        何罗鱼: 鱼 is not a word there; 2026-10-10: wrong 鱼 fires 16 -> 1 over 16 episodes)."""
+        cuts, pos = {0}, 0
+        for word in self._tokenizer.cut(zh, HMM=True):
+            pos += len(word)
+            cuts.add(pos)
+        return cuts
 
     def _find_glossary(self, zh: str) -> tuple[GlossaryEntry, ...]:
+        """Glossary terms in the line, as whole words: a term that starts or ends inside a longer word does not
+        count (鱼 is not in 钓鱼 "to fish" or 鱼钩 "fish hook"; 2026-10-10: forcing "cá" there broke 35 lines)."""
         found: list[GlossaryEntry] = []
         covered = [False] * len(zh)
+        cuts = self._boundaries(zh)
         for entry in self._glossary:   # longest first
             start = zh.find(entry.zh)
             while start != -1:
                 end = start + len(entry.zh)
-                if not any(covered[start:end]):
+                if start in cuts and end in cuts and not any(covered[start:end]):
                     covered[start:end] = [True] * (end - start)
                     if entry not in found:
                         found.append(entry)
@@ -71,6 +85,23 @@ class RuleContext:
 
     def pronoun_variants(self, speaker: str, listener: str) -> list[PronounPair]:
         return self._pairs.get((speaker, listener), [])
+
+
+def _word_tokenizer(glossary: list[GlossaryEntry]):
+    """A jieba tokenizer that keeps multi-character glossary terms whole. Single characters are not boosted, so
+    the words they are part of (钓鱼) stay whole. Loaded here, not on first use (the review screen builds the
+    rule context in a worker)."""
+    import logging
+
+    import jieba
+
+    jieba.setLogLevel(logging.WARNING)
+    tok = jieba.Tokenizer()
+    tok.initialize()
+    for entry in glossary:
+        if len(entry.zh) >= 2:
+            tok.add_word(entry.zh, freq=100000)
+    return tok
 
 
 def wrap_lines(vi: str, max_chars: int) -> list[str]:
@@ -202,7 +233,9 @@ def judge(event_id: str, attempt: int, failures: list[RuleFailure], warnings: li
     if not failures and evaluated and rubric is None:
         parts.append("not evaluated: the evaluator returned no score for this line")
     parts += [f"warning: {w}" for w in warnings]
-    suggestion = rubric.suggestion.strip() if rubric and not passed else ""
+    # kept on a passing line too (a score of 3 passes but still gets a suggestion): the reviewer sees it (6.4);
+    # only failed lines are sent back to the translator
+    suggestion = rubric.suggestion.strip() if rubric else ""
     if suggestion:
         parts.append(f"suggested: {suggestion}")
     return Evaluation(event_id=event_id, attempt=attempt, passed=passed, scores=scores, feedback="\n".join(parts),

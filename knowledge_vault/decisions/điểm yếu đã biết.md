@@ -40,6 +40,7 @@ tags: [weakness]
 ## Dịch và evaluator
 
 - [ ] Evaluator bắt được ít dòng mà reviewer viết lại
+- [x] Câu sửa của evaluator trên dòng 3 điểm bị bỏ đi; luật glossary một chữ khớp bên trong từ khác và ép translator viết sai → [[2026-10-10 vòng phản hồi translator - evaluator]]
 - [ ] Tiêu chí speaker của evaluator bắt được ít speaker sai
 - [ ] Có dòng được dịch từ tiếng Trung sai
 - [ ] Partial review đổi speaker mà không dịch lại đại từ

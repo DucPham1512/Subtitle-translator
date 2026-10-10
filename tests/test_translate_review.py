@@ -267,3 +267,24 @@ def test_deleted_lines_need_no_approval_and_are_recorded(project):
     assert {(e.field, e.before, e.after) for e in edits if e.event_id == "ep001:0000"} >= {("deleted", "false", "true")}
     assert approved[0].deleted
     assert not review.needs_attention(approved[0].model_copy(update={"flags": ["retry_cap"]}))
+
+
+def test_glossary_rule_matches_whole_words_only(project):
+    config, paths = project
+    seed_memory(config, paths)
+    from subagent.memory.manager import MemoryManager
+    from subagent.models import MemoryProposal
+
+    MemoryManager(paths, config).apply([MemoryProposal(kind="glossary", source="bootstrap",
+                                                       payload={"zh": "鱼", "vi": "cá"})])
+    rc = RuleContext(config, MemoryStore(paths.memory_db))
+    ev = sample_events()[0]
+    fishing = ev.model_copy(update={"zh": "你们三个先去钓鱼吧"})       # 钓鱼 "to fish": 鱼 is not a word here
+    assert rule_checks(_line("Ba người các con đi câu trước đi"), fishing, None, rc)[0] == []
+    hook = ev.model_copy(update={"zh": "挂上鱼钩"})                     # 鱼钩 "fish hook"
+    assert [e.zh for e in rc.glossary_in(hook.zh)] == []
+    fish = ev.model_copy(update={"zh": "这条鱼卖给我"})                 # 鱼 on its own: the rule applies
+    assert [f.code for f in rule_checks(_line("Bán con này đi", speaker=None), fish, None, rc)[0]] == ["glossary"]
+    assert [e.zh for e in rc.glossary_in("林渊已经筑基")] == ["林渊", "筑基"]   # multi-character terms still found
+    for coinage in ("我就教你们降鱼钓法", "这条何罗鱼钓上来"):     # the show's own words, not in the glossary yet
+        assert [e.zh for e in rc.glossary_in(coinage)] == []
