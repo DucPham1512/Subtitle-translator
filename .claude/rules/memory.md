@@ -5,10 +5,11 @@ paths:
 ### 5.15 Memory Manager (`memory/manager.py`)
 
 - **Responsibility:** the only component allowed to write memory. Everything else reads through `memory/store.py` read functions.
-- **Interface:** `apply(proposals: list[MemoryProposal]) -> ApplyResult`, `update_briefings(episode_id, approved_lines)`, `commit(message)`, `history(limit)`, `diff(commit_sha)`, `entry_history(table, key)`, `rollback(commit_sha)`.
+- **Interface:** `apply(proposals: list[MemoryProposal]) -> ApplyResult`, `update_briefings(episode_id, approved_lines)`, `character_updates(...)`, `pending_updates()`, `resolve_update(update_id, accept)`, `commit(message)`, `history(limit)`, `diff(commit_sha)`, `entry_history(table, key)`, `rollback(commit_sha)`.
 - **Write rules:**
   - A locked entry is changed only by a proposal with `source="human"`.
-  - Proposals from `translator` are applied only if their evidence lines were approved.
+  - Proposals from `translator` and `updater` (5.15c) are applied only if their evidence lines were approved.
+  - `updater` proposals replace what an unlocked entry says without the evidence comparison below; on a locked entry they are held for review (5.15c), never rejected.
   - Human edits create or update entries with `locked=1`.
   - A proposal that conflicts with an existing unlocked entry is applied only if it has more evidence than the current entry (`memory_log.evidence_count`); otherwise it is written to `data/memory/conflicts.json` / `conflicts.md` for review.
   - Only human edits delete entries. Deleting a character also deletes its pronoun pairs, voice and confusable pairs.
@@ -16,6 +17,7 @@ paths:
   - Every write runs in a transaction and adds a `memory_log` row. Rejected proposals are logged as `op="rejected"` with a reason.
   - An unnamed automatic character (auto id, `name_vi` still equal to the id) takes the first name proposed for it, without the evidence comparison; the id is then replaced by the name in every `briefings/*.md`. Later renames follow the normal rules; a name set by a person is locked.
 - **After each episode:**
+  - Character updates (5.15c, `memory.character_updates`): one `utility` call; its checked proposals join the translator's before probation.
   - Probation (5.15b, `memory.probation`): candidates that came back are promoted, this episode's new voices and new translator-named characters become candidates, proposals about candidates wait, expired candidates are dropped. With probation off: new voices that approved lines still use (as speaker or listener) become characters at once (`name_zh` = `name_vi` = id, unlocked, source `translator`).
   - Apply approved proposals and human-edit proposals.
   - Record the reviewer's remove / keep decisions in `line_decisions` (5.13a).
@@ -50,6 +52,20 @@ paths:
 - **Dropped:** a candidate still waiting when an episode numbered beyond its window finishes. Rows stay (status `dropped`), so it can be inspected or rolled back.
 - **From review:** an NPC created in review ("New NPC", 6.4) is added to the episode's new voices at finish (`characters.review_voice_ids`); a candidate assigned by hand in a later episode counts as coming back like one the voice stage found.
 - Rerunning an episode's finish rebuilds that episode's candidates. With `memory.probation: false` the old behaviour applies (new voices become characters at once).
+
+### 5.15c Character updates (`memory/character_updates.py`, `memory/manager.py: character_updates`)
+
+- **When:** at every finish (and chain-mode bench learning), before probation, when `memory.character_updates` is on and an LLM client is given. One `utility` call (task `character_update`, prompt `prompts/character_update_system.md`; prefix: the characters block) with the story so far, the present characters (everyone who is speaker or listener in an approved, non-deleted line: id, kind locked / unlocked / candidate / new voice, name, description, aliases), the pronoun pairs between them, and the approved script with event ids.
+- **It returns** per character: a name (only when a line states it), the full updated description (Vietnamese), new aliases (`"<zh> (<vi>)"`: titles, roles, forms of address), evidence; and the pronoun pairs the approved Vietnamese uses that are missing from the matrix or differ from it.
+- **Checks in code** (dropped ones are logged): the id is present in the episode; evidence lines exist, may be learned from, and have the character as speaker or listener (pairs: exactly that speaker and listener); a name's `name_zh` is written in an evidence line that addresses the character (it is the listener) or in its own self-introduction (我是 / 在下 / 老夫 … just before the name); an alias's Chinese is written in an evidence line that addresses the character (measured on ep014: the model gave 会长 to the NPC who said it), aliases already known are dropped, at most `memory.aliases_max` kept; a description is cut to `memory.description_max_chars` (word boundary, "…"); a pair's self or address term occurs as a word in an evidence line's Vietnamese, and a pair equal to the matrix is dropped.
+- **Applied** as proposals with `source="updater"`:
+  - unlocked characters and pairs: applied directly in the episode commit (the more-evidence rule does not apply; an unnamed automatic character takes the name like any first name, renaming it in the briefings);
+  - candidates (5.15b), including this episode's new ones: name only if it has none, description replaced, aliases added (`_update_candidate`); everything moves to the character on promotion; pairs with a candidate wait in `pending_json` as before;
+  - locked characters and pairs: held, one item per field (name, description, aliases, pair) in `data/memory/character_updates.json` (`PendingUpdate`: episode, current, proposed, evidence ids and their "zh | vi" lines, reason). A newer update of the same field replaces the waiting one; finishing an episode again replaces its items.
+  - auto mode: evidence must be on trusted lines (`voice_learning.trusted_auto_lines`); other updates of known characters are held with reason `untrusted`, others (candidates, new voices) dropped.
+- **Review:** Memory → Character updates (6.7). Accept = a human edit (applied, locked; aliases are added to the current list); reject = recorded in `character_update_rejections.json` by signature (table, key, field, proposed value) and never held again. Each resolution is its own commit (`character update <id>: accepted`).
+- The episode commit counts held items (`episode ep006: 5 writes, 2 held for review`); the memory stage counts `updates_held`.
+- **Prompts:** the characters block shows aliases (`(called: 会长 (Hội trưởng); …)`); the new-voices block shows a returning candidate's description and aliases.
 
 ### 5.16 Human-edit mining (part of Memory Manager import step)
 

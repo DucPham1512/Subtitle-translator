@@ -10,7 +10,7 @@ EpisodeStatus = Literal["new", "running", "awaiting_review", "done", "failed", "
 LineType = Literal["dialogue", "sign", "title", "sfx"]
 SpeakerStatus = Literal["fixed", "confusable", "unknown", "too_short", "new_voice", "disputed"]
 ProposalKind = Literal["glossary", "pronoun_pair", "character", "style_rule", "briefing", "line_decision"]
-ProposalSource = Literal["translator", "human", "bootstrap", "dreaming"]
+ProposalSource = Literal["translator", "human", "bootstrap", "dreaming", "updater"]
 
 
 class Episode(BaseModel):

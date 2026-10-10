@@ -27,7 +27,7 @@ paths:
 - **Responsibility:** translate a window into Vietnamese and decide speaker and listener per line.
 - **Prompt layout:**
   1. Static system prompt (`prompts/translator_system.md`): subtitle style, register from `show.genre_register`, xưng hô rules, length limits, output schema.
-  2. Memory prefix (built once per episode): characters (archived ones left out), full glossary, pronoun matrix (pairs with archived characters left out), `story_so_far.md`, `style_rules.md`, then the episode's new voices (id, line count, first time) and the known characters without a voice sample.
+  2. Memory prefix (built once per episode): characters (archived ones left out; aliases shown as "called: …", 5.15c), full glossary, pronoun matrix (pairs with archived characters left out), `story_so_far.md`, `style_rules.md`, then the episode's new voices (id, line count, first time; a returning candidate also with its name, description and aliases) and the known characters without a voice sample.
   3. Variable: previous context lines, then window lines as JSON with `event_id`, `zh`, `speaker_candidates` and their status.
 - **Output per line:** `speaker`, `listener`, `speaker_conf`, `vi`, optional `proposals` (new glossary terms, new or changed pronoun pairs, new characters) with evidence event ids.
 - **Rules given to the model:**

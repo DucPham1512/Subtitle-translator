@@ -676,6 +676,21 @@ VI = {
     "Line decisions": "Quyết định giữ / bỏ dòng",
     "Incomplete: no price set for {models} (Settings > Advanced, llm.prices)":
         "Chưa đầy đủ: chưa đặt giá cho {models} (Cài đặt > Nâng cao, llm.prices)",
+    # character updates (5.15c)
+    "called {names}": "còn gọi là {names}",
+    "Also called": "Tên gọi khác",
+    "Character updates": "Cập nhật nhân vật",
+    "What finished episodes taught about characters you confirmed (locked), or, in auto mode, about lines nobody checked. Accepting saves the change as your edit; a rejected change is not proposed again.":
+        "Những gì các tập đã xong cho biết thêm về nhân vật bạn đã xác nhận (đã khóa), hoặc, ở chế độ tự động, từ những dòng chưa ai kiểm tra. Chấp nhận sẽ lưu thay đổi như chỉnh sửa của bạn; thay đổi bị từ chối sẽ không được đề xuất lại.",
+    "Character / pair": "Nhân vật / cặp",
+    "Field": "Mục",
+    "Why it waits": "Lý do chờ duyệt",
+    "Accept change": "Chấp nhận thay đổi",
+    "Reject change": "Từ chối thay đổi",
+    "Name": "Tên",
+    "confirmed by you": "bạn đã xác nhận",
+    "auto mode: lines not checked": "chế độ tự động: dòng chưa được kiểm tra",
+    "Evidence:": "Bằng chứng:",
 }
 
 _PH = re.compile(r"\{[a-z_]+\}")

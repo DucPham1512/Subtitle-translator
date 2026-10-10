@@ -10,11 +10,11 @@ import json
 import re
 import sqlite3
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS characters (
@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS characters (
   updated_at TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'active',     -- active | kept | archived (character lifecycle)
   status_note TEXT,                          -- why the status was set
-  generic INTEGER NOT NULL DEFAULT 0         -- stands for many individuals (all fish, passers-by): never voice/picture
+  generic INTEGER NOT NULL DEFAULT 0,        -- stands for many individuals (all fish, passers-by): never voice/picture
+  aliases TEXT NOT NULL DEFAULT '[]'         -- JSON list: titles and other names, e.g. "会长 (Hội trưởng)"
 );
 CREATE TABLE IF NOT EXISTS glossary (
   zh TEXT PRIMARY KEY,
@@ -123,7 +124,8 @@ CREATE TABLE IF NOT EXISTS candidates (        -- new characters on probation (5
   pending_json TEXT NOT NULL DEFAULT '[]',   -- proposals that wait for the promotion (pronoun pairs)
   status TEXT NOT NULL DEFAULT 'candidate',  -- candidate | promoted | dropped
   status_note TEXT,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  aliases TEXT NOT NULL DEFAULT '[]'         -- JSON list, moved to the character on promotion
 );
 CREATE TABLE IF NOT EXISTS candidate_sprites (  -- how a candidate looks: its talking sprites (float16)
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -138,7 +140,29 @@ TABLES = ("characters", "glossary", "pronoun_pairs", "voice_bank", "confusable_p
 STATUSES = ("active", "kept", "archived")
 # columns added after the first release: (table, column, definition)
 MIGRATIONS = [("characters", "status", "TEXT NOT NULL DEFAULT 'active'"), ("characters", "status_note", "TEXT"),
-              ("characters", "generic", "INTEGER NOT NULL DEFAULT 0")]
+              ("characters", "generic", "INTEGER NOT NULL DEFAULT 0"),
+              ("characters", "aliases", "TEXT NOT NULL DEFAULT '[]'"), ("candidates", "aliases", "TEXT NOT NULL DEFAULT '[]'")]
+
+
+def parse_aliases(value: object) -> list[str]:
+    """The aliases column (a JSON list) or a list / comma- or semicolon-separated text, as a clean list."""
+    if value is None or value == "":
+        return []
+    if isinstance(value, str):
+        text = value.strip()
+        if text.startswith("["):
+            try:
+                value = json.loads(text)
+            except ValueError:
+                value = [text]
+        else:
+            value = re.split(r"\s*[;,，、]\s*", text)
+    out: list[str] = []
+    for item in value if isinstance(value, list) else [value]:
+        item = " ".join(str(item).split())
+        if item and item not in out:
+            out.append(item)
+    return out
 
 
 def episode_number(episode_id: str) -> int | None:
@@ -164,6 +188,12 @@ class Character(BaseModel):
     status: str = "active"          # active | kept | archived
     status_note: str | None = None
     generic: bool = False           # many individuals under one name: not matched or learned by voice / picture
+    aliases: list[str] = []         # titles and other names others use for the character
+
+    @field_validator("aliases", mode="before")
+    @classmethod
+    def _aliases(cls, v: object) -> list[str]:
+        return parse_aliases(v)
 
     @property
     def archived(self) -> bool:
@@ -183,6 +213,7 @@ class Candidate:
     embedding: np.ndarray | None = None
     pending: list[dict] = None  # type: ignore[assignment]
     status_note: str | None = None
+    aliases: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -372,7 +403,8 @@ class MemoryStore:
             out.append(Candidate(id=r["id"], first_episode=r["first_episode"], n_lines=r["n_lines"],
                                  status=r["status"], name_zh=r["name_zh"], name_vi=r["name_vi"],
                                  description=r["description"], embedding=emb,
-                                 pending=json.loads(r["pending_json"] or "[]"), status_note=r["status_note"]))
+                                 pending=json.loads(r["pending_json"] or "[]"), status_note=r["status_note"],
+                                 aliases=parse_aliases(r.get("aliases"))))
         return out
 
     def returning_candidates(self, number: int, window: int) -> list[Candidate]:

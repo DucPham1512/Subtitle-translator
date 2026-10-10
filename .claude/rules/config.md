@@ -180,6 +180,9 @@ memory:
   probation: true                     # a new character is a candidate until it comes back (5.15b)
   probation_min_lines: 3              # approved lines as speaker in its first episode
   probation_window: 2                 # it must come back within this many episodes (by number)
+  character_updates: false            # one utility call per finished episode updates characters (5.15c)
+  description_max_chars: 200          # a description the model writes is cut to this length
+  aliases_max: 8                      # aliases kept per character
 render:
   font_dir: fonts
   font_name: "Noto Sans"

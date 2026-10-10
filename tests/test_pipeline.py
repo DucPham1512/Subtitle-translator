@@ -81,6 +81,8 @@ def _handlers():
                                 for it in items]}
         if "review the whole subtitle script" in system:
             return {"lines": []}
+        if "character memory" in system:
+            return {"characters": [], "pronouns": []}
         if "story memory" in system:
             return {"summary_sentence": "Lâm Uyên Trúc Cơ và muốn xuống núi.", "characters_introduced": [],
                     "episode_markdown": "# ep001\n## Tóm tắt\nLâm Uyên Trúc Cơ.", "story_so_far": "Lâm Uyên Trúc Cơ."}

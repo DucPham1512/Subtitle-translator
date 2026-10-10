@@ -37,6 +37,7 @@ Giá trị chế độ nằm ở `review.mode` trong `config.yaml`.
 - [ ] Mở rộng schema glossary: một entry nhiều nghĩa, mỗi nghĩa kèm điều kiện ngắn.
 - [ ] Đưa các nghĩa và điều kiện vào prefix cho translator.
 - [ ] Đổi rule check glossary sang cảnh báo mềm.
+- [ ] Chế độ human: cân nhắc bật lại cập nhật nhân vật theo tập (`memory.character_updates`), có thể chỉ cho thẻ nhân vật và màn Memory, không vào prompt translator. Xem [2026-10-08 cập nhật nhân vật theo tập](2026-10-08%20c%E1%BA%ADp%20nh%E1%BA%ADt%20nh%C3%A2n%20v%E1%BA%ADt%20theo%20t%E1%BA%ADp.md).
 
 ## Cần đo
 

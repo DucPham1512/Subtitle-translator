@@ -795,42 +795,42 @@
 <context>
     <name>CharacterBrowser</name>
     <message>
-        <location filename="../views/character_browser.py" line="107"/>
+        <location filename="../views/character_browser.py" line="109"/>
         <source>Browse characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="113"/>
+        <location filename="../views/character_browser.py" line="115"/>
         <source>Pictures and voice samples come from a line each character speaks in an episode you reviewed. Pick the one who speaks here.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116"/>
+        <location filename="../views/character_browser.py" line="118"/>
         <source>Picture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116"/>
+        <location filename="../views/character_browser.py" line="118"/>
         <source>Character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116"/>
+        <location filename="../views/character_browser.py" line="118"/>
         <source>Voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="136"/>
+        <location filename="../views/character_browser.py" line="138"/>
         <source>Use as speaker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="137"/>
+        <location filename="../views/character_browser.py" line="139"/>
         <source>Use as listener</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="138"/>
+        <location filename="../views/character_browser.py" line="140"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -838,17 +838,17 @@
 <context>
     <name>CharacterStrip</name>
     <message>
-        <location filename="../views/character_browser.py" line="68"/>
+        <location filename="../views/character_browser.py" line="70"/>
         <source>Play a line this character speaks in an earlier episode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="70"/>
+        <location filename="../views/character_browser.py" line="72"/>
         <source>Use this line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="72"/>
+        <location filename="../views/character_browser.py" line="74"/>
         <source>Make this line the speaker&apos;s sample: its voice, and the character marked talking in On screen as the picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1011,63 +1011,63 @@
 <context>
     <name>EntryTable</name>
     <message>
-        <location filename="../views/memory.py" line="71"/>
+        <location filename="../views/memory.py" line="86"/>
         <source>Search…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="74"/>
+        <location filename="../views/memory.py" line="89"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="75"/>
+        <location filename="../views/memory.py" line="90"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="76"/>
+        <location filename="../views/memory.py" line="91"/>
         <source>Save changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="77"/>
+        <location filename="../views/memory.py" line="92"/>
         <source>Discard changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="106"/>
+        <location filename="../views/memory.py" line="121"/>
         <source>Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="118"/>
+        <location filename="../views/memory.py" line="133"/>
         <source>{n} entries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="149"/>
-        <location filename="../views/memory.py" line="181"/>
+        <location filename="../views/memory.py" line="165"/>
+        <location filename="../views/memory.py" line="197"/>
         <source>Unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="172"/>
+        <location filename="../views/memory.py" line="188"/>
         <source>Delete locked entries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="173"/>
+        <location filename="../views/memory.py" line="189"/>
         <source>{n} of the selected entries are locked (confirmed by a person). Delete them anyway? Deleting a character also deletes its pronoun pairs and voice.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="202"/>
+        <location filename="../views/memory.py" line="217"/>
         <source>Nothing to save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="214"/>
+        <location filename="../views/memory.py" line="229"/>
         <source>History…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1682,326 +1682,401 @@ Replaced: {files}</source>
 <context>
     <name>MemoryView</name>
     <message>
-        <location filename="../views/memory.py" line="278"/>
+        <location filename="../views/memory.py" line="301"/>
         <source>A job is running: memory is read-only until it finishes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285"/>
+        <location filename="../views/memory.py" line="308"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285"/>
-        <location filename="../views/memory.py" line="286"/>
+        <location filename="../views/memory.py" line="308"/>
+        <location filename="../views/memory.py" line="309"/>
         <source>Chinese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285"/>
-        <location filename="../views/memory.py" line="286"/>
+        <location filename="../views/memory.py" line="308"/>
+        <location filename="../views/memory.py" line="309"/>
         <source>Vietnamese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="286"/>
+        <location filename="../views/memory.py" line="309"/>
+        <location filename="../views/memory.py" line="702"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287"/>
+        <location filename="../views/memory.py" line="310"/>
         <source>Pinyin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287"/>
+        <location filename="../views/memory.py" line="310"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287"/>
+        <location filename="../views/memory.py" line="310"/>
         <source>Notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288"/>
+        <location filename="../views/memory.py" line="311"/>
         <source>First episode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288"/>
-        <location filename="../views/memory.py" line="396"/>
+        <location filename="../views/memory.py" line="311"/>
+        <location filename="../views/memory.py" line="422"/>
         <source>Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288"/>
-        <location filename="../views/memory.py" line="728"/>
+        <location filename="../views/memory.py" line="311"/>
+        <location filename="../views/memory.py" line="821"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="289"/>
+        <location filename="../views/memory.py" line="312"/>
         <source>Updated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="289"/>
+        <location filename="../views/memory.py" line="312"/>
         <source>Times removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="290"/>
+        <location filename="../views/memory.py" line="313"/>
         <source>Times kept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="290"/>
+        <location filename="../views/memory.py" line="313"/>
         <source>Last episode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="291"/>
+        <location filename="../views/memory.py" line="314"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="291"/>
+        <location filename="../views/memory.py" line="314"/>
         <source>Status reason</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="292"/>
+        <location filename="../views/memory.py" line="315"/>
         <source>Generic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="300"/>
+        <location filename="../views/memory.py" line="315"/>
+        <location filename="../views/memory.py" line="702"/>
+        <source>Also called</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="323"/>
         <source>Characters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="301"/>
+        <location filename="../views/memory.py" line="324"/>
         <source>Glossary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="302"/>
+        <location filename="../views/memory.py" line="325"/>
         <source>Pronoun matrix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="303"/>
+        <location filename="../views/memory.py" line="326"/>
         <source>Briefings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="304"/>
+        <location filename="../views/memory.py" line="327"/>
         <source>Style rules</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="305"/>
-        <location filename="../views/memory.py" line="589"/>
+        <location filename="../views/memory.py" line="328"/>
+        <location filename="../views/memory.py" line="615"/>
         <source>Voice bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="306"/>
+        <location filename="../views/memory.py" line="329"/>
         <source>Line decisions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="307"/>
-        <location filename="../views/memory.py" line="636"/>
+        <location filename="../views/memory.py" line="330"/>
+        <location filename="../views/memory.py" line="662"/>
         <source>Conflicts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="308"/>
-        <location filename="../views/memory.py" line="665"/>
+        <location filename="../views/memory.py" line="331"/>
+        <location filename="../views/memory.py" line="729"/>
+        <source>Character updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="332"/>
+        <location filename="../views/memory.py" line="758"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="354"/>
+        <location filename="../views/memory.py" line="380"/>
         <source>Some changes were not saved</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="358"/>
-        <location filename="../views/memory.py" line="475"/>
+        <location filename="../views/memory.py" line="384"/>
+        <location filename="../views/memory.py" line="501"/>
         <source>Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="365"/>
+        <location filename="../views/memory.py" line="391"/>
         <source>Rows: speaker. Columns: listener. Cell: self term / address term. Double-click a cell to edit.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="431"/>
-        <location filename="../views/memory.py" line="483"/>
+        <location filename="../views/memory.py" line="457"/>
+        <location filename="../views/memory.py" line="509"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="432"/>
-        <location filename="../views/memory.py" line="484"/>
+        <location filename="../views/memory.py" line="458"/>
+        <location filename="../views/memory.py" line="510"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="512"/>
+        <location filename="../views/memory.py" line="538"/>
         <source>Character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="512"/>
+        <location filename="../views/memory.py" line="538"/>
         <source>Clips in bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="513"/>
+        <location filename="../views/memory.py" line="539"/>
         <source>Clip files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="520"/>
+        <location filename="../views/memory.py" line="546"/>
         <source>Clips (double-click to play):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="522"/>
+        <location filename="../views/memory.py" line="548"/>
         <source>Recompute selected voices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="527"/>
+        <location filename="../views/memory.py" line="553"/>
         <source>Voice similarity (confusable pairs in red)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="588"/>
+        <location filename="../views/memory.py" line="614"/>
         <source>recompute voices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="589"/>
+        <location filename="../views/memory.py" line="615"/>
         <source>Another job is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597"/>
+        <location filename="../views/memory.py" line="623"/>
         <source>Table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597"/>
+        <location filename="../views/memory.py" line="623"/>
         <source>Key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597"/>
+        <location filename="../views/memory.py" line="623"/>
+        <location filename="../views/memory.py" line="675"/>
         <source>Current</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="598"/>
+        <location filename="../views/memory.py" line="624"/>
+        <location filename="../views/memory.py" line="675"/>
         <source>Proposed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="598"/>
+        <location filename="../views/memory.py" line="624"/>
         <source>Source / evidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="599"/>
+        <location filename="../views/memory.py" line="625"/>
         <source>Reason</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="605"/>
+        <location filename="../views/memory.py" line="631"/>
         <source>Accept proposal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="606"/>
+        <location filename="../views/memory.py" line="632"/>
         <source>Reject proposal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645"/>
-        <location filename="../views/memory.py" line="728"/>
+        <location filename="../views/memory.py" line="670"/>
+        <source>What finished episodes taught about characters you confirmed (locked), or, in auto mode, about lines nobody checked. Accepting saves the change as your edit; a rejected change is not proposed again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="674"/>
+        <source>Episode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="674"/>
+        <source>Character / pair</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="675"/>
+        <source>Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="676"/>
+        <source>Why it waits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="686"/>
+        <source>Accept change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="687"/>
+        <source>Reject change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="702"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="703"/>
+        <source>Pronouns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="704"/>
+        <source>confirmed by you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="704"/>
+        <source>auto mode: lines not checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="720"/>
+        <source>Evidence:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="738"/>
+        <location filename="../views/memory.py" line="821"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645"/>
+        <location filename="../views/memory.py" line="738"/>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645"/>
+        <location filename="../views/memory.py" line="738"/>
         <source>Changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="656"/>
+        <location filename="../views/memory.py" line="749"/>
         <source>Roll back to this version…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684"/>
+        <location filename="../views/memory.py" line="777"/>
         <source>Added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684"/>
+        <location filename="../views/memory.py" line="777"/>
         <source>Changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684"/>
+        <location filename="../views/memory.py" line="777"/>
         <source>Removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="705"/>
+        <location filename="../views/memory.py" line="798"/>
         <source>No changes in this version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="712"/>
-        <location filename="../views/memory.py" line="719"/>
+        <location filename="../views/memory.py" line="805"/>
+        <location filename="../views/memory.py" line="812"/>
         <source>Roll back memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="713"/>
+        <location filename="../views/memory.py" line="806"/>
         <source>Restore memory to the version of {date} (“{message}”)?
 
 A new version is created; nothing is lost, and this rollback can itself be undone from the history.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="724"/>
+        <location filename="../views/memory.py" line="817"/>
         <source>History of {key}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="728"/>
+        <location filename="../views/memory.py" line="821"/>
         <source>Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="728"/>
+        <location filename="../views/memory.py" line="821"/>
         <source>Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="729"/>
+        <location filename="../views/memory.py" line="822"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2169,37 +2244,37 @@ A new version is created; nothing is lost, and this rollback can itself be undon
 <context>
     <name>PairDialog</name>
     <message>
-        <location filename="../views/memory.py" line="224"/>
+        <location filename="../views/memory.py" line="247"/>
         <source>Pronouns {speaker} → {listener}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="229"/>
+        <location filename="../views/memory.py" line="252"/>
         <source>Leave the context empty for the default pair. Rows without terms are deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231"/>
+        <location filename="../views/memory.py" line="254"/>
         <source>Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231"/>
+        <location filename="../views/memory.py" line="254"/>
         <source>Self term</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231"/>
+        <location filename="../views/memory.py" line="254"/>
         <source>Address term</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="232"/>
+        <location filename="../views/memory.py" line="255"/>
         <source>Since episode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="239"/>
+        <location filename="../views/memory.py" line="262"/>
         <source>Add variant</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3306,11 +3381,16 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
     </message>
     <message>
         <location filename="../views/character_browser.py" line="46"/>
-        <source>sample chosen by you</source>
+        <source>called {names}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../views/character_browser.py" line="48"/>
+        <source>sample chosen by you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="50"/>
         <source>no reviewed line yet</source>
         <translation type="unfinished"></translation>
     </message>

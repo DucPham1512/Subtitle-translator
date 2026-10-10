@@ -125,7 +125,7 @@ class EditRecord(BaseModel):   # edits.jsonl
 class MemoryProposal(BaseModel):
     kind: Literal["glossary", "pronoun_pair", "character", "style_rule", "briefing", "line_decision"]
     payload: dict
-    source: Literal["translator", "human", "bootstrap", "dreaming"]
+    source: Literal["translator", "human", "bootstrap", "dreaming", "updater"]   # updater: character updates (5.15c)
     evidence: list[str] = []   # event ids or edit ids
 
 class CostRecord(BaseModel):   # cost.jsonl, one per LLM call (5.1)
@@ -155,7 +155,8 @@ CREATE TABLE characters (
   updated_at TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'active',   -- active | kept | archived (5.15a)
   status_note TEXT,                        -- why the status was set
-  generic INTEGER NOT NULL DEFAULT 0       -- many individuals under one name (all fish, passers-by)
+  generic INTEGER NOT NULL DEFAULT 0,      -- many individuals under one name (all fish, passers-by)
+  aliases TEXT NOT NULL DEFAULT '[]'       -- JSON list of titles / other names, "会长 (Hội trưởng)" (5.15c)
 );
 
 CREATE TABLE appearances (         -- who appears in which episode (5.15a)
@@ -246,7 +247,8 @@ CREATE TABLE candidates (         -- new characters on probation (5.15b)
   pending_json TEXT NOT NULL DEFAULT '[]',   -- proposals waiting for the promotion (pronoun pairs)
   status TEXT NOT NULL DEFAULT 'candidate',  -- candidate | promoted | dropped
   status_note TEXT,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  aliases TEXT NOT NULL DEFAULT '[]'         -- JSON list (5.15c), moved to the character on promotion
 );
 
 CREATE TABLE candidate_sprites (  -- a candidate's unrecognised talking sprites (float16 DINOv2 features)
@@ -274,3 +276,5 @@ Other files in `data/memory/` (all versioned by git):
 - `speaker_corrections.jsonl`: speaker / listener changes made in review, input for dreaming.
 - `dream_proposals.json`, `dream_state.json`: the last dreaming run and which edits it has seen.
 - `dream_rejections.json`: proposals the reviewer rejected; dreaming never proposes them again (5.18).
+- `character_updates.json`: character updates waiting for the reviewer (locked entries, untrusted auto-mode lines; 5.15c).
+- `character_update_rejections.json`: character updates the reviewer rejected; never held again (5.15c).

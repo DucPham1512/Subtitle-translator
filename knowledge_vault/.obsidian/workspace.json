@@ -11,14 +11,10 @@
             "id": "50735187272a43cb",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "decisions/2026-10-08 tách CLAUDE.md.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "2026-10-08 tách CLAUDE.md"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           },
           {
@@ -35,8 +31,7 @@
               "title": "điểm yếu đã biết"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -49,21 +44,6 @@
         "id": "a0daabfc209edb1b",
         "type": "tabs",
         "children": [
-          {
-            "id": "66080121ebef3a54",
-            "type": "leaf",
-            "state": {
-              "type": "file-explorer",
-              "state": {
-                "sortOrder": "alphabetical",
-                "autoReveal": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-folder-closed",
-              "title": "Files"
-            }
-          },
           {
             "id": "171e3e1e23e78cf7",
             "type": "leaf",
@@ -93,8 +73,24 @@
               "icon": "lucide-bookmark",
               "title": "Bookmarks"
             }
+          },
+          {
+            "id": "43f879ad75f24950",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -204,9 +200,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "b60737e0aca38811",
+  "active": "50735187272a43cb",
   "lastOpenFiles": [
+    "changelog/2026-10-09.md",
     "decisions/2026-10-08 tách CLAUDE.md.md",
+    "decisions/điểm yếu đã biết.md",
     "decisions/2026-10-07 chia hai chế độ auto và human.md",
     "map/sơ đồ pipeline.md",
     "diagrams/pipeline.drawio",
@@ -220,7 +218,6 @@
     "diagrams/speaker detection.drawio",
     "map/tổng quan pipeline.md",
     "diagrams/translation loop.drawio",
-    "decisions/điểm yếu đã biết.md",
     "diagrams/voice matching.drawio",
     "diagrams/sprite matching.drawio",
     "diagrams",

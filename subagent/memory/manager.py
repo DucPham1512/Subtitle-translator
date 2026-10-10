@@ -38,6 +38,7 @@ from subagent.memory.store import (
     dumps,
     episode_number,
     migrate,
+    parse_aliases,
     row_key,
 )
 from subagent.models import EditRecord, LineTranslation, MemoryProposal, NewVoice, ReviewedLine
@@ -58,7 +59,7 @@ KIND_ORDER = {"character": 0, "glossary": 1, "pronoun_pair": 2, "line_decision":
 KIND_TABLE = {"character": "characters", "glossary": "glossary", "pronoun_pair": "pronoun_pairs",
               "line_decision": "line_decisions"}
 COLUMNS = {
-    "characters": ["id", "name_zh", "name_vi", "description", "status", "status_note", "generic"],
+    "characters": ["id", "name_zh", "name_vi", "description", "status", "status_note", "generic", "aliases"],
     "glossary": ["zh", "vi", "pinyin", "type", "notes", "first_episode"],
     "pronoun_pairs": ["speaker_id", "listener_id", "self_term", "address_term", "context", "since_episode"],
     "line_decisions": ["zh", "remove_count", "keep_count", "last_episode"],
@@ -70,7 +71,12 @@ REQUIRED = {
     "line_decisions": ["zh"],
 }
 LOCKING_SOURCES = {"human", "bootstrap"}
+EVIDENCE_SOURCES = {"translator", "updater"}     # applied only when every evidence line was approved
 BRIEFING_FILES = {"story_so_far.md", "INDEX.md"}
+UPDATES_FILE = "character_updates.json"                    # updates waiting for the reviewer (5.15c)
+UPDATE_REJECTIONS_FILE = "character_update_rejections.json"
+BACKUP_ITEMS = ("memory.db", "briefings", "style_rules.md", "conflicts.json", "conflicts.md",
+                "speaker_corrections.jsonl", UPDATES_FILE, UPDATE_REJECTIONS_FILE)
 
 
 class ApplyResult(BaseModel):
@@ -81,6 +87,7 @@ class ApplyResult(BaseModel):
     renamed: list[tuple[str, str]] = Field(default_factory=list)    # (character id, new name): first names
     lifecycle: dict[str, int] = Field(default_factory=dict)         # status -> characters moved to it
     probation: dict[str, int] = Field(default_factory=dict)         # candidates / promoted / dropped (5.15b)
+    held: list[dict] = Field(default_factory=list)                  # updater changes waiting for review (5.15c)
 
     @property
     def writes(self) -> int:
@@ -98,6 +105,22 @@ class Conflict(BaseModel):
     source: str
     evidence: list[str]
     reason: str
+
+
+class PendingUpdate(BaseModel):
+    """A character update from an episode that waits for the reviewer (5.15c): one field of one entry."""
+    id: str                         # "<table>:<key>:<field>"; a newer update of the same field replaces it
+    episode: str
+    table: str                      # characters | pronoun_pairs
+    key: str
+    field: str                      # name | description | aliases | pair
+    current: dict
+    proposed: dict                  # aliases: only the ones to add
+    evidence: list[str]
+    lines: list[str] = Field(default_factory=list)   # "event id: zh | vi" of the evidence
+    reason: str                     # locked | untrusted (auto mode: evidence not on trusted lines)
+    signature: str
+    ts: str = ""
 
 
 class CommitInfo(BaseModel):
@@ -225,6 +248,8 @@ class MemoryManager:
         for k, v in list(payload.items()):
             if isinstance(v, str):
                 payload[k] = v.strip()
+        if table == "characters" and "aliases" in payload:
+            payload["aliases"] = dumps_aliases(payload["aliases"])
         if table == "characters":
             # the lifecycle status is set by the lifecycle rules or by a person, never by a model's proposal
             if p.source != "human":
@@ -245,7 +270,8 @@ class MemoryManager:
             return
         label = f"{table}:{key}"
 
-        if p.source == "translator" and (approved_ids is None or not p.evidence or not set(p.evidence) <= approved_ids):
+        if p.source in EVIDENCE_SOURCES and (approved_ids is None or not p.evidence
+                                             or not set(p.evidence) <= approved_ids):
             self._reject(conn, result, table, key, p, "evidence lines not approved")
             return
 
@@ -273,13 +299,18 @@ class MemoryManager:
             if not changes and target_lock == existing["locked"]:
                 result.unchanged.append(label)
                 return
+            if existing["locked"] and p.source == "updater":
+                result.held += held_updates(table, key, existing, changes, p, "locked")
+                return
             if existing["locked"] and p.source not in LOCKING_SOURCES:
                 self._reject(conn, result, table, key, p, "entry is locked")
                 return
             # an automatically found character nobody has named yet takes the first name proposed for it
             first_name = (table == "characters" and is_unnamed(existing, self.config.voice.new_voice_prefix)
                           and bool(changes.get("name_vi")) and changes["name_vi"] != key)
-            if not existing["locked"] and p.source not in LOCKING_SOURCES and changes and not first_name:
+            # character updates (5.15c) replace what an unlocked entry says: no evidence comparison
+            if (not existing["locked"] and p.source not in LOCKING_SOURCES and p.source != "updater" and changes
+                    and not first_name):
                 current_evidence = _current_evidence(conn, table, key)
                 if len(p.evidence) <= current_evidence:
                     self._conflict(conn, result, table, key, existing, p,
@@ -315,6 +346,7 @@ class MemoryManager:
         if table == "characters":
             row["status"] = row.get("status") or "active"
             row["generic"] = int(row.get("generic") or 0)
+            row["aliases"] = row.get("aliases") or "[]"
         _insert(conn, table, row)
         self._log(conn, "insert", table, key, None, row, p, len(p.evidence))
         result.applied.append(label)
@@ -528,6 +560,11 @@ class MemoryManager:
             approved = [line for line in approved if not line.deleted]
             approved_ids = {line.event_id for line in approved if line.approved}
             proposals = [p for t in translations if t.event_id in approved_ids for p in t.proposals]
+            held: list[dict] = []
+            updating = self.config.memory.character_updates and llm is not None
+            if updating:
+                updates, held = self.character_updates(episode_id, approved, new_voices or [], mode, llm)
+                proposals += updates
             probation: dict[str, int] = {}
             if self.config.memory.probation:
                 proposals, probation, extra_ids = self.probation(episode_id, approved, approved_ids, proposals,
@@ -538,12 +575,17 @@ class MemoryManager:
             proposals += self.mine_edits(episode_id, approved, translations, edits)
             result = self.apply(proposals, approved_ids=approved_ids, episode_id=episode_id)
             result.probation = probation
+            result.held = held + result.held
+            if updating:
+                self._write_held(episode_id, result.held, approved)
             if line_decisions is not None:
                 self.record_line_decisions(episode_id, *line_decisions)
             fates = self.update_briefings(episode_id, approved, llm) if llm is not None else []
             result.lifecycle = self.update_lifecycle(episode_id, approved, fates)
             moved = "".join(f", {n} {status}" for status, n in sorted(result.lifecycle.items()))
             moved += "".join(f", {n} {kind}" for kind, n in sorted(probation.items()) if n)
+            if result.held:
+                moved += f", {len(result.held)} held for review"
             self.commit(f"episode {episode_id}: {result.writes} writes{moved}")
         return result
 
@@ -646,9 +688,12 @@ class MemoryManager:
                 pending: dict[str, list[dict]] = {}
                 for p in proposals:
                     cid = str(p.payload.get("id") or "")
-                    if p.kind == "character" and p.source == "translator" and cid and cid not in known:
+                    if p.kind == "character" and p.source in EVIDENCE_SOURCES and cid and cid not in known:
                         if cid in waiting and set(p.evidence) <= approved_ids:
-                            self._name_candidate(conn, rows[cid], p, now)
+                            if p.source == "updater":
+                                self._update_candidate(conn, rows[cid], p, now)
+                            else:
+                                self._name_candidate(conn, rows[cid], p, now)
                         else:
                             self._log(conn, "rejected", "characters", cid or "?", None, p.payload, p,
                                       len(p.evidence), reason="probation: fewer than "
@@ -690,7 +735,8 @@ class MemoryManager:
         row = {"id": cid, "name_zh": cand["name_zh"] or cid, "name_vi": cand["name_vi"] or cid,
                "description": cand["description"] or f"Voice found automatically in {cand['first_episode']}; "
                                                      f"back in {episode_id}",
-               "locked": 0, "updated_at": now, "status": "active", "status_note": None, "generic": 0}
+               "locked": 0, "updated_at": now, "status": "active", "status_note": None, "generic": 0,
+               "aliases": cand.get("aliases") or "[]"}
         _insert(conn, "characters", row)
         reason = f"promoted from probation: back in {episode_id}, {evidence}"
         self._log(conn, "insert", "characters", cid, None, row, None, cand["n_lines"], source="system", reason=reason)
@@ -720,6 +766,110 @@ class MemoryManager:
                      (after["name_zh"], after["name_vi"], after["description"], now, cand["id"]))
         self._log(conn, "update", "candidates", cand["id"], cand, after, p, len(p.evidence))
         cand.update(after)
+
+    def _update_candidate(self, conn: sqlite3.Connection, cand: dict, p: MemoryProposal, now: str) -> None:
+        """A character update for a candidate (5.15c): a name if it has none yet, the new description, more aliases.
+        They move to the character on promotion."""
+        pl = p.payload
+        after = dict(cand)
+        if pl.get("name_vi") and (not cand.get("name_vi") or cand["name_vi"] == cand["id"]):
+            after["name_zh"], after["name_vi"] = pl.get("name_zh") or cand.get("name_zh"), pl["name_vi"]
+        if pl.get("description"):
+            after["description"] = pl["description"]
+        if "aliases" in pl:
+            after["aliases"] = dumps_aliases(parse_aliases(cand.get("aliases")) + parse_aliases(pl["aliases"]))
+        if all(after.get(f) == cand.get(f) for f in ("name_zh", "name_vi", "description", "aliases")):
+            return
+        after["updated_at"] = now
+        conn.execute("UPDATE candidates SET name_zh=?, name_vi=?, description=?, aliases=?, updated_at=? WHERE id=?",
+                     (after["name_zh"], after["name_vi"], after["description"], after.get("aliases") or "[]", now,
+                      cand["id"]))
+        self._log(conn, "update", "candidates", cand["id"], cand, after, p, len(p.evidence))
+        cand.update(after)
+
+    # -- character updates (5.15c) --------------------------------------------------------------------
+
+    def character_updates(self, episode_id: str, approved: list[ReviewedLine], voices: list[NewVoice], mode: str,
+                          llm: object) -> tuple[list[MemoryProposal], list[dict]]:
+        """The updater's checked proposals for this episode, and (auto mode) the ones held because their evidence
+        is not on trusted lines. Updates of a candidate or new voice without trusted evidence are dropped."""
+        from subagent.memory import character_updates as cu
+        from subagent.memory.voice_learning import trusted_auto_lines
+
+        lines = [x for x in approved if x.approved and not x.deleted]
+        proposals = cu.propose(self.paths, self.config, self.store, episode_id, lines, llm)
+        if mode != "auto":
+            return proposals, []
+        chars = self.store.character_ids()
+        known = chars | {c.id for c in self.store.candidates()} | {v.id for v in voices}
+        trusted = {x.event_id for x in trusted_auto_lines(self.paths, self.config, episode_id, known, min_ms=0)}
+        keep: list[MemoryProposal] = []
+        held: list[dict] = []
+        for p in proposals:
+            if set(p.evidence) <= trusted:
+                keep.append(p)
+                continue
+            table = KIND_TABLE[p.kind]
+            key = row_key(table, {**p.payload, "context": p.payload.get("context") or ""})
+            ids = ({p.payload.get("id")} if p.kind == "character"
+                   else {p.payload.get("speaker_id"), p.payload.get("listener_id")})
+            if not ids <= chars:
+                log.info("character updates: %s %s dropped (auto mode, evidence not trusted)", p.kind, key)
+                continue
+            existing = self.store.get_row(table, key) or {}
+            payload = dict(p.payload)
+            if "aliases" in payload:
+                payload["aliases"] = dumps_aliases(payload["aliases"])
+            changes = {k: v for k, v in payload.items() if k in COLUMNS[table] and existing.get(k) != v}
+            held += held_updates(table, key, existing, changes, p, "untrusted")
+        return keep, held
+
+    def _write_held(self, episode_id: str, held: list[dict], approved: list[ReviewedLine]) -> None:
+        """Replace this episode's waiting updates; a newer update of the same field replaces an older one, and one
+        the reviewer rejected before is not added again."""
+        by_id = {x.event_id: x for x in approved}
+        rejected = {r["signature"] for r in read_json(self.dir / UPDATE_REJECTIONS_FILE, []) or []}
+        items = [i for i in self.pending_updates() if i.episode != episode_id]
+        now = now_iso()
+        for h in held:
+            if h["signature"] in rejected:
+                continue
+            item = PendingUpdate(episode=episode_id, ts=now, lines=[
+                f"{e}: {by_id[e].zh} | {by_id[e].vi}" for e in h["evidence"] if e in by_id], **h)
+            items = [i for i in items if i.id != item.id] + [item]
+        if items or (self.dir / UPDATES_FILE).is_file():
+            atomic_write_json(self.dir / UPDATES_FILE, [i.model_dump() for i in items])
+
+    def pending_updates(self) -> list[PendingUpdate]:
+        return [PendingUpdate.model_validate(d) for d in read_json(self.dir / UPDATES_FILE, []) or []]
+
+    def resolve_update(self, update_id: str, accept: bool) -> None:
+        """Accept (a human edit: applied and locked) or reject (never proposed again) one waiting update."""
+        self._refuse_while_jobs_run()
+        with self.locked():
+            items = self.pending_updates()
+            item = next((i for i in items if i.id == update_id), None)
+            if item is None:
+                raise SubagentError(f"Character update {update_id} not found", code="update_not_found")
+            if accept:
+                payload = dict(item.proposed)
+                if item.table == "characters":
+                    payload["id"] = item.key
+                    if item.field == "aliases":
+                        current = self.store.get_row("characters", item.key) or {}
+                        payload["aliases"] = parse_aliases(current.get("aliases")) + parse_aliases(payload["aliases"])
+                kind = "character" if item.table == "characters" else "pronoun_pair"
+                result = self.apply([MemoryProposal(kind=kind, payload=payload, source="human",
+                                                    evidence=item.evidence)])
+                if result.rejected:
+                    raise SubagentError(f"Character update {update_id} not applied: {result.rejected[0][1]}",
+                                        code="update_rejected")
+            else:
+                known = read_json(self.dir / UPDATE_REJECTIONS_FILE, []) or []
+                known.append({"signature": item.signature, "description": describe_update(item), "date": now_iso()})
+                atomic_write_json(self.dir / UPDATE_REJECTIONS_FILE, known)
+            atomic_write_json(self.dir / UPDATES_FILE, [i.model_dump() for i in items if i.id != update_id])
+            self.commit(f"character update {update_id}: {'accepted' if accept else 'rejected'}")
 
     def update_lifecycle(self, episode_id: str, approved: list[ReviewedLine], fates: list | None = None) -> dict[str, int]:
         """Record who appears in this episode, then keep, archive or bring back unlocked characters (5.15a).
@@ -838,8 +988,7 @@ class MemoryManager:
         """Snapshot the memory files; restore them if the block fails (NFR-R4)."""
         tmp = Path(tempfile.mkdtemp(prefix="memory-backup-"))
         try:
-            for item in ("memory.db", "briefings", "style_rules.md", "conflicts.json", "conflicts.md",
-                         "speaker_corrections.jsonl"):
+            for item in BACKUP_ITEMS:
                 src = self.dir / item
                 if src.is_dir():
                     shutil.copytree(src, tmp / item)
@@ -849,8 +998,7 @@ class MemoryManager:
                 yield
             except BaseException:
                 log.warning("Memory update failed; restoring the previous memory files")
-                for item in ("memory.db", "briefings", "style_rules.md", "conflicts.json", "conflicts.md",
-                             "speaker_corrections.jsonl"):
+                for item in BACKUP_ITEMS:
                     dst, src = self.dir / item, tmp / item
                     if dst.is_dir():
                         shutil.rmtree(dst)
@@ -1107,6 +1255,48 @@ def _next_status(row: dict, seen: set[int], processed: set[int], current: int | 
         if sum(1 for n in processed if n > last) >= archive_after:
             return "archived", f"not seen since ep{last:03d}"
     return status, note
+
+
+def dumps_aliases(value: object) -> str:
+    return json.dumps(parse_aliases(value), ensure_ascii=False)
+
+
+def held_updates(table: str, key: str, current: dict, changes: dict, p: MemoryProposal, reason: str) -> list[dict]:
+    """One waiting update per changed field of a character (name, description, aliases) or one per pronoun pair."""
+    out = []
+
+    def add(field: str, cur: dict, proposed: dict) -> None:
+        sig = f"{table}|{key}|{field}|{json.dumps(proposed, ensure_ascii=False, sort_keys=True).lower()}"
+        out.append({"id": f"{table}:{key}:{field}", "table": table, "key": key, "field": field, "current": cur,
+                    "proposed": proposed, "evidence": list(p.evidence), "reason": reason, "signature": sig})
+
+    if table == "pronoun_pairs":
+        if changes:
+            fields = ("speaker_id", "listener_id", "self_term", "address_term", "context")
+            add("pair", {f: current.get(f) for f in ("self_term", "address_term")} if current else {},
+                {f: p.payload.get(f) or "" for f in fields})
+        return out
+    if "name_vi" in changes or "name_zh" in changes:
+        add("name", {"name_zh": current.get("name_zh"), "name_vi": current.get("name_vi")},
+            {"name_zh": p.payload.get("name_zh") or current.get("name_zh"),
+             "name_vi": p.payload.get("name_vi") or current.get("name_vi")})
+    if "description" in changes:
+        add("description", {"description": current.get("description")}, {"description": changes["description"]})
+    if "aliases" in changes:
+        have = parse_aliases(current.get("aliases"))
+        new = [a for a in parse_aliases(changes["aliases"]) if a not in have]
+        if new:
+            add("aliases", {"aliases": have}, {"aliases": new})
+    return out
+
+
+def describe_update(item: PendingUpdate) -> str:
+    if item.table == "pronoun_pairs":
+        pl = item.proposed
+        ctx = f" ({pl.get('context')})" if pl.get("context") else ""
+        return (f"pronouns {pl.get('speaker_id')} → {pl.get('listener_id')}{ctx}: "
+                f"{pl.get('self_term')} / {pl.get('address_term')}")
+    return f"{item.key} {item.field}: {json.dumps(item.proposed, ensure_ascii=False)}"
 
 
 def merge_proposals(proposals: list[MemoryProposal]) -> list[MemoryProposal]:

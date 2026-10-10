@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +38,7 @@ class CharacterCard:
     id: str
     name: str                              # the Vietnamese name, or the id while it has none
     description: str = ""
+    aliases: list[str] = field(default_factory=list)   # titles and other names (5.15c)
     first_episode: str | None = None
     kind: str = "character"                # character | candidate | new
     source: str = "none"                   # pinned | bootstrap | reviewed | none: where the sample comes from
@@ -109,11 +110,13 @@ def card_info(paths: Paths, config: Config, char_id: str, *, current: str | None
     row = next((c for c in store.characters() if c.id == char_id), None)
     if row is not None:
         card.name, card.description, card.kind = row.name_vi or char_id, row.description or "", "character"
+        card.aliases = list(row.aliases)
     else:
         cand = next((c for c in store.candidates() if c.id == char_id), None)
         if cand is not None:
             card.name = cand.name_vi or char_id
             card.description, card.kind, card.first_episode = cand.description or "", "candidate", cand.first_episode
+            card.aliases = list(cand.aliases)
     order = _episode_ids(paths)
     seen = sorted({a["episode_id"] for a in store.appearances() if a["character_id"] == char_id},
                   key=lambda e: order.index(e) if e in order else len(order))

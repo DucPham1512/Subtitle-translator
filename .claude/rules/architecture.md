@@ -67,6 +67,7 @@ subagent/
     bootstrap.py       memory bootstrap
     dreaming.py        offline consolidation, rejection memory
     probation.py       new characters on probation: candidate checks, return check (5.15b)
+    character_updates.py  per-episode character updates: names, descriptions, aliases, pronoun pairs (5.15c)
     voice_learning.py  voice bank learned from reviewed lines, auto-mode gate, evaluation (5.8a)
     sprite_learning.py sprite bank learned from talking sprites and trusted speakers (5.8b)
 app/                   desktop app (PySide6); imports `subagent`, never the reverse
@@ -91,7 +92,8 @@ data/
     voices/<char_id>/*.wav
     sprites/<char_id>/*.png
   memory/              git repo: memory.db, briefings/, style_rules.md, conflicts.json/.md,
-                       speaker_corrections.jsonl, dream_proposals.json, dream_state.json, dream_rejections.json
+                       speaker_corrections.jsonl, dream_proposals.json, dream_state.json, dream_rejections.json,
+                       character_updates.json, character_update_rejections.json
 fonts/                 subtitle font(s) with Vietnamese + pinyin coverage
 work/<episode_id>/     per-episode artifacts (not committed); the folder is `paths.work_dir`, may be anywhere
 cache/llm/             LLM response cache (not committed)

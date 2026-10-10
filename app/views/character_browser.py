@@ -42,6 +42,8 @@ def describe(widget: QWidget, card) -> str:
         parts.append(widget.tr("first seen {ep}").format(ep=card.first_episode))
     if card.description:
         parts.append(card.description)
+    if getattr(card, "aliases", None):
+        parts.append(widget.tr("called {names}").format(names=", ".join(card.aliases)))
     if card.source == "pinned":
         parts.append(widget.tr("sample chosen by you"))
     elif card.source == "none":

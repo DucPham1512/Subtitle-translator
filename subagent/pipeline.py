@@ -489,7 +489,8 @@ class Pipeline:
             status="done", input_hash=key, finished_at=now_iso(), duration_s=round(time.monotonic() - t0, 2),
             counts={"applied": len(result.applied), "rejected": len(result.rejected), "conflicts": len(result.conflicts),
                     **{f"characters_{status}": n for status, n in result.lifecycle.items()},
-                    **{f"probation_{kind}": n for kind, n in result.probation.items() if n}},
+                    **{f"probation_{kind}": n for kind, n in result.probation.items() if n},
+                    **({"updates_held": len(result.held)} if result.held else {})},
         )
         save_state(ctx.work, state)
         self.progress.emit("memory", "done", message=_counts_text(state.stages["memory"].counts))

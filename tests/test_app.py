@@ -715,3 +715,40 @@ def test_on_screen_checked_mark(qapp):
                         pinyin="", vi="x")
     edits = compute_edits([base], [base.model_copy(update={"cast_checked": True})])
     assert [(e.field, e.before, e.after) for e in edits] == [("cast_checked", "false", "true")]
+
+
+def test_memory_character_updates_tab_accepts_a_waiting_change(qapp, project):
+    from app.main_window import MainWindow
+    from app.services import Services
+    from subagent.memory.manager import MemoryManager
+    from subagent.models import ReviewedLine
+    from tests.conftest import make_llm
+
+    config, paths = project
+    config.memory.character_updates = True
+    seed_memory(config, paths)
+    line = ReviewedLine(event_id="ep001:0001", start_ms=0, end_ms=900, speaker="lin_yuan", listener="shi_zun",
+                        zh="师尊", pinyin="", vi="Sư phụ.", approved=True)
+    updates = {"characters": [{"id": "lin_yuan", "description": "Đệ tử của Sư tôn (shi_zun)",
+                               "evidence": ["ep001:0001"]}]}
+    brief = {"summary_sentence": "x", "characters_introduced": [], "episode_markdown": "# ep001", "story_so_far": "x"}
+    llm, _ = make_llm(config, paths, {"utility": lambda m: updates if "character memory" in m[0]["content"] else brief})
+    MemoryManager(paths, config).episode_update("ep001", [line], [], [], llm)
+
+    window = MainWindow(Services(paths.root))
+    window.go("memory")
+    view = window.views["memory"]
+    view.tabs.setCurrentWidget(view.updates_tab)
+    settle(qapp)
+    assert view.update_table.rowCount() == 1
+    assert view.update_table.item(0, 4).text() == "Đệ tử của Sư tôn (shi_zun)"
+    view.update_table.selectRow(0)
+    settle(qapp)
+    assert "ep001:0001: 师尊 | Sư phụ." in view.update_lines.toPlainText()
+    view.update_accept_btn.click()
+    settle(qapp)
+    assert view.update_table.rowCount() == 0
+    assert MemoryManager(paths, config).store.get_row("characters", "lin_yuan")["description"] == \
+        "Đệ tử của Sư tôn (shi_zun)"
+    window.close()
+    settle(qapp)

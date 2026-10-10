@@ -286,6 +286,10 @@ class MemoryConfig(_Section):
     probation: bool = True
     probation_min_lines: int = 3             # approved lines it speaks in its first episode to become a candidate
     probation_window: int = 2                # it must come back within this many episodes (by number)
+    # character updates (5.15c): one utility call per finished episode updates names, descriptions, aliases, pronouns
+    character_updates: bool = False
+    description_max_chars: int = 200         # a description the model writes is cut to this length
+    aliases_max: int = 8                     # aliases kept per character
 
 
 class RenderConfig(_Section):

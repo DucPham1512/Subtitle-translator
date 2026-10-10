@@ -17,6 +17,8 @@ def characters_block(store: MemoryStore) -> str:
         desc = (c.description or "").replace("\n", " ")
         if c.generic:
             desc = (desc + " " if desc else "") + "(generic: stands for many individuals; not identified by voice)"
+        if c.aliases:
+            desc = (desc + " " if desc else "") + f"(called: {'; '.join(c.aliases)})"
         lines.append(f"{c.id} | {c.name_zh} | {c.name_vi} | {desc}")
     return "\n".join(lines) + "\n"
 
@@ -109,11 +111,17 @@ def new_voices_block(voices: list, store: MemoryStore, first_ms: dict[str, int])
         return ""
     lines = ["## New voices in this episode",
              "Voices that match no known character, each heard on several lines. Use the id as speaker or listener."]
+    cands = {c.id: c for c in store.candidates()}
     for v in voices:
         t = min((first_ms.get(e, 0) for e in v.event_ids), default=0) // 1000
         back = ""
         if getattr(v, "returning_from", None):
             back = f"; also heard in {v.returning_from}" + (f" (named {v.name_vi})" if v.name_vi else "")
+            cand = cands.get(v.id)
+            if cand is not None and cand.description:
+                back += f"; {' '.join(cand.description.split())}"
+            if cand is not None and cand.aliases:
+                back += f" (called: {'; '.join(cand.aliases)})"
         lines.append(f"- {v.id}: {len(v.event_ids)} lines, first at {t // 60:02d}:{t % 60:02d}{back}")
     voiced = set(store.voice_bank())
     silent = [f"{c.id} ({c.name_vi})" for c in store.characters(active_only=True) if c.id not in voiced and not c.generic]

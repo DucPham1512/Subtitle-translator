@@ -35,11 +35,12 @@ from PySide6.QtWidgets import (
 from app.widgets import ClipPlayer, confirm, show_error
 from app.workers import run_async
 from subagent.memory import briefings as bf
-from subagent.memory.store import row_key
+from subagent.memory.store import parse_aliases, row_key
 from subagent.models import MemoryProposal
 
 LOCKED_COL = "locked"
 BOOL_COLS = ("generic",)        # shown as checkboxes, saved as 0 / 1
+LIST_COLS = ("aliases",)        # JSON lists, shown and edited as "a; b"
 
 
 def _item(text: object, editable: bool = True) -> QTableWidgetItem:
@@ -47,6 +48,20 @@ def _item(text: object, editable: bool = True) -> QTableWidgetItem:
     if not editable:
         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
     return item
+
+
+def _update_text(field: str, values: dict) -> str:
+    """A waiting character update's current or proposed value as one line."""
+    if not values:
+        return "—"
+    if field == "pair":
+        return f"{values.get('self_term', '')} / {values.get('address_term', '')}" + (
+            f" ({values['context']})" if values.get("context") else "")
+    if field == "name":
+        return f"{values.get('name_vi') or ''} {values.get('name_zh') or ''}".strip() or "—"
+    if field == "aliases":
+        return "; ".join(values.get("aliases") or []) or "—"
+    return str(values.get(field) or "—")
 
 
 class EntryTable(QWidget):
@@ -126,7 +141,8 @@ class EntryTable(QWidget):
                 item.setCheckState(Qt.CheckState.Checked if r.get(col) else Qt.CheckState.Unchecked)
             else:
                 editable = col in self.columns and (new or col not in self.key_cols)
-                item = _item(r.get(col), editable)
+                value = "; ".join(parse_aliases(r.get(col))) if col in LIST_COLS else r.get(col)
+                item = _item(value, editable)
             if j == 0:
                 item.setData(Qt.ItemDataRole.UserRole, None if new else row_key(self.table_name, r))
             self.grid.setItem(i, j, item)
@@ -191,8 +207,7 @@ class EntryTable(QWidget):
             orig = self.original.get(key) if key else None
             if any(not d.get(k) for k in self.key_cols):
                 continue
-            if orig is not None and all((bool(orig.get(c)) == d[c]) if c in BOOL_COLS else (orig.get(c) or "") == d[c]
-                                        for c in self.columns) \
+            if orig is not None and all(_same(c, orig.get(c), d[c]) for c in self.columns) \
                     and bool(orig.get(LOCKED_COL)) == d[LOCKED_COL]:
                 continue
             payload = {c: (int(d[c]) if c in BOOL_COLS else d[c] or None) for c in self.columns}
@@ -214,6 +229,14 @@ class EntryTable(QWidget):
         action = menu.addAction(self.tr("History…"))
         if menu.exec(self.grid.viewport().mapToGlobal(pos)) is action:
             self.view.show_entry_history(self.table_name, key)
+
+
+def _same(col: str, before: object, after: object) -> bool:
+    if col in BOOL_COLS:
+        return bool(before) == after
+    if col in LIST_COLS:
+        return parse_aliases(before) == parse_aliases(after)
+    return (before or "") == after
 
 
 class PairDialog(QDialog):
@@ -289,10 +312,10 @@ class MemoryView(QWidget):
                   "updated_at": self.tr("Updated"), "remove_count": self.tr("Times removed"),
                   "keep_count": self.tr("Times kept"), "last_episode": self.tr("Last episode"),
                   "status": self.tr("Status"), "status_note": self.tr("Status reason"),
-                  "generic": self.tr("Generic")}
+                  "generic": self.tr("Generic"), "aliases": self.tr("Also called")}
         self.characters = EntryTable(self, "characters", "character",
-                                     ["id", "name_zh", "name_vi", "description", "status", "status_note", "generic"],
-                                     ["id"], labels)
+                                     ["id", "name_zh", "name_vi", "description", "aliases", "status", "status_note",
+                                      "generic"], ["id"], labels)
         self.glossary = EntryTable(self, "glossary", "glossary",
                                    ["zh", "vi", "pinyin", "type", "notes", "first_episode"], ["zh"], labels)
         self.line_decisions = EntryTable(self, "line_decisions", "line_decision",
@@ -305,6 +328,7 @@ class MemoryView(QWidget):
         self.tabs.addTab(self._voice_tab(), self.tr("Voice bank"))
         self.tabs.addTab(self.line_decisions, self.tr("Line decisions"))
         self.tabs.addTab(self._conflicts_tab(), self.tr("Conflicts"))
+        self.tabs.addTab(self._updates_tab(), self.tr("Character updates"))
         self.tabs.addTab(self._history_tab(), self.tr("History"))
         self.tabs.currentChanged.connect(lambda _: self._load_current())
         main.jobs.started.connect(lambda _: self._set_editable())
@@ -323,7 +347,7 @@ class MemoryView(QWidget):
         for t in (self.characters, self.glossary, self.line_decisions):
             t.set_editable(on)
         for b in (self.md_edit_btn, self.style_edit_btn, self.rollback_btn, self.accept_btn, self.reject_btn,
-                  self.recompute_btn):
+                  self.recompute_btn, self.update_accept_btn, self.update_reject_btn):
             b.setEnabled(on)
 
     def _load_current(self) -> None:
@@ -340,6 +364,8 @@ class MemoryView(QWidget):
             self._load_voices()
         elif w is self.conflict_tab:
             self._load_conflicts()
+        elif w is self.updates_tab:
+            self._load_updates()
         elif w is self.history_tab:
             self._load_history()
 
@@ -634,6 +660,73 @@ class MemoryView(QWidget):
         manager = self.services.manager()
         run_async(lambda: manager.resolve_conflict(conflict.id, accept), lambda _: self._load_conflicts(),
                   lambda exc: show_error(self, self.tr("Conflicts"), exc))
+
+    # -- character updates (5.15c) ------------------------------------------------------------------
+
+    def _updates_tab(self) -> QWidget:
+        self.updates_tab = QWidget()
+        layout = QVBoxLayout(self.updates_tab)
+        layout.addWidget(QLabel(self.tr(
+            "What finished episodes taught about characters you confirmed (locked), or, in auto mode, about lines "
+            "nobody checked. Accepting saves the change as your edit; a rejected change is not proposed again.")))
+        split = QSplitter(Qt.Orientation.Vertical)
+        self.update_table = QTableWidget(0, 6)
+        self.update_table.setHorizontalHeaderLabels([self.tr("Episode"), self.tr("Character / pair"),
+                                                     self.tr("Field"), self.tr("Current"), self.tr("Proposed"),
+                                                     self.tr("Why it waits")])
+        self.update_table.horizontalHeader().setStretchLastSection(True)
+        self.update_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.update_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.update_table.itemSelectionChanged.connect(self._show_update_lines)
+        split.addWidget(self.update_table)
+        self.update_lines = QTextBrowser()
+        split.addWidget(self.update_lines)
+        layout.addWidget(split)
+        row = QHBoxLayout()
+        self.update_accept_btn = QPushButton(self.tr("Accept change"))
+        self.update_reject_btn = QPushButton(self.tr("Reject change"))
+        self.update_accept_btn.clicked.connect(lambda: self._resolve_update(True))
+        self.update_reject_btn.clicked.connect(lambda: self._resolve_update(False))
+        row.addStretch(1)
+        row.addWidget(self.update_accept_btn)
+        row.addWidget(self.update_reject_btn)
+        layout.addLayout(row)
+        return self.updates_tab
+
+    def _load_updates(self) -> None:
+        manager = self.services.manager()
+        run_async(manager.pending_updates, self._fill_updates)
+
+    def _fill_updates(self, items) -> None:
+        self._updates = items
+        fields = {"name": self.tr("Name"), "description": self.tr("Description"), "aliases": self.tr("Also called"),
+                  "pair": self.tr("Pronouns")}
+        reasons = {"locked": self.tr("confirmed by you"), "untrusted": self.tr("auto mode: lines not checked")}
+        self.update_table.setRowCount(len(items))
+        for i, u in enumerate(items):
+            key = u.key.replace("|", " → ", 1).replace("|", " · ") if u.table == "pronoun_pairs" else u.key
+            values = [u.episode, key, fields.get(u.field, u.field), _update_text(u.field, u.current),
+                      _update_text(u.field, u.proposed), reasons.get(u.reason, u.reason)]
+            for j, v in enumerate(values):
+                self.update_table.setItem(i, j, _item(v, editable=False))
+        self.update_table.resizeColumnsToContents()
+        self.update_lines.clear()
+
+    def _show_update_lines(self) -> None:
+        row = self.update_table.currentRow()
+        if row < 0 or row >= len(getattr(self, "_updates", [])):
+            return
+        u = self._updates[row]
+        self.update_lines.setPlainText(self.tr("Evidence:") + "\n" + "\n".join(u.lines or u.evidence))
+
+    def _resolve_update(self, accept: bool) -> None:
+        row = self.update_table.currentRow()
+        if row < 0 or not self._editable():
+            return
+        item = self._updates[row]
+        manager = self.services.manager()
+        run_async(lambda: manager.resolve_update(item.id, accept), lambda _: self._load_updates(),
+                  lambda exc: show_error(self, self.tr("Character updates"), exc))
 
     # -- history ------------------------------------------------------------------------------------
 

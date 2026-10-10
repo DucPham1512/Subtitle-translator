@@ -795,42 +795,42 @@
 <context>
     <name>CharacterBrowser</name>
     <message>
-        <location filename="../views/character_browser.py" line="107" />
+        <location filename="../views/character_browser.py" line="109" />
         <source>Browse characters</source>
         <translation>Duyệt nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="113" />
+        <location filename="../views/character_browser.py" line="115" />
         <source>Pictures and voice samples come from a line each character speaks in an episode you reviewed. Pick the one who speaks here.</source>
         <translation>Hình và mẫu giọng lấy từ một câu thoại của mỗi nhân vật trong tập bạn đã duyệt. Hãy chọn người đang nói ở đây.</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116" />
+        <location filename="../views/character_browser.py" line="118" />
         <source>Picture</source>
         <translation>Hình</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116" />
+        <location filename="../views/character_browser.py" line="118" />
         <source>Character</source>
         <translation>Nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="116" />
+        <location filename="../views/character_browser.py" line="118" />
         <source>Voice</source>
         <translation>Giọng</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="136" />
+        <location filename="../views/character_browser.py" line="138" />
         <source>Use as speaker</source>
         <translation>Dùng làm người nói</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="137" />
+        <location filename="../views/character_browser.py" line="139" />
         <source>Use as listener</source>
         <translation>Dùng làm người nghe</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="138" />
+        <location filename="../views/character_browser.py" line="140" />
         <source>Close</source>
         <translation>Đóng</translation>
     </message>
@@ -838,17 +838,17 @@
 <context>
     <name>CharacterStrip</name>
     <message>
-        <location filename="../views/character_browser.py" line="68" />
+        <location filename="../views/character_browser.py" line="70" />
         <source>Play a line this character speaks in an earlier episode</source>
         <translation>Phát một câu nhân vật này nói ở tập trước</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="70" />
+        <location filename="../views/character_browser.py" line="72" />
         <source>Use this line</source>
         <translation>Dùng câu này</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="72" />
+        <location filename="../views/character_browser.py" line="74" />
         <source>Make this line the speaker's sample: its voice, and the character marked talking in On screen as the picture (nobody marked talking: no picture, e.g. for a narrator). Changes the card only.</source>
         <translation>Lấy câu này làm mẫu của người nói: giọng của câu, và nhân vật được đánh dấu đang nói ở mục Trên màn hình làm hình (không ai được đánh dấu đang nói: không có hình, ví dụ người dẫn chuyện). Chỉ thay đổi thẻ nhân vật.</translation>
     </message>
@@ -1011,63 +1011,63 @@
 <context>
     <name>EntryTable</name>
     <message>
-        <location filename="../views/memory.py" line="71" />
+        <location filename="../views/memory.py" line="86" />
         <source>Search…</source>
         <translation>Tìm…</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="74" />
+        <location filename="../views/memory.py" line="89" />
         <source>Add</source>
         <translation>Thêm</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="75" />
+        <location filename="../views/memory.py" line="90" />
         <source>Delete</source>
         <translation>Xóa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="76" />
+        <location filename="../views/memory.py" line="91" />
         <source>Save changes</source>
         <translation>Lưu thay đổi</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="77" />
+        <location filename="../views/memory.py" line="92" />
         <source>Discard changes</source>
         <translation>Bỏ thay đổi</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="106" />
+        <location filename="../views/memory.py" line="121" />
         <source>Memory</source>
         <translation>Bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="118" />
+        <location filename="../views/memory.py" line="133" />
         <source>{n} entries</source>
         <translation>{n} mục</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="149" />
-        <location filename="../views/memory.py" line="181" />
+        <location filename="../views/memory.py" line="165" />
+        <location filename="../views/memory.py" line="197" />
         <source>Unsaved changes</source>
         <translation>Có thay đổi chưa lưu</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="172" />
+        <location filename="../views/memory.py" line="188" />
         <source>Delete locked entries</source>
         <translation>Xóa mục đã khóa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="173" />
+        <location filename="../views/memory.py" line="189" />
         <source>{n} of the selected entries are locked (confirmed by a person). Delete them anyway? Deleting a character also deletes its pronoun pairs and voice.</source>
         <translation>{n} mục được chọn đã khóa (do người xác nhận). Vẫn xóa? Xóa nhân vật cũng xóa các cặp xưng hô và giọng nói của nhân vật đó.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="202" />
+        <location filename="../views/memory.py" line="217" />
         <source>Nothing to save</source>
         <translation>Không có gì để lưu</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="214" />
+        <location filename="../views/memory.py" line="229" />
         <source>History…</source>
         <translation>Lịch sử…</translation>
     </message>
@@ -1689,304 +1689,379 @@ Bị thay thế: {files}</translation>
 <context>
     <name>MemoryView</name>
     <message>
-        <location filename="../views/memory.py" line="278" />
+        <location filename="../views/memory.py" line="301" />
         <source>A job is running: memory is read-only until it finishes.</source>
         <translation>Đang có tác vụ chạy: bộ nhớ chỉ được xem cho đến khi tác vụ kết thúc.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285" />
+        <location filename="../views/memory.py" line="308" />
         <source>Id</source>
         <translation>Mã</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285" />
-        <location filename="../views/memory.py" line="286" />
+        <location filename="../views/memory.py" line="308" />
+        <location filename="../views/memory.py" line="309" />
         <source>Chinese</source>
         <translation>Tiếng Trung</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="285" />
-        <location filename="../views/memory.py" line="286" />
+        <location filename="../views/memory.py" line="308" />
+        <location filename="../views/memory.py" line="309" />
         <source>Vietnamese</source>
         <translation>Tiếng Việt</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="286" />
+        <location filename="../views/memory.py" line="309" />
+        <location filename="../views/memory.py" line="702" />
         <source>Description</source>
         <translation>Mô tả</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287" />
+        <location filename="../views/memory.py" line="310" />
         <source>Pinyin</source>
         <translation>Pinyin</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287" />
+        <location filename="../views/memory.py" line="310" />
         <source>Type</source>
         <translation>Loại</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="287" />
+        <location filename="../views/memory.py" line="310" />
         <source>Notes</source>
         <translation>Ghi chú</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288" />
+        <location filename="../views/memory.py" line="311" />
         <source>First episode</source>
         <translation>Tập đầu tiên</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288" />
-        <location filename="../views/memory.py" line="396" />
+        <location filename="../views/memory.py" line="311" />
+        <location filename="../views/memory.py" line="422" />
         <source>Locked</source>
         <translation>Đã khóa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="288" />
-        <location filename="../views/memory.py" line="728" />
+        <location filename="../views/memory.py" line="311" />
+        <location filename="../views/memory.py" line="821" />
         <source>Source</source>
         <translation>Nguồn</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="289" />
+        <location filename="../views/memory.py" line="312" />
         <source>Updated</source>
         <translation>Cập nhật</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="289" />
+        <location filename="../views/memory.py" line="312" />
         <source>Times removed</source>
         <translation>Số lần bỏ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="290" />
+        <location filename="../views/memory.py" line="313" />
         <source>Times kept</source>
         <translation>Số lần giữ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="290" />
+        <location filename="../views/memory.py" line="313" />
         <source>Last episode</source>
         <translation>Tập gần nhất</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="291" />
+        <location filename="../views/memory.py" line="314" />
         <source>Status</source>
         <translation>Trạng thái</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="291" />
+        <location filename="../views/memory.py" line="314" />
         <source>Status reason</source>
         <translation>Lý do trạng thái</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="292" />
+        <location filename="../views/memory.py" line="315" />
         <source>Generic</source>
         <translation>Chung</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="300" />
+        <location filename="../views/memory.py" line="315" />
+        <location filename="../views/memory.py" line="702" />
+        <source>Also called</source>
+        <translation>Tên gọi khác</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="323" />
         <source>Characters</source>
         <translation>Nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="301" />
+        <location filename="../views/memory.py" line="324" />
         <source>Glossary</source>
         <translation>Thuật ngữ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="302" />
+        <location filename="../views/memory.py" line="325" />
         <source>Pronoun matrix</source>
         <translation>Ma trận xưng hô</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="303" />
+        <location filename="../views/memory.py" line="326" />
         <source>Briefings</source>
         <translation>Tóm tắt</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="304" />
+        <location filename="../views/memory.py" line="327" />
         <source>Style rules</source>
         <translation>Quy tắc văn phong</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="305" />
-        <location filename="../views/memory.py" line="589" />
+        <location filename="../views/memory.py" line="328" />
+        <location filename="../views/memory.py" line="615" />
         <source>Voice bank</source>
         <translation>Kho giọng nói</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="306" />
+        <location filename="../views/memory.py" line="329" />
         <source>Line decisions</source>
         <translation>Quyết định giữ / bỏ dòng</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="307" />
-        <location filename="../views/memory.py" line="636" />
+        <location filename="../views/memory.py" line="330" />
+        <location filename="../views/memory.py" line="662" />
         <source>Conflicts</source>
         <translation>Xung đột</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="308" />
-        <location filename="../views/memory.py" line="665" />
+        <location filename="../views/memory.py" line="331" />
+        <location filename="../views/memory.py" line="729" />
+        <source>Character updates</source>
+        <translation>Cập nhật nhân vật</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="332" />
+        <location filename="../views/memory.py" line="758" />
         <source>History</source>
         <translation>Lịch sử</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="354" />
+        <location filename="../views/memory.py" line="380" />
         <source>Some changes were not saved</source>
         <translation>Một số thay đổi chưa được lưu</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="358" />
-        <location filename="../views/memory.py" line="475" />
+        <location filename="../views/memory.py" line="384" />
+        <location filename="../views/memory.py" line="501" />
         <source>Memory</source>
         <translation>Bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="365" />
+        <location filename="../views/memory.py" line="391" />
         <source>Rows: speaker. Columns: listener. Cell: self term / address term. Double-click a cell to edit.</source>
         <translation>Hàng: người nói. Cột: người nghe. Ô: tự xưng / gọi người nghe. Nhấp đúp vào ô để sửa.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="431" />
-        <location filename="../views/memory.py" line="483" />
+        <location filename="../views/memory.py" line="457" />
+        <location filename="../views/memory.py" line="509" />
         <source>Edit</source>
         <translation>Sửa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="432" />
-        <location filename="../views/memory.py" line="484" />
+        <location filename="../views/memory.py" line="458" />
+        <location filename="../views/memory.py" line="510" />
         <source>Save</source>
         <translation>Lưu</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="512" />
+        <location filename="../views/memory.py" line="538" />
         <source>Character</source>
         <translation>Nhân vật</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="512" />
+        <location filename="../views/memory.py" line="538" />
         <source>Clips in bank</source>
         <translation>Số đoạn trong kho</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="513" />
+        <location filename="../views/memory.py" line="539" />
         <source>Clip files</source>
         <translation>Số tệp mẫu</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="520" />
+        <location filename="../views/memory.py" line="546" />
         <source>Clips (double-click to play):</source>
         <translation>Các đoạn mẫu (nhấp đúp để phát):</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="522" />
+        <location filename="../views/memory.py" line="548" />
         <source>Recompute selected voices</source>
         <translation>Tính lại giọng đã chọn</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="527" />
+        <location filename="../views/memory.py" line="553" />
         <source>Voice similarity (confusable pairs in red)</source>
         <translation>Độ giống giọng (cặp dễ nhầm tô đỏ)</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="588" />
+        <location filename="../views/memory.py" line="614" />
         <source>recompute voices</source>
         <translation>tính lại giọng</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="589" />
+        <location filename="../views/memory.py" line="615" />
         <source>Another job is running.</source>
         <translation>Đang có tác vụ khác chạy.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597" />
+        <location filename="../views/memory.py" line="623" />
         <source>Table</source>
         <translation>Bảng</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597" />
+        <location filename="../views/memory.py" line="623" />
         <source>Key</source>
         <translation>Khóa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="597" />
+        <location filename="../views/memory.py" line="623" />
+        <location filename="../views/memory.py" line="675" />
         <source>Current</source>
         <translation>Hiện tại</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="598" />
+        <location filename="../views/memory.py" line="624" />
+        <location filename="../views/memory.py" line="675" />
         <source>Proposed</source>
         <translation>Đề xuất</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="598" />
+        <location filename="../views/memory.py" line="624" />
         <source>Source / evidence</source>
         <translation>Nguồn / bằng chứng</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="599" />
+        <location filename="../views/memory.py" line="625" />
         <source>Reason</source>
         <translation>Lý do</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="605" />
+        <location filename="../views/memory.py" line="631" />
         <source>Accept proposal</source>
         <translation>Chấp nhận đề xuất</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="606" />
+        <location filename="../views/memory.py" line="632" />
         <source>Reject proposal</source>
         <translation>Từ chối đề xuất</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645" />
-        <location filename="../views/memory.py" line="728" />
+        <location filename="../views/memory.py" line="670" />
+        <source>What finished episodes taught about characters you confirmed (locked), or, in auto mode, about lines nobody checked. Accepting saves the change as your edit; a rejected change is not proposed again.</source>
+        <translation>Những gì các tập đã xong cho biết thêm về nhân vật bạn đã xác nhận (đã khóa), hoặc, ở chế độ tự động, từ những dòng chưa ai kiểm tra. Chấp nhận sẽ lưu thay đổi như chỉnh sửa của bạn; thay đổi bị từ chối sẽ không được đề xuất lại.</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="674" />
+        <source>Episode</source>
+        <translation>Tập</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="674" />
+        <source>Character / pair</source>
+        <translation>Nhân vật / cặp</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="675" />
+        <source>Field</source>
+        <translation>Mục</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="676" />
+        <source>Why it waits</source>
+        <translation>Lý do chờ duyệt</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="686" />
+        <source>Accept change</source>
+        <translation>Chấp nhận thay đổi</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="687" />
+        <source>Reject change</source>
+        <translation>Từ chối thay đổi</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="702" />
+        <source>Name</source>
+        <translation>Tên</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="703" />
+        <source>Pronouns</source>
+        <translation>Xưng hô</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="704" />
+        <source>confirmed by you</source>
+        <translation>bạn đã xác nhận</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="704" />
+        <source>auto mode: lines not checked</source>
+        <translation>chế độ tự động: dòng chưa được kiểm tra</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="720" />
+        <source>Evidence:</source>
+        <translation>Bằng chứng:</translation>
+    </message>
+    <message>
+        <location filename="../views/memory.py" line="738" />
+        <location filename="../views/memory.py" line="821" />
         <source>Date</source>
         <translation>Ngày</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645" />
+        <location filename="../views/memory.py" line="738" />
         <source>Message</source>
         <translation>Nội dung</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="645" />
+        <location filename="../views/memory.py" line="738" />
         <source>Changes</source>
         <translation>Thay đổi</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="656" />
+        <location filename="../views/memory.py" line="749" />
         <source>Roll back to this version…</source>
         <translation>Quay về phiên bản này…</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684" />
+        <location filename="../views/memory.py" line="777" />
         <source>Added</source>
         <translation>Thêm mới</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684" />
+        <location filename="../views/memory.py" line="777" />
         <source>Changed</source>
         <translation>Đã đổi</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="684" />
+        <location filename="../views/memory.py" line="777" />
         <source>Removed</source>
         <translation>Đã xóa</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="705" />
+        <location filename="../views/memory.py" line="798" />
         <source>No changes in this version.</source>
         <translation>Phiên bản này không có thay đổi.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="712" />
-        <location filename="../views/memory.py" line="719" />
+        <location filename="../views/memory.py" line="805" />
+        <location filename="../views/memory.py" line="812" />
         <source>Roll back memory</source>
         <translation>Quay lui bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="713" />
+        <location filename="../views/memory.py" line="806" />
         <source>Restore memory to the version of {date} (“{message}”)?
 
 A new version is created; nothing is lost, and this rollback can itself be undone from the history.</source>
@@ -1995,22 +2070,22 @@ A new version is created; nothing is lost, and this rollback can itself be undon
 Một phiên bản mới sẽ được tạo; không mất dữ liệu nào, và có thể hoàn tác thao tác này từ lịch sử.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="724" />
+        <location filename="../views/memory.py" line="817" />
         <source>History of {key}</source>
         <translation>Lịch sử của {key}</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="728" />
+        <location filename="../views/memory.py" line="821" />
         <source>Change</source>
         <translation>Thay đổi</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="728" />
+        <location filename="../views/memory.py" line="821" />
         <source>Details</source>
         <translation>Chi tiết</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="729" />
+        <location filename="../views/memory.py" line="822" />
         <source>Version</source>
         <translation>Phiên bản</translation>
     </message>
@@ -2180,37 +2255,37 @@ Một phiên bản mới sẽ được tạo; không mất dữ liệu nào, và
 <context>
     <name>PairDialog</name>
     <message>
-        <location filename="../views/memory.py" line="224" />
+        <location filename="../views/memory.py" line="247" />
         <source>Pronouns {speaker} → {listener}</source>
         <translation>Xưng hô {speaker} → {listener}</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="229" />
+        <location filename="../views/memory.py" line="252" />
         <source>Leave the context empty for the default pair. Rows without terms are deleted.</source>
         <translation>Để trống ngữ cảnh cho cặp mặc định. Dòng không có từ xưng hô sẽ bị xóa.</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231" />
+        <location filename="../views/memory.py" line="254" />
         <source>Context</source>
         <translation>Ngữ cảnh</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231" />
+        <location filename="../views/memory.py" line="254" />
         <source>Self term</source>
         <translation>Tự xưng</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="231" />
+        <location filename="../views/memory.py" line="254" />
         <source>Address term</source>
         <translation>Gọi người nghe</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="232" />
+        <location filename="../views/memory.py" line="255" />
         <source>Since episode</source>
         <translation>Từ tập</translation>
     </message>
     <message>
-        <location filename="../views/memory.py" line="239" />
+        <location filename="../views/memory.py" line="262" />
         <source>Add variant</source>
         <translation>Thêm biến thể</translation>
     </message>
@@ -3323,11 +3398,16 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
     </message>
     <message>
         <location filename="../views/character_browser.py" line="46" />
+        <source>called {names}</source>
+        <translation>còn gọi là {names}</translation>
+    </message>
+    <message>
+        <location filename="../views/character_browser.py" line="48" />
         <source>sample chosen by you</source>
         <translation>mẫu do bạn chọn</translation>
     </message>
     <message>
-        <location filename="../views/character_browser.py" line="48" />
+        <location filename="../views/character_browser.py" line="50" />
         <source>no reviewed line yet</source>
         <translation>chưa có câu đã duyệt</translation>
     </message>
