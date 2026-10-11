@@ -39,7 +39,8 @@ Stages 1–4 and 5–6 are independent and may run in parallel (process-level) o
 
 ```
 subagent/
-  __main__.py          CLI entry (argparse)
+  __main__.py          CLI entry (argparse): the parser assembled from cli/, main()
+  cli/                 commands, one module per group: episodes.py, memory.py, measure.py, series.py; common.py
   config.py            load + validate config.yaml into Pydantic models
   models.py            shared Pydantic data models (section 4)
   llm.py               LLM client wrapper, cost records (section 5.1)
