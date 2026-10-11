@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sqlite3
 
 import numpy as np
 
@@ -71,44 +72,12 @@ class BanksMixin:
         with self._transaction() as conn:
             known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
             if episode_id is not None:
-                for ex_id, (_, _, was_added) in (undo or {}).items():
-                    if was_added:
-                        row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
-                        if row:
-                            conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                            dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
-                    elif ex_id in base:
-                        conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (*base[ex_id], ex_id))
-                conn.execute("DELETE FROM sprite_feedback WHERE episode_id=?", (episode_id,))
-            for ex_id, (right, wrong) in stats.items():
-                conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (right, wrong, ex_id))
-                if episode_id is not None:
-                    b_right, b_wrong = base.get(ex_id, (0, 0))
-                    if (right, wrong) != (b_right, b_wrong):
-                        conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
-                                     "VALUES (?,?,?,?,0)", (ex_id, episode_id, right - b_right, wrong - b_wrong))
+                _undo_episode(conn, episode_id, undo or {}, base, dropped)
+            _record_votes(conn, stats, episode_id, base)
             for ex_id in remove:
-                row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
-                if row:
-                    conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                    dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
-            for char, emb, ep, event in add:
-                if char not in known:
-                    continue
-                vec = np.asarray(emb, np.float32)
-                vec = (vec / (np.linalg.norm(vec) or 1.0)).astype(np.float16)
-                cur = conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, "
-                                   "wrong, added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
-                if episode_id is not None:
-                    conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
-                                 "VALUES (?,?,0,0,1)", (cur.lastrowid, episode_id))
-                added[char] = added.get(char, 0) + 1
-            for char in {r["character_id"] for r in conn.execute("SELECT DISTINCT character_id FROM sprite_bank")}:
-                ids = [r["id"] for r in conn.execute(
-                    "SELECT id FROM sprite_bank WHERE character_id=? ORDER BY (right - wrong) DESC, id DESC", (char,))]
-                for ex_id in ids[max_per_character:]:
-                    conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                    dropped[char] = dropped.get(char, 0) + 1
+                _drop_exemplar(conn, ex_id, dropped)
+            _add_exemplars(conn, add, known, episode_id, now, added)
+            _keep_best(conn, max_per_character, dropped)
             conn.execute("DELETE FROM sprite_feedback WHERE exemplar_id NOT IN (SELECT id FROM sprite_bank)")
             for char in sorted(set(added) | set(dropped)):
                 self._log(conn, "update", "sprite_bank", char, None,
@@ -147,3 +116,60 @@ class BanksMixin:
                 conn.execute("INSERT OR REPLACE INTO confusable_pairs VALUES (?,?,?)", (a, b, float(sim)))
                 self._log(conn, "insert", "confusable_pairs", f"{a}|{b}", None,
                           {"a": a, "b": b, "similarity": float(sim)}, None, 0, source=source)
+
+
+def _drop_exemplar(conn: sqlite3.Connection, ex_id: int, dropped: dict[str, int]) -> None:
+    """Delete one exemplar (if it still exists) and count it for its character."""
+    row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
+    if row:
+        conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+        dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
+
+
+def _undo_episode(conn: sqlite3.Connection, episode_id: str, undo: dict[int, tuple[int, int, bool]],
+                  base: dict[int, tuple[int, int]], dropped: dict[str, int]) -> None:
+    """Take back what learning this episode did last time: its added exemplars go, its votes return to `base`."""
+    for ex_id, (_, _, was_added) in undo.items():
+        if was_added:
+            _drop_exemplar(conn, ex_id, dropped)
+        elif ex_id in base:
+            conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (*base[ex_id], ex_id))
+    conn.execute("DELETE FROM sprite_feedback WHERE episode_id=?", (episode_id,))
+
+
+def _record_votes(conn: sqlite3.Connection, stats: dict[int, tuple[int, int]], episode_id: str | None,
+                  base: dict[int, tuple[int, int]]) -> None:
+    """The new right / wrong counts; with an episode, its share of the votes is recorded (re-finish safe)."""
+    for ex_id, (right, wrong) in stats.items():
+        conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (right, wrong, ex_id))
+        if episode_id is not None:
+            b_right, b_wrong = base.get(ex_id, (0, 0))
+            if (right, wrong) != (b_right, b_wrong):
+                conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
+                             "VALUES (?,?,?,?,0)", (ex_id, episode_id, right - b_right, wrong - b_wrong))
+
+
+def _add_exemplars(conn: sqlite3.Connection, add: list, known: set[str], episode_id: str | None, now: str,
+                   added: dict[str, int]) -> None:
+    """New exemplars of known characters (L2-normalized, float16); with an episode, recorded as its additions."""
+    for char, emb, ep, event in add:
+        if char not in known:
+            continue
+        vec = np.asarray(emb, np.float32)
+        vec = (vec / (np.linalg.norm(vec) or 1.0)).astype(np.float16)
+        cur = conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, "
+                           "wrong, added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
+        if episode_id is not None:
+            conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
+                         "VALUES (?,?,0,0,1)", (cur.lastrowid, episode_id))
+        added[char] = added.get(char, 0) + 1
+
+
+def _keep_best(conn: sqlite3.Connection, max_per_character: int, dropped: dict[str, int]) -> None:
+    """Each character keeps its `max_per_character` best-confirmed exemplars (right - wrong, then newest)."""
+    for char in {r["character_id"] for r in conn.execute("SELECT DISTINCT character_id FROM sprite_bank")}:
+        ids = [r["id"] for r in conn.execute(
+            "SELECT id FROM sprite_bank WHERE character_id=? ORDER BY (right - wrong) DESC, id DESC", (char,))]
+        for ex_id in ids[max_per_character:]:
+            conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+            dropped[char] = dropped.get(char, 0) + 1
