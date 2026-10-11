@@ -51,7 +51,26 @@ class ReviewView(QWidget):
     def __init__(self, main):
         super().__init__()
         self.main = main
-        self.services = main.services
+        self._init_state()
+        layout = QVBoxLayout(self)
+        layout.addLayout(self._build_toolbar())
+        self._build_banner(layout)
+        split = QSplitter(Qt.Orientation.Horizontal)
+        split.addWidget(self._build_line_table())
+        right = QSplitter(Qt.Orientation.Vertical)
+        self.preview = PreviewWidget()
+        right.addWidget(self.preview)
+        editor, buttons = self._build_editor()
+        split.addWidget(self._build_right_side(right, editor, buttons))
+        split.setSizes([620, 700])
+        layout.addWidget(split, 1)
+        self.editor = editor
+        self._connect_editor()
+        self._init_timers()
+
+    def _init_state(self) -> None:
+        """The episode and line state the screen works on."""
+        self.services = self.main.services
         self.data: ReviewData | None = None
         self.lines: dict[str, ReviewedLine] = {}
         self.order: list[str] = []
@@ -68,7 +87,8 @@ class ReviewView(QWidget):
         self.characters: dict[str, str] = {}
         self._finish_job = ""
 
-        layout = QVBoxLayout(self)
+    def _build_toolbar(self) -> QHBoxLayout:
+        """Episode picker, counter and the line list filters."""
         top = QHBoxLayout()
         top.addWidget(QLabel(self.tr("Episode:")))
         self.episode_box = QComboBox()
@@ -91,14 +111,17 @@ class ReviewView(QWidget):
         self.speaker_filter.currentIndexChanged.connect(self._apply_filters)
         self.unapproved.toggled.connect(self._apply_filters)
         self.search.textChanged.connect(self._apply_filters)
-        layout.addLayout(top)
+        return top
 
+    def _build_banner(self, layout: QVBoxLayout) -> None:
+        """Shown when the episode's review is finished."""
         self.read_only_banner = QLabel(self.tr("Read-only: this episode's review is finished."))
         self.read_only_banner.setStyleSheet("background: #fff3cd; color: #664d03; padding: 4px;")
         self.read_only_banner.hide()
         layout.addWidget(self.read_only_banner)
 
-        split = QSplitter(Qt.Orientation.Horizontal)
+    def _build_line_table(self) -> QTableWidget:
+        """The line list (left)."""
         self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels([self.tr("State"), self.tr("Time"), self.tr("Speaker → listener"),
                                               self.tr("Chinese"), self.tr("Vietnamese")])
@@ -109,11 +132,10 @@ class ReviewView(QWidget):
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
         self.table.currentCellChanged.connect(lambda row, *_: self._select_row(row))
-        split.addWidget(self.table)
+        return self.table
 
-        right = QSplitter(Qt.Orientation.Vertical)
-        self.preview = PreviewWidget()
-        right.addWidget(self.preview)
+    def _build_editor(self) -> tuple[QWidget, QHBoxLayout]:
+        """The line editor and the action buttons (returned for the right side's bottom row)."""
         editor = QWidget()
         form_layout = QVBoxLayout(editor)
         form = QFormLayout()
@@ -132,33 +154,7 @@ class ReviewView(QWidget):
         for t in LINE_TYPES:
             self.line_type.addItem({"dialogue": self.tr("Dialogue"), "sign": self.tr("Sign"),
                                     "title": self.tr("Title"), "sfx": self.tr("Sound effect")}[t], t)
-        who = QHBoxLayout()
-        who.addWidget(self.speaker, 1)
-        who.addWidget(QLabel("→"))
-        who.addWidget(self.listener, 1)
-        who.addWidget(self.line_type)
-        self.new_char_btn = QPushButton(self.tr("New character…"))
-        self.new_char_btn.setToolTip(self.tr("Add a character to memory and assign it to this line"))
-        self.new_char_btn.clicked.connect(self._new_character)
-        who.addWidget(self.new_char_btn)
-        self.new_npc_btn = QPushButton(self.tr("New NPC"))
-        self.new_npc_btn.setToolTip(self.tr(
-            "Give this line's speaker a new automatic id (npc_<episode>_<n>) without saving anything to memory. "
-            "Use the same id on the character's other lines: at Finish review, with at least 3 approved lines as "
-            "speaker it goes on probation, and becomes a character only if it speaks again in the next 2 episodes."))
-        self.new_npc_btn.clicked.connect(self._new_npc)
-        who.addWidget(self.new_npc_btn)
-        self.browse_btn = QPushButton(self.tr("Browse characters…"))
-        self.browse_btn.setToolTip(self.tr("See every character's picture, first episode and voice sample, and "
-                                           "assign one to this line"))
-        self.browse_btn.clicked.connect(self._browse_characters)
-        who.addWidget(self.browse_btn)
-        self.suggest_btn = QPushButton()
-        self.suggest_btn.setToolTip(self.tr("Use the speaker Partial review suggests (the line is then flagged so you "
-                                            "check its pronouns)"))
-        self.suggest_btn.clicked.connect(self._use_suggestion)
-        self.suggest_btn.hide()
-        who.addWidget(self.suggest_btn)
+        who = self._build_who_row()
         form.addRow(self.tr("Chinese"), self.zh)
         self.band = BandView()
         self.band.setToolTip(self.tr("The original subtitle in the video at this line (the preview hides it)"))
@@ -188,6 +184,42 @@ class ReviewView(QWidget):
         self.context = QTextBrowser()
         self.context.setOpenLinks(False)
         form_layout.addWidget(self.context, 1)
+        buttons = self._build_action_buttons()
+        return editor, buttons
+
+    def _build_who_row(self) -> QHBoxLayout:
+        """Speaker → listener, line type, and the character buttons (new character, new NPC, browse, suggestion)."""
+        who = QHBoxLayout()
+        who.addWidget(self.speaker, 1)
+        who.addWidget(QLabel("→"))
+        who.addWidget(self.listener, 1)
+        who.addWidget(self.line_type)
+        self.new_char_btn = QPushButton(self.tr("New character…"))
+        self.new_char_btn.setToolTip(self.tr("Add a character to memory and assign it to this line"))
+        self.new_char_btn.clicked.connect(self._new_character)
+        who.addWidget(self.new_char_btn)
+        self.new_npc_btn = QPushButton(self.tr("New NPC"))
+        self.new_npc_btn.setToolTip(self.tr(
+            "Give this line's speaker a new automatic id (npc_<episode>_<n>) without saving anything to memory. "
+            "Use the same id on the character's other lines: at Finish review, with at least 3 approved lines as "
+            "speaker it goes on probation, and becomes a character only if it speaks again in the next 2 episodes."))
+        self.new_npc_btn.clicked.connect(self._new_npc)
+        who.addWidget(self.new_npc_btn)
+        self.browse_btn = QPushButton(self.tr("Browse characters…"))
+        self.browse_btn.setToolTip(self.tr("See every character's picture, first episode and voice sample, and "
+                                           "assign one to this line"))
+        self.browse_btn.clicked.connect(self._browse_characters)
+        who.addWidget(self.browse_btn)
+        self.suggest_btn = QPushButton()
+        self.suggest_btn.setToolTip(self.tr("Use the speaker Partial review suggests (the line is then flagged so you "
+                                            "check its pronouns)"))
+        self.suggest_btn.clicked.connect(self._use_suggestion)
+        self.suggest_btn.hide()
+        who.addWidget(self.suggest_btn)
+        return who
+
+    def _build_action_buttons(self) -> QHBoxLayout:
+        """Approve, finish, reset, delete, discard and partial review (shown under both right-side views)."""
         buttons = QHBoxLayout()
         self.approve_btn = QPushButton(self.tr("Approve and next"))
         self.approve_rest_btn = QPushButton(self.tr("Approve all remaining non-flagged…"))
@@ -208,6 +240,10 @@ class ReviewView(QWidget):
         buttons.addStretch(1)
         for b in (self.reset_btn, self.delete_btn, self.discard_btn, self.partial_btn, self.finish_btn):
             buttons.addWidget(b)
+        return buttons
+
+    def _build_right_side(self, right: QSplitter, editor: QWidget, buttons: QHBoxLayout) -> QWidget:
+        """Line / On screen tabs, the audit bar and the action buttons."""
         right.addWidget(editor)
         right.setSizes([380, 420])
         # the right side switches between the line (player + editor) and the characters on screen
@@ -229,11 +265,10 @@ class ReviewView(QWidget):
         self.audit_bar.hide()
         right_layout.addWidget(self.audit_bar)
         right_layout.addLayout(buttons)                   # approve / finish stay visible in both views
-        split.addWidget(right_box)
-        split.setSizes([620, 700])
-        layout.addWidget(split, 1)
-        self.editor = editor
+        return right_box
 
+    def _connect_editor(self) -> None:
+        """Editor fields and action buttons to their handlers."""
         self.zh.textEdited.connect(lambda t: self._edit("zh", t))
         self.pinyin.textEdited.connect(lambda t: self._edit("pinyin", t))
         self.vi.textChanged.connect(lambda: self._edit("vi", self.vi.toPlainText()))
@@ -249,8 +284,10 @@ class ReviewView(QWidget):
         self.delete_btn.clicked.connect(self._toggle_delete)
         self.discard_btn.clicked.connect(self._discard_review)
         self.originals: dict[str, ReviewedLine] = {}
-        main.jobs.finished.connect(self._job_finished)
+        self.main.jobs.finished.connect(self._job_finished)
 
+    def _init_timers(self) -> None:
+        """Debounce timers, audit state and keyboard shortcuts."""
         self._save_timer = self._timer(1000, self._save)
         self._preview_timer = self._timer(300, self._refresh_preview)
         self._rules_timer = self._timer(150, self._check_rules)
