@@ -227,6 +227,8 @@ class WindowTranslator:
         return {t.event_id: t for t in resp.lines if t.event_id in wanted}
 
     def run_window(self, window: Window) -> None:
+        """Translate a window, then retry only the failed lines (with their history and the evaluator's
+        suggestion) up to `translate.max_retries`; each line keeps its best attempt."""
         cfg = self.ctx.config
         base_context = [context_row(self.events[i], self.done.get(i)) for i in window.context_ids if i in self.events]
         attempts: dict[str, list[tuple[LineTranslation, Evaluation]]] = {i: [] for i in window.event_ids}
@@ -241,58 +243,69 @@ class WindowTranslator:
                     for i in window.event_ids if i not in pending
                 ]
             got = self._translate(pending, context, feedback)
-
-            checked: list[tuple[str, LineTranslation | None, list, list, list, Evaluation | None]] = []
-            for eid in pending:
-                t = got.get(eid)
-                if t is None:
-                    checked.append((eid, None, [], [], [], None))
-                    continue
-                line = to_translation(t, attempt)
-                repeat = next((ev for old, ev in attempts[eid] if _same(old, line)), None)
-                failures, warnings = rule_checks(line, self.events[eid], self.speakers.get(eid), self.rules)
-                hard = [f for f in failures if f.code not in self.soft_codes]
-                soft = [f for f in failures if f.code in self.soft_codes]
-                checked.append((eid, line, hard, soft, warnings, repeat))
-
+            checked = self._check_lines(pending, got, attempts, attempt)
             to_rubric = [(self.events[eid], line, self.speakers.get(eid))
                          for eid, line, hard, _, _, repeat in checked if line is not None and not hard and not repeat]
             scene = [context_row(self.events[i], None) for i in window.event_ids]
             rubric = llm_rubric(self.ctx.llm, self.e_static, self.e_prefix, to_rubric, scene)
-
-            next_pending, feedback = [], []
-            for eid, line, hard, soft, warnings, repeat in checked:
-                if line is None:
-                    ev = Evaluation(event_id=eid, attempt=attempt, passed=False, rule_failures=["missing"],
-                                    feedback="[missing] the translator returned no line for this event")
-                    line = LineTranslation(event_id=eid, speaker=None, listener=None, speaker_conf=0.0, vi="",
-                                           attempts=attempt)
-                elif repeat is not None:
-                    # the same answer again: re-judging it would give the same verdict, so stop retrying this line
-                    ev = repeat.model_copy(update={"attempt": attempt})
-                    self.evaluations.append(ev)
-                    attempts[eid].append((line, ev))
-                    continue
-                else:
-                    ev = judge(eid, attempt, hard, warnings + [str(f) for f in soft], rubric.get(eid), cfg,
-                               evaluated=not hard)
-                    ev.soft_failures = [f.code for f in soft]
-                self.evaluations.append(ev)
-                attempts[eid].append((line, ev))
-                if not ev.passed:
-                    next_pending.append(eid)
-                    feedback.append({
-                        "event_id": eid,
-                        "earlier_attempts": [{"vi": old.vi, "speaker": old.speaker, "listener": old.listener,
-                                              "feedback": old_ev.feedback} for old, old_ev in attempts[eid]],
-                        "evaluator_suggestion": ev.suggestion,
-                    })
-            pending = next_pending
+            pending, feedback = self._judge_lines(checked, rubric, attempts, attempt)
             if not pending:
                 break
 
         for eid in window.event_ids:
             self.done[eid] = self._finalize(eid, attempts[eid])
+
+    def _check_lines(self, pending: list[str], got: dict[str, TranslatedLine],
+                     attempts: dict[str, list[tuple[LineTranslation, Evaluation]]], attempt: int,
+                     ) -> list[tuple[str, LineTranslation | None, list, list, list, Evaluation | None]]:
+        """Per pending line: (event id, translation or None when missing, hard rule failures, soft ones, warnings,
+        the verdict of an identical earlier answer)."""
+        checked: list[tuple[str, LineTranslation | None, list, list, list, Evaluation | None]] = []
+        for eid in pending:
+            t = got.get(eid)
+            if t is None:
+                checked.append((eid, None, [], [], [], None))
+                continue
+            line = to_translation(t, attempt)
+            repeat = next((ev for old, ev in attempts[eid] if _same(old, line)), None)
+            failures, warnings = rule_checks(line, self.events[eid], self.speakers.get(eid), self.rules)
+            hard = [f for f in failures if f.code not in self.soft_codes]
+            soft = [f for f in failures if f.code in self.soft_codes]
+            checked.append((eid, line, hard, soft, warnings, repeat))
+        return checked
+
+    def _judge_lines(self, checked: list, rubric: dict, attempts: dict[str, list[tuple[LineTranslation, Evaluation]]],
+                     attempt: int) -> tuple[list[str], list[dict]]:
+        """Record each line's evaluation; returns the lines to retry and the feedback the translator gets."""
+        cfg = self.ctx.config
+        next_pending, feedback = [], []
+        for eid, line, hard, soft, warnings, repeat in checked:
+            if line is None:
+                ev = Evaluation(event_id=eid, attempt=attempt, passed=False, rule_failures=["missing"],
+                                feedback="[missing] the translator returned no line for this event")
+                line = LineTranslation(event_id=eid, speaker=None, listener=None, speaker_conf=0.0, vi="",
+                                       attempts=attempt)
+            elif repeat is not None:
+                # the same answer again: re-judging it would give the same verdict, so stop retrying this line
+                ev = repeat.model_copy(update={"attempt": attempt})
+                self.evaluations.append(ev)
+                attempts[eid].append((line, ev))
+                continue
+            else:
+                ev = judge(eid, attempt, hard, warnings + [str(f) for f in soft], rubric.get(eid), cfg,
+                           evaluated=not hard)
+                ev.soft_failures = [f.code for f in soft]
+            self.evaluations.append(ev)
+            attempts[eid].append((line, ev))
+            if not ev.passed:
+                next_pending.append(eid)
+                feedback.append({
+                    "event_id": eid,
+                    "earlier_attempts": [{"vi": old.vi, "speaker": old.speaker, "listener": old.listener,
+                                          "feedback": old_ev.feedback} for old, old_ev in attempts[eid]],
+                    "evaluator_suggestion": ev.suggestion,
+                })
+        return next_pending, feedback
 
     def _finalize(self, eid: str, tries: list[tuple[LineTranslation, Evaluation]]) -> LineTranslation:
         line, ev = _best(tries)

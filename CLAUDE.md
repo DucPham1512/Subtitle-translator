@@ -140,7 +140,7 @@ The detailed spec (old sections 3.2–6.11) lives in `.claude/rules/`, verbatim 
 ## 9. Rules for Claude Code
 - Every change or decision must have a note in `knowledge_vault/decisions/`; do not modify `data/memory/` through the vault.
 - Implement in stage order. Each stage must have tests and run on a real short clip before starting the next.
-- Never write to memory outside `memory/manager.py`.
+- Never write to memory outside the `memory/manager/` package (the Memory Manager).
 - `subagent/` must never import `app/` or PySide6.
 - The app never writes pipeline artifacts other than those listed in 6.1; it calls core functions or starts CLI jobs.
 - Every user-visible UI string goes through `tr()`; never hardcode interface text.

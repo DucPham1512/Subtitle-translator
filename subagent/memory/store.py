@@ -1,4 +1,4 @@
-"""SQLite memory access (4.1). Public functions only read; writes live in memory/manager.py.
+"""SQLite memory access (4.1). Public functions only read; writes live in the memory/manager/ package.
 
 Connections are opened read-only and closed after every query, so a rollback can replace the file.
 """

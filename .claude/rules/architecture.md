@@ -25,7 +25,7 @@ Each stage reads the previous stage's artifact from `work/<episode_id>/` and wri
 | 11 | Script review | `stages/script_review.py` | `script_review.jsonl` |
 | 12 | Review gate | `stages/review.py` | `approved.jsonl` + `edits.jsonl` (auto) or `review_draft.jsonl` + status `awaiting_review` (human) |
 | 13 | Human review + finish | `app/views/review.py`, `stages/review.py` | `review_draft.jsonl` (autosaved), then `approved.jsonl`, `edits.jsonl` |
-| 14 | Memory update | `memory/manager.py` | memory DB + briefings, git commit |
+| 14 | Memory update | `memory/manager/` | memory DB + briefings, git commit |
 | 15 | Voice + sprite learning | `memory/voice_learning.py`, `memory/sprite_learning.py` | voice bank + confusable pairs, sprite bank; git commits (5.8a, 5.8b) |
 | 16 | Render + deliver | `stages/render.py`, `delivery.py` | `output.ass`; finished video moved to the output folder |
 | 17 | Report | `pipeline.py` | `report.md` (`cost.jsonl` is appended by every LLM call) |
@@ -39,7 +39,8 @@ Stages 1–4 and 5–6 are independent and may run in parallel (process-level) o
 
 ```
 subagent/
-  __main__.py          CLI entry (argparse)
+  __main__.py          CLI entry (argparse): the parser assembled from cli/, main()
+  cli/                 commands, one module per group: episodes.py, memory.py, measure.py, series.py; common.py
   config.py            load + validate config.yaml into Pydantic models
   models.py            shared Pydantic data models (section 4)
   llm.py               LLM client wrapper, cost records (section 5.1)
@@ -64,7 +65,15 @@ subagent/
     cast.py  script_review.py  review.py  render.py
   memory/
     store.py           SQLite access (read functions are public, write functions are private to manager)
-    manager.py         Memory Manager (sole writer)
+    manager/           Memory Manager (sole writer), one module per responsibility:
+      __init__.py      MemoryManager: setup, locking, connections, one write transaction
+      apply.py         write rules, Markdown memory, manual edits, conflicts
+      episode.py       episode update, lifecycle, line decisions, edit mining, briefings
+      candidates.py    probation: candidates, promotion
+      updates.py       character updates and the ones waiting for review
+      banks.py         voice bank, confusable pairs, sprite bank
+      history.py       git commit, history, diff, rollback
+      rows.py  results.py  proposals.py   shared helpers (row SQL, result models, proposal merging)
     prefix.py          memory prefix blocks for prompts (5.1 caching rule), reviewer corrections
     briefings.py       Markdown briefing read/write helpers
     briefing_gen.py    per-episode briefing and story compression (utility calls)

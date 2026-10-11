@@ -111,7 +111,7 @@ def test_rollback_refused_while_a_job_runs(project, monkeypatch):
     config, paths = project
     seed_memory(config, paths)
     m = MemoryManager(paths, config)
-    monkeypatch.setattr("subagent.memory.manager.running_jobs", lambda p: ["ep002"])
+    monkeypatch.setattr("subagent.memory.manager.history.running_jobs", lambda p: ["ep002"])
     with pytest.raises(JobRunningError):
         m.rollback(m.history()[0].sha)
 
