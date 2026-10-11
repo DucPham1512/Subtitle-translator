@@ -141,7 +141,7 @@ class Runner:
         parts: dict = {
             "upstream": {u: self.state.stages[u].output_hash if u in self.state.stages else None for u in stage.upstream},
             "config": {s: cfg.section(s) for s in stage.config},
-            "prompts": {p: _prompt_hash(self.ctx.paths, p) for p in stage.prompts},
+            "prompts": {p: _prompt_hash(self.ctx.paths, p, cfg) for p in stage.prompts},
             "models": {r: cfg.llm.providers[r].model for r in stage.llm_roles if r in cfg.llm.providers},
         }
         if stage.name == "review":
@@ -221,15 +221,21 @@ class Runner:
 RERUN_FROM = "ocr_fix"
 
 
-def _prompt_hash(paths: Paths, name: str) -> str | None:
-    """The general prompt, and the series' notes for it when there are some (both change what the model reads)."""
+def _prompt_hash(paths: Paths, name: str, config: Config | None = None) -> str | None:
+    """The general prompt, the series' notes for it, and for the translator the translation style file (all
+    change what the model reads)."""
     p = paths.prompts / f"{name}.md"
     if not p.is_file():
         return None
+    parts = [hash_path(p)]
     notes = paths.series_prompts / f"{name}.md"
     if paths.series and notes.is_file():
-        return f"{hash_path(p)}+{hash_path(notes)}"
-    return hash_path(p)
+        parts.append(hash_path(notes))
+    if name == "translator_system" and config is not None:
+        style = paths.prompts / "registers" / f"{config.show.genre_register}.md"
+        if style.is_file():
+            parts.append(hash_path(style))
+    return "+".join(parts)
 
 
 def _counts_text(counts: dict[str, int]) -> str:

@@ -24,10 +24,10 @@ DEFAULT_FONT = Path(__file__).resolve().parent.parent / "app" / "fonts"
 
 
 def registers(root: Path) -> list[str]:
-    """Translation registers a series can use: the register blocks of the translator prompt."""
-    prompt = root / "prompts" / "translator_system.md"
-    text = prompt.read_text(encoding="utf-8") if prompt.is_file() else ""
-    return re.findall(r"<!-- register:([\w-]+) -->", text)
+    """Translation styles a series can use: prompts/registers/<id>.md (5.11)."""
+    from subagent.registers import list_registers
+
+    return [r.id for r in list_registers(root)]
 
 
 def check_slug(slug: str) -> str:
@@ -122,6 +122,9 @@ def add(root: Path, slug: str, name: str, register: str = "co_trang_tien_hiep",
     folder = series_root(root) / slug
     if folder.exists():
         raise SubagentError(f"series '{slug}' already exists", code="series_exists")
+    styles = registers(root)
+    if styles and register not in styles:
+        raise SubagentError(f"no translation style '{register}' (styles: {', '.join(styles)})", code="bad_style")
     data: dict = {"show": {"name": name, "genre_register": register}}
     if work_dir:
         data["paths"] = {"work_dir": work_dir}

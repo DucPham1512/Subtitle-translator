@@ -55,6 +55,9 @@ subagent/
   character_card.py    who an id is: name, description, first episode, voice clip, picture (6.4)
   subtitle_style.py    generic subtitle segmentation: stroke-width transform, series style calibration (5.4a)
   series.py            several series: add, rename, default, migrate the single-series layout (5.2a)
+  registers.py         translation styles: prompts/registers/<id>.md, text + pronoun words (5.11)
+  settings_schema.py   what the settings form shows: field kinds, help, known sets, which file (6.9)
+  yaml_edit.py         set / delete YAML values in place, keeping comments (5.2a)
   stages/
     ingest.py  ocr.py  events.py  ocr_fix.py  audio.py  voice.py
     pinyin_gen.py  windows.py  translate.py  evaluate.py  sprite.py
@@ -82,9 +85,9 @@ app/                   desktop app (PySide6); imports `subagent`, never the reve
   shortcuts.py  widgets.py
   views/
     episodes.py  run.py  review.py  memory.py  bootstrap.py  dreaming.py  settings.py
-    character_dialog.py  character_browser.py  common.py
+    character_dialog.py  character_browser.py  common.py  settings_form.py
   i18n/                app_en.ts, app_vi.ts (+ compiled .qm), fill_vi.py (Vietnamese strings)
-prompts/               one .md file per prompt, loaded at runtime
+prompts/               one .md file per prompt, loaded at runtime; registers/<id>.md: translation styles (5.11)
 data/series/<slug>/    one folder per series (5.2a); "data/<x>" in this spec means data/series/<slug>/<x>
   series.yaml          overrides of config.yaml sections for this show
   episodes/index.json  episode registry: links to source videos, which stay where they are

@@ -80,8 +80,14 @@ class TranslatorResponse(BaseModel):
 _REGISTER_BLOCK = re.compile(r"<!-- register:(?P<name>[\w-]+) -->\n(?P<body>.*?)<!-- /register -->\n?", re.S)
 
 
-def translator_static(prompt: str, register: str, config: Config) -> str:
-    """Keep only the register block selected by show.genre_register; fill limits from config."""
+def translator_static(prompt: str, register: str, config: Config, body: str | None = None) -> str:
+    """The register (translation style) selected by show.genre_register in place of `{{register}}`
+    (`body`: its text from prompts/registers/<id>.md); a prompt with inline register blocks keeps only the
+    selected one. Limits are filled from config."""
+    if "{{register}}" in prompt:
+        if body is None:
+            raise SubagentError(f"No translation style '{register}' in prompts/registers/", code="config_invalid")
+        prompt = prompt.replace("{{register}}", body)
     blocks = {m.group("name"): m.group("body") for m in _REGISTER_BLOCK.finditer(prompt)}
     if blocks and register not in blocks:
         raise SubagentError(f"No register block '{register}' in prompts/translator_system.md "
@@ -195,8 +201,11 @@ class WindowTranslator:
         store = MemoryStore(ctx.paths.memory_db)
         voices = load_new_voices(ctx.work)
         self.rules = RuleContext(ctx.config, store, store.character_ids() | {v.id for v in voices})
+        from subagent.registers import load_register
+
+        style = load_register(ctx.paths.root, ctx.config.show.genre_register)
         self.t_static = translator_static(load_prompt(ctx.paths, "translator_system"), ctx.config.show.genre_register,
-                                          ctx.config)
+                                          ctx.config, style.body if style else None)
         self.e_static = load_prompt(ctx.paths, "evaluator_system")
         # memory prefixes: built once per episode, byte-identical across calls (prefix caching)
         corrections = corrections_block(reviewer_corrections(ctx.paths, ctx.config.memory.correction_examples))

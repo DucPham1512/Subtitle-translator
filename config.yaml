@@ -36,38 +36,7 @@ translate:
   retry_on_cps: false
   picture_veto: 'off'
   picture_evidence: tiebreak
-  pronoun_terms:
-  - ta
-  - ngươi
-  - huynh
-  - đệ
-  - tỷ
-  - muội
-  - sư phụ
-  - đồ nhi
-  - sư huynh
-  - sư đệ
-  - sư tỷ
-  - sư muội
-  - tại hạ
-  - bổn tọa
-  - lão phu
-  - bản cung
-  - trẫm
-  - thần
-  - nô tỳ
-  - các hạ
-  - tiền bối
-  - vãn bối
-  - tôi
-  - bạn
-  - anh
-  - em
-  - chị
-  - cậu
-  - tớ
-  - mày
-  - tao
+  pronoun_terms: []        # empty: the style's words (prompts/registers/<show.genre_register>.md)
 evaluate:
   min_score: 3
   criteria:

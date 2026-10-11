@@ -528,6 +528,12 @@ def load_config(root: Path | None = None, series: str | None = None) -> tuple[Co
         raise ConfigError(f"config.yaml not found in {root}")
     data = _read_yaml(path)
     config = parse_config(series_data(root, data, series))
+    if not config.translate.pronoun_terms:           # the translation style's pronoun words (5.11)
+        from subagent.registers import load_register
+
+        style = load_register(root, config.show.genre_register)
+        if style is not None and style.pronoun_terms:
+            config.translate.pronoun_terms = list(style.pronoun_terms)
     _load_env(root / ".env")
     return config, Paths(root, config)
 
@@ -563,28 +569,44 @@ def save_config_text(root: Path, text: str, *, series_file: bool = False, series
 
 
 def update_config_values(root: Path, updates: dict[str, object], series: str | None = None) -> Config:
-    """Set dotted keys (e.g. "video.subtitle_band"), validate the merged result and save. With a series active,
-    a key whose section is a series section (`SERIES_SECTIONS`) or already in its series.yaml is written there,
-    any other key in config.yaml. Comments are not preserved for rewritten files; the raw editor keeps them."""
-    from subagent.util import atomic_write_text
+    """Set dotted keys (e.g. "video.subtitle_band"), validate the merged result and save (see `save_settings`)."""
+    return save_settings(root, [(key.split("."), value) for key, value in updates.items()], series)
 
-    shared = _read_yaml(root / "config.yaml")
+
+def save_settings(root: Path, changes: list[tuple[list[str], object]], series: str | None = None) -> Config:
+    """Apply changes (key path, value) and save. With a series active, a change whose section is a series
+    section (`SERIES_SECTIONS`) or already in its series.yaml goes to series.yaml, any other to config.yaml
+    (5.2a). Values are rewritten in place (`yaml_edit`), so the comment on every line stays; a mapping value
+    replaces the mapping (missing keys are removed). The merged result is validated before anything is written."""
+    from subagent.util import atomic_write_text
+    from subagent.yaml_edit import set_mapping, set_value
+
+    shared_path = root / "config.yaml"
+    shared_text = shared_path.read_text(encoding="utf-8")
+    shared = yaml.safe_load(shared_text) or {}
     slug = active_series(root, shared, series)
     own_path = series_root(root) / slug / SERIES_FILE if slug else None
-    own = _read_yaml(own_path) if own_path and own_path.is_file() else {}
-    touched = {"shared": False, "series": False}
-    for dotted, value in updates.items():
-        keys = dotted.split(".")
-        to_series = bool(slug) and (keys[0] in SERIES_SECTIONS or keys[0] in own)
-        node = own if to_series else shared
-        touched["series" if to_series else "shared"] = True
-        for key in keys[:-1]:
-            node = node.setdefault(key, {})
-        node[keys[-1]] = value
-    config = parse_config(merge_sections(series_data(root, shared, slug), own) if slug else shared)
-    if touched["shared"]:
-        atomic_write_text(root / "config.yaml", yaml.safe_dump(shared, allow_unicode=True, sort_keys=False))
-    if touched["series"] and own_path is not None:
-        atomic_write_text(own_path, f"# series '{slug}': overrides of config.yaml sections for this show\n"
-                          + yaml.safe_dump(own, allow_unicode=True, sort_keys=False))
+    own_text = own_path.read_text(encoding="utf-8") if own_path and own_path.is_file() else \
+        (f"# series '{slug}': overrides of config.yaml sections for this show\n" if slug else "")
+    own = yaml.safe_load(own_text) or {} if slug else {}
+    texts = {"shared": shared_text, "series": own_text}
+    touched: set[str] = set()
+    for path, value in changes:
+        which = "series" if slug and (path[0] in SERIES_SECTIONS or path[0] in own) else "shared"
+        edit = set_mapping if isinstance(value, dict) else set_value
+        texts[which] = edit(texts[which], list(path), value)
+        touched.add(which)
+    shared_new = yaml.safe_load(texts["shared"]) or {}
+    if slug:
+        merged = merge_sections(shared_new, yaml.safe_load(texts["series"]) or {})
+        base_work = Path((shared_new.get("paths") or {}).get("work_dir") or "work")
+        if not ((yaml.safe_load(texts["series"]) or {}).get("paths") or {}).get("work_dir"):
+            merged = merge_sections(merged, {"paths": {"work_dir": str(base_work / slug)}})
+        config = parse_config(merge_sections(merged, {"series": {"default": slug}}))
+    else:
+        config = parse_config(shared_new)
+    if "shared" in touched:
+        atomic_write_text(shared_path, texts["shared"])
+    if "series" in touched and own_path is not None:
+        atomic_write_text(own_path, texts["series"])
     return config

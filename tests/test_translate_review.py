@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from subagent.context import EpisodeContext
-from subagent.errors import ReviewIncompleteError
+from subagent.errors import ReviewIncompleteError, SubagentError
 from subagent.memory.store import MemoryStore
 from subagent.models import (
     Evaluation,
@@ -150,9 +150,14 @@ def test_translate_retry_cap_keeps_best_and_flags(project):
 
 def test_register_block_selection(project):
     config, paths = project
+    from subagent.registers import load_register
+
     prompt = (paths.prompts / "translator_system.md").read_text(encoding="utf-8")
-    text = translate.translator_static(prompt, "co_trang_tien_hiep", config)
+    style = load_register(paths.root, "co_trang_tien_hiep")
+    text = translate.translator_static(prompt, "co_trang_tien_hiep", config, style.body)
     assert "Register: cổ trang" in text and "<!--" not in text and "{{" not in text
+    with pytest.raises(SubagentError):                       # a style without its file
+        translate.translator_static(prompt, "no_such_style", config, None)
 
 
 # -- sprite ----------------------------------------------------------------------------------------
