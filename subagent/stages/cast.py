@@ -330,6 +330,37 @@ MotionFn = Callable[[SubtitleEvent, list[list[float]]], list[float | None]]
 FramesFn = Callable[[list[float], int, int], dict[float, np.ndarray]]
 
 
+def _recognise(line: CastLine, frame: np.ndarray, engine: CastEngine, bank: Bank, cfg: CastConfig, w: int, h: int,
+               embs: list[np.ndarray]) -> list[int]:
+    """Find, describe and name the characters in a line's frame: detections go on the line, their vectors on
+    `embs`. Returns the positions of the ones the sprite bank did not recognise."""
+    unknown: list[int] = []
+    dets = engine.detect(frame, min(0.1, cfg.min_score))
+    keep = keep_boxes(dets, cfg, w, h)
+    crops = [crop(frame, dets[i][0]) for i in keep]
+    feats = engine.embed(crops) if crops else np.zeros((0, 0), np.float32)
+    for k, i in enumerate(keep):
+        box, score, label = dets[i]
+        char, sim, _ = match(feats[k], bank, cfg)
+        line.detections.append(CastDetection(index=len(embs), box=[round(v, 1) for v in box],
+                                             score=round(score, 3), label=label, character=char,
+                                             similarity=round(sim, 4)))
+        embs.append(feats[k])
+        if char is None:
+            unknown.append(len(line.detections) - 1)
+    return unknown
+
+
+def _mark_talking(line: CastLine, event: SubtitleEvent, motion_fn: MotionFn, cfg: CastConfig) -> None:
+    """With 2+ characters on screen: each box's head movement over the line, and the one clearly talking."""
+    if len(line.detections) < 2:
+        return
+    motions = motion_fn(event, [d.box for d in line.detections])
+    for d, mv in zip(line.detections, motions, strict=True):
+        d.motion = None if mv is None else round(mv, 3)
+    line.talking = talking_index([d.motion for d in line.detections], cfg.talk_dominance)
+
+
 def run(ctx: EpisodeContext, engine: CastEngine | None = None, motion_fn: MotionFn | None = None,
         frames_fn: FramesFn | None = None) -> dict[str, int]:
     cfg = ctx.config.cast
@@ -362,24 +393,9 @@ def run(ctx: EpisodeContext, engine: CastEngine | None = None, motion_fn: Motion
         line = CastLine(event_id=e.id)
         if frame is not None:
             save_frame(ctx.work, e.id, frame)
-            dets = engine.detect(frame, min(0.1, cfg.min_score))
-            keep = keep_boxes(dets, cfg, w, h)
-            crops = [crop(frame, dets[i][0]) for i in keep]
-            feats = engine.embed(crops) if crops else np.zeros((0, 0), np.float32)
-            for k, i in enumerate(keep):
-                box, score, label = dets[i]
-                char, sim, _ = match(feats[k], bank, cfg)
-                line.detections.append(CastDetection(index=len(embs), box=[round(v, 1) for v in box],
-                                                     score=round(score, 3), label=label, character=char,
-                                                     similarity=round(sim, 4)))
-                embs.append(feats[k])
-                if char is None:
-                    unknown_rows.append((len(lines), len(line.detections) - 1))
-            if len(line.detections) >= 2:
-                motions = motion_fn(e, [d.box for d in line.detections])
-                for d, mv in zip(line.detections, motions, strict=True):
-                    d.motion = None if mv is None else round(mv, 3)
-                line.talking = talking_index([d.motion for d in line.detections], cfg.talk_dominance)
+            unknown = _recognise(line, frame, engine, bank, cfg, w, h, embs)
+            unknown_rows += [(len(lines), pos) for pos in unknown]
+            _mark_talking(line, e, motion_fn, cfg)
         lines.append(line)
         ctx.progress.emit("cast", "progress", done=n, total=len(events))
     groups = group_unknowns([embs[lines[li].detections[di].index] for li, di in unknown_rows], cfg.unknown_similarity)
