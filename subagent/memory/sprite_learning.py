@@ -63,6 +63,18 @@ def trusted_speakers(paths: Paths, config: Config, episode_id: str, known: set[s
     return {x.event_id: x.speaker for x in lines if x.speaker}
 
 
+@dataclass
+class _Plan:
+    """What one learning pass works on: the label of each detection and the exemplars' votes."""
+    label: dict[int, tuple[str, float, int | None]]          # detection index -> (character, similarity, exemplar)
+    right: Counter
+    wrong: Counter
+    result: SpriteLearnResult
+    touched: set[int] = field(default_factory=set)
+    confirmed: set[int] = field(default_factory=set)
+    decided: set[int] = field(default_factory=set)            # boxes the reviewer labelled
+
+
 def plan(lines: list[CastLine], embs: np.ndarray, speakers: dict[str, str], bank, stats: dict[int, tuple[int, int]],
          config: Config, episode_id: str, labels: dict[str, dict[str, str]] | None = None):
     """Pure learning step. Returns (additions, new stats, removals, result).
@@ -71,59 +83,83 @@ def plan(lines: list[CastLine], embs: np.ndarray, speakers: dict[str, str], bank
     stats: exemplar id -> (right, wrong) so far.
     labels: event id -> {detection position: character id or NOT_A_CHARACTER} from the reviewer.
     """
-    from subagent.stages.cast import NOT_A_CHARACTER, group_unknowns, match
+    from subagent.stages.cast import match
 
     cfg = config.cast
-    result = SpriteLearnResult()
-    label: dict[int, tuple[str, float, int | None]] = {}      # detection index -> (character, similarity, exemplar)
+    label: dict[int, tuple[str, float, int | None]] = {}
     for ln in lines:
         for d in ln.detections:
             char, sim, ex = match(embs[d.index], bank, cfg)
             if char:
                 label[d.index] = (char, sim, ex)
-    right: Counter = Counter({k: v[0] for k, v in stats.items()})
-    wrong: Counter = Counter({k: v[1] for k, v in stats.items()})
-    touched: set[int] = set()
-    confirmed: set[int] = set()
-    decided: set[int] = set()                  # boxes the reviewer labelled
+    st = _Plan(label=label, right=Counter({k: v[0] for k, v in stats.items()}),
+               wrong=Counter({k: v[1] for k, v in stats.items()}), result=SpriteLearnResult())
+    _apply_labels(st, lines, labels)
+    talking = [(ln, ln.talker()) for ln in lines if ln.talker() is not None and ln.event_id in speakers
+               and ln.talker().index not in st.decided]
+    st.result.lines = len(talking)
+    _check_talkers(st, talking, speakers)
+    removals = [ex for ex in st.touched if st.wrong[ex] > st.right[ex]]
+    _name_unknowns(st, lines, embs, talking, speakers, cfg)
+    event_of = {d.index: ln.event_id for ln in lines for d in ln.detections}
+    additions = [(char, embs[i], episode_id, event_of[i]) for i, (char, sim, _) in sorted(st.label.items())
+                 if sim >= cfg.add_similarity or i in st.confirmed]
+    new_stats = {ex: (st.right[ex], st.wrong[ex]) for ex in st.touched if ex not in removals}
+    return additions, new_stats, removals, st.result
+
+
+def _apply_labels(st: _Plan, lines: list[CastLine], labels: dict[str, dict[str, str]] | None) -> None:
+    """The reviewer's box labels come first: the box is that character (or no character); the exemplar that had
+    named it gains a right or a wrong."""
+    from subagent.stages.cast import NOT_A_CHARACTER
+
     for ln in lines:
         for pos, lab in (labels or {}).get(ln.event_id, {}).items():
             if not pos.isdigit() or int(pos) >= len(ln.detections):
                 continue
             d = ln.detections[int(pos)]
-            decided.add(d.index)
-            if d.index in label and label[d.index][2] is not None:
-                char, _, ex = label[d.index]
+            st.decided.add(d.index)
+            if d.index in st.label and st.label[d.index][2] is not None:
+                char, _, ex = st.label[d.index]
                 if char == lab:
-                    right[ex] += 1
+                    st.right[ex] += 1
                 else:
-                    wrong[ex] += 1
-                touched.add(ex)
-            label.pop(d.index, None)
+                    st.wrong[ex] += 1
+                st.touched.add(ex)
+            st.label.pop(d.index, None)
             if lab != NOT_A_CHARACTER:
-                label[d.index] = (lab, 1.0, None)
-                confirmed.add(d.index)
-                result.labelled += 1
-    talking = [(ln, ln.talker()) for ln in lines if ln.talker() is not None and ln.event_id in speakers
-               and ln.talker().index not in decided]
-    result.lines = len(talking)
+                st.label[d.index] = (lab, 1.0, None)
+                st.confirmed.add(d.index)
+                st.result.labelled += 1
+
+
+def _check_talkers(st: _Plan, talking: list, speakers: dict[str, str]) -> None:
+    """A talking sprite recognised as the line's speaker confirms its exemplar; as someone else, the exemplar gains
+    a wrong and the sprite counts as unknown."""
     for ln, t in talking:
         sp = speakers[ln.event_id]
-        if t.index in label:
-            char, _, ex = label[t.index]
+        if t.index in st.label:
+            char, _, ex = st.label[t.index]
             if char == sp:
-                right[ex] += 1
-                confirmed.add(t.index)
-                result.confirmed += 1
+                st.right[ex] += 1
+                st.confirmed.add(t.index)
+                st.result.confirmed += 1
             else:
-                wrong[ex] += 1
-                del label[t.index]      # wrongly named: counts as unknown below
-                result.corrected += 1
+                st.wrong[ex] += 1
+                del st.label[t.index]      # wrongly named: counts as unknown below
+                st.result.corrected += 1
             if ex is not None:
-                touched.add(ex)
-    removals = [ex for ex in touched if wrong[ex] > right[ex]]
-    # unknown sprites of this episode (everything not recognised now)
-    unknown_idx = [d.index for ln in lines for d in ln.detections if d.index not in label and d.index not in decided]
+                st.touched.add(ex)
+
+
+def _name_unknowns(st: _Plan, lines: list[CastLine], embs: np.ndarray, talking: list, speakers: dict[str, str],
+                   cfg) -> None:
+    """Unknown sprites of this episode get the speaker their talking lines vote for (a few passes, as each new name
+    explains more lines)."""
+    from subagent.stages.cast import group_unknowns
+
+    unknown_idx = [d.index for ln in lines for d in ln.detections if d.index not in st.label
+                   and d.index not in st.decided]
     group_of = dict(zip(unknown_idx, group_unknowns([embs[i] for i in unknown_idx], cfg.unknown_similarity),
                         strict=True))
     members: dict[int, list[int]] = {}
@@ -132,23 +168,18 @@ def plan(lines: list[CastLine], embs: np.ndarray, speakers: dict[str, str], bank
     for _ in range(PASSES):
         votes: dict[int, Counter] = {}
         for ln, t in talking:
-            if t.index in group_of and t.index not in label:
+            if t.index in group_of and t.index not in st.label:
                 votes.setdefault(group_of[t.index], Counter())[speakers[ln.event_id]] += 1
         changed = False
         for g, c in votes.items():
             sp, n = c.most_common(1)[0]
             if n >= cfg.name_min_votes and n / sum(c.values()) >= cfg.name_min_share:
                 for i in members[g]:
-                    label[i] = (sp, 1.0, None)          # joins the bank below
-                result.named[f"u{g + 1:03d}"] = sp
+                    st.label[i] = (sp, 1.0, None)          # joins the bank below
+                st.result.named[f"u{g + 1:03d}"] = sp
                 changed = True
         if not changed:
             break
-    event_of = {d.index: ln.event_id for ln in lines for d in ln.detections}
-    additions = [(char, embs[i], episode_id, event_of[i]) for i, (char, sim, _) in sorted(label.items())
-                 if sim >= cfg.add_similarity or i in confirmed]
-    new_stats = {ex: (right[ex], wrong[ex]) for ex in touched if ex not in removals}
-    return additions, new_stats, removals, result
 
 
 EmbedFn = Callable[[str, list[list[float]]], np.ndarray | None]
