@@ -16,7 +16,7 @@ APP_DIR = Path(__file__).resolve().parent
 def install_fonts(root: Path) -> None:
     """Bundle Noto Sans + Noto Sans SC as the app font with fallback (NFR-UX6)."""
     families: list[str] = []
-    for folder in (root / "fonts", APP_DIR / "fonts"):
+    for folder in (APP_DIR / "fonts", root / "fonts"):   # app/fonts: the interface's own copy
         if not folder.is_dir():
             continue
         for f in sorted(folder.iterdir()):

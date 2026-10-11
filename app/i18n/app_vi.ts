@@ -1596,92 +1596,117 @@ Bị thay thế: {files}</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="30" />
+        <location filename="../main_window.py" line="81" />
         <source>Subtitle Agent</source>
         <translation>Subtitle Agent</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54" />
+        <location filename="../main_window.py" line="105" />
         <source>Episodes</source>
         <translation>Các tập</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54" />
+        <location filename="../main_window.py" line="105" />
         <source>Review</source>
         <translation>Duyệt</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54" />
+        <location filename="../main_window.py" line="105" />
         <source>Memory</source>
         <translation>Bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55" />
+        <location filename="../main_window.py" line="106" />
         <source>Bootstrap</source>
         <translation>Khởi tạo</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55" />
+        <location filename="../main_window.py" line="106" />
         <source>Dreaming</source>
         <translation>Tổng hợp</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55" />
+        <location filename="../main_window.py" line="106" />
         <source>Audit</source>
         <translation>Kiểm định</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="56" />
+        <location filename="../main_window.py" line="107" />
         <source>Settings</source>
         <translation>Cài đặt</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="75" />
+        <location filename="../main_window.py" line="133" />
         <source>No job running</source>
         <translation>Không có tác vụ nào</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="77" />
+        <location filename="../main_window.py" line="135" />
         <source>Device: …</source>
         <translation>Thiết bị: …</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="83" />
+        <location filename="../main_window.py" line="141" />
         <source>Running: {job}</source>
         <translation>Đang chạy: {job}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="114" />
+        <location filename="../main_window.py" line="160" />
+        <source>The series (show) you are working on</source>
+        <translation>Bộ phim đang làm</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="165" />
+        <source>New series…</source>
+        <translation>Bộ phim mới…</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="186" />
+        <source>New series</source>
+        <translation>Bộ phim mới</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="204" />
+        <source>Series</source>
+        <translation>Bộ phim</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="205" />
+        <source>A job is running. Switch series when it has finished.</source>
+        <translation>Đang có một job chạy. Hãy đổi bộ phim khi job xong.</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="238" />
         <source>Device: {device}</source>
         <translation>Thiết bị: {device}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="118" />
+        <location filename="../main_window.py" line="242" />
         <source>Cost ${cost} / ${budget}</source>
         <translation>Chi phí ${cost} / ${budget}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="123" />
+        <location filename="../main_window.py" line="247" />
         <source>Running: {job} — {stage}</source>
         <translation>Đang chạy: {job} — {stage}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="127" />
+        <location filename="../main_window.py" line="251" />
         <source>Finished: {job}</source>
         <translation>Đã xong: {job}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="129" />
+        <location filename="../main_window.py" line="253" />
         <source>Failed: {job}</source>
         <translation>Thất bại: {job}</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="134" />
+        <location filename="../main_window.py" line="260" />
         <source>Job running</source>
         <translation>Tác vụ đang chạy</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="135" />
+        <location filename="../main_window.py" line="261" />
         <source>A job is running ({job}). Cancel it and close? It can be resumed later.</source>
         <translation>Đang có tác vụ chạy ({job}). Hủy và đóng? Có thể tiếp tục sau.</translation>
     </message>
@@ -2186,6 +2211,50 @@ Một phiên bản mới sẽ được tạo; không mất dữ liệu nào, và
         <location filename="../views/character_dialog.py" line="127" />
         <source>This id is already used by another character.</source>
         <translation>Mã này đã được dùng cho nhân vật khác.</translation>
+    </message>
+</context>
+<context>
+    <name>NewSeriesDialog</name>
+    <message>
+        <location filename="../main_window.py" line="40" />
+        <location filename="../main_window.py" line="67" />
+        <source>New series</source>
+        <translation>Bộ phim mới</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="43" />
+        <source>short id, e.g. my-show</source>
+        <translation>mã ngắn, ví dụ my-show</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="49" />
+        <source>default: a subfolder of the shared work folder</source>
+        <translation>mặc định: một thư mục con của thư mục làm việc chung</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="50" />
+        <source>Id</source>
+        <translation>Mã</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="51" />
+        <source>Name</source>
+        <translation>Tên</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="52" />
+        <source>Translation style</source>
+        <translation>Văn phong dịch</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="53" />
+        <source>Work folder</source>
+        <translation>Thư mục làm việc</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="54" />
+        <source>After creating it, the Bootstrap screen opens: calibrate the subtitles, write the cast and add voice clips, as for the first series.</source>
+        <translation>Sau khi tạo, màn Bootstrap sẽ mở: căn chỉnh phụ đề, viết danh sách nhân vật và thêm mẫu giọng, như với bộ phim đầu tiên.</translation>
     </message>
 </context>
 <context>
@@ -2896,19 +2965,19 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
     </message>
     <message>
         <location filename="../views/settings.py" line="49" />
-        <location filename="../views/settings.py" line="256" />
+        <location filename="../views/settings.py" line="272" />
         <source>API keys</source>
         <translation>Khóa API</translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="50" />
-        <location filename="../views/settings.py" line="291" />
+        <location filename="../views/settings.py" line="307" />
         <source>Language</source>
         <translation>Ngôn ngữ</translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="51" />
-        <location filename="../views/settings.py" line="331" />
+        <location filename="../views/settings.py" line="347" />
         <source>Shortcuts</source>
         <translation>Phím tắt</translation>
     </message>
@@ -2916,14 +2985,14 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
         <location filename="../views/settings.py" line="67" />
         <location filename="../views/settings.py" line="70" />
         <location filename="../views/settings.py" line="179" />
-        <location filename="../views/settings.py" line="213" />
-        <location filename="../views/settings.py" line="216" />
+        <location filename="../views/settings.py" line="229" />
+        <location filename="../views/settings.py" line="232" />
         <source>Settings</source>
         <translation>Cài đặt</translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="70" />
-        <location filename="../views/settings.py" line="216" />
+        <location filename="../views/settings.py" line="232" />
         <source>Saved.</source>
         <translation>Đã lưu.</translation>
     </message>
@@ -3085,97 +3154,107 @@ Mọi chỉnh sửa, phê duyệt và thao tác xóa ({n} dòng) sẽ được t
         <translation>Thư mục đầu ra không tồn tại: {path}</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="193" />
-        <source>config.yaml. It is validated before saving; comments are kept.</source>
-        <translation>config.yaml. Được kiểm tra trước khi lưu; các chú thích được giữ nguyên.</translation>
+        <location filename="../views/settings.py" line="195" />
+        <source>config.yaml (shared by every series)</source>
+        <translation>config.yaml (dùng chung cho mọi bộ phim)</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="198" />
+        <location filename="../views/settings.py" line="197" />
+        <source>series.yaml (this series: {slug})</source>
+        <translation>series.yaml (bộ phim này: {slug})</translation>
+    </message>
+    <message>
+        <location filename="../views/settings.py" line="201" />
+        <source>Validated before saving; comments are kept. A series' series.yaml overrides config.yaml for that series.</source>
+        <translation>Được kiểm tra trước khi lưu; giữ nguyên chú thích. series.yaml của một bộ phim ghi đè config.yaml cho bộ phim đó.</translation>
+    </message>
+    <message>
+        <location filename="../views/settings.py" line="208" />
         <source>Reload</source>
         <translation>Tải lại</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="199" />
+        <location filename="../views/settings.py" line="209" />
         <source>Validate and save</source>
         <translation>Kiểm tra và lưu</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="241" />
+        <location filename="../views/settings.py" line="257" />
         <source>Save keys</source>
         <translation>Lưu khóa</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="245" />
+        <location filename="../views/settings.py" line="261" />
         <source>Test {role}</source>
         <translation>Thử {role}</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="258" />
+        <location filename="../views/settings.py" line="274" />
         <source>Keys saved to .env.</source>
         <translation>Đã lưu khóa vào .env.</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="265" />
+        <location filename="../views/settings.py" line="281" />
         <source>Testing {role}…</source>
         <translation>Đang thử {role}…</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="267" />
+        <location filename="../views/settings.py" line="283" />
         <source>{role}: connected (reply: {reply})</source>
         <translation>{role}: đã kết nối (trả lời: {reply})</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="269" />
+        <location filename="../views/settings.py" line="285" />
         <source>{role}: failed — {error}</source>
         <translation>{role}: thất bại — {error}</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="279" />
+        <location filename="../views/settings.py" line="295" />
         <source>Apply (restarts the app)</source>
         <translation>Áp dụng (khởi động lại ứng dụng)</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="281" />
+        <location filename="../views/settings.py" line="297" />
         <source>Interface language</source>
         <translation>Ngôn ngữ giao diện</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="283" />
+        <location filename="../views/settings.py" line="299" />
         <source>Theme</source>
         <translation>Giao diện</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="283" />
+        <location filename="../views/settings.py" line="299" />
         <source>Follows the Windows light / dark setting.</source>
         <translation>Theo chế độ sáng / tối của Windows.</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="292" />
+        <location filename="../views/settings.py" line="308" />
         <source>The language changes after a restart. Restart now?</source>
         <translation>Ngôn ngữ sẽ đổi sau khi khởi động lại. Khởi động lại ngay?</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="303" />
+        <location filename="../views/settings.py" line="319" />
         <source>Action</source>
         <translation>Thao tác</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="303" />
+        <location filename="../views/settings.py" line="319" />
         <source>Shortcut</source>
         <translation>Phím tắt</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="313" />
+        <location filename="../views/settings.py" line="329" />
         <source>Reset to defaults</source>
         <translation>Khôi phục mặc định</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="314" />
+        <location filename="../views/settings.py" line="330" />
         <source>Save shortcuts</source>
         <translation>Lưu phím tắt</translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="331" />
+        <location filename="../views/settings.py" line="347" />
         <source>Saved. They apply when you open Review.</source>
         <translation>Đã lưu. Áp dụng khi mở màn hình Duyệt.</translation>
     </message>

@@ -420,6 +420,43 @@ def cmd_sprites(args, config, paths, progress) -> int:
     return 0
 
 
+def cmd_series(args, config, paths, progress) -> int:
+    import yaml
+
+    from subagent import series as sr
+    from subagent.config import find_root, list_series
+
+    root = find_root()
+    if args.action == "list":
+        default = ((yaml.safe_load((root / "config.yaml").read_text(encoding="utf-8")) or {}).get("series")
+                   or {}).get("default")
+        names = list_series(root)
+        if not names:
+            print("no series yet: data/ holds the single-series layout (`series migrate SLUG` names it)")
+        for slug in names:
+            print(("* " if slug == default else "  ") + slug)
+        return 0
+    if not args.slug:
+        print(f"series {args.action}: give the series slug")
+        return 2
+    if args.action == "add":
+        folder = sr.add(root, args.slug, args.name or args.slug, args.register, args.work_dir)
+        print(f"series {args.slug} created in {folder}; next: `python -m subagent --series {args.slug} bootstrap` "
+              "(or the app's Bootstrap screen)")
+    elif args.action == "migrate":
+        folder = sr.migrate(root, args.slug)
+        print(f"single-series data moved to {folder}; config.yaml now uses series.default: {args.slug}")
+    elif args.action == "default":
+        sr.set_default(root, args.slug)
+        print(f"default series: {args.slug}")
+    else:
+        if not args.new:
+            print("series rename OLD NEW")
+            return 2
+        print(f"renamed to {sr.rename(root, args.slug, args.new)}")
+    return 0
+
+
 def cmd_voices(args, config, paths, progress) -> int:
     from subagent.joblock import job_lock
     from subagent.memory import voice_learning as vl
@@ -530,6 +567,8 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--progress", choices=["json", "text"], default=argparse.SUPPRESS, help="progress output format")
     common.add_argument("--verbose", action="store_true", default=argparse.SUPPRESS, help="debug logging")
+    common.add_argument("--series", default=argparse.SUPPRESS,
+                        help="series to work on (data/series/<slug>/; default: series.default in config.yaml)")
 
     parser = argparse.ArgumentParser(prog="python -m subagent", description=__doc__)
     parser.add_argument("--progress", choices=["json", "text"], default="text", help="progress output format")
@@ -653,6 +692,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("action", choices=["learn"])
     p.set_defaults(func=cmd_sprites)
 
+    p = sub.add_parser("series", parents=[common], help="list, add, rename or choose series; migrate the "
+                                                       "single-series layout into one")
+    p.add_argument("action", choices=["list", "add", "rename", "default", "migrate"])
+    p.add_argument("slug", nargs="?", help="add / default / migrate: the series; rename: the current name")
+    p.add_argument("new", nargs="?", help="rename: the new name")
+    p.add_argument("--name", help="add: the show's display name (default: the slug)")
+    p.add_argument("--register", default="co_trang_tien_hiep", help="add: translation register (show.genre_register)")
+    p.add_argument("--work-dir", help="add: its work folder (default: <work_dir>/<slug>/)")
+    p.set_defaults(func=cmd_series, no_config=True)
+
     p = sub.add_parser("status", parents=[common], help="stage completion, cost, flag counts")
     p.add_argument("episode", nargs="?")
     p.add_argument("--json", action="store_true")
@@ -671,7 +720,9 @@ def main(argv: list[str] | None = None) -> int:
     _setup_logging(args.verbose)
     progress = Progress(args.progress)
     try:
-        config, paths = load_config()
+        if getattr(args, "no_config", False):        # works before any series exists or loads
+            return args.func(args, None, None, progress)
+        config, paths = load_config(series=getattr(args, "series", None))
         return args.func(args, config, paths, progress)
     except SubagentError as exc:
         progress.emit(getattr(args, "command", "cli"), "error", message=str(exc), error_code=exc.code)

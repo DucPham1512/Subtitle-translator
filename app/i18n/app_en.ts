@@ -1589,92 +1589,117 @@ Replaced: {files}</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="30"/>
+        <location filename="../main_window.py" line="81"/>
         <source>Subtitle Agent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54"/>
+        <location filename="../main_window.py" line="105"/>
         <source>Episodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54"/>
+        <location filename="../main_window.py" line="105"/>
         <source>Review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54"/>
+        <location filename="../main_window.py" line="105"/>
         <source>Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55"/>
+        <location filename="../main_window.py" line="106"/>
         <source>Bootstrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55"/>
+        <location filename="../main_window.py" line="106"/>
         <source>Dreaming</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="55"/>
+        <location filename="../main_window.py" line="106"/>
         <source>Audit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="56"/>
+        <location filename="../main_window.py" line="107"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="75"/>
+        <location filename="../main_window.py" line="133"/>
         <source>No job running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="77"/>
+        <location filename="../main_window.py" line="135"/>
         <source>Device: …</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="83"/>
+        <location filename="../main_window.py" line="141"/>
         <source>Running: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="114"/>
+        <location filename="../main_window.py" line="160"/>
+        <source>The series (show) you are working on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="165"/>
+        <source>New series…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="186"/>
+        <source>New series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="204"/>
+        <source>Series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="205"/>
+        <source>A job is running. Switch series when it has finished.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="238"/>
         <source>Device: {device}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="118"/>
+        <location filename="../main_window.py" line="242"/>
         <source>Cost ${cost} / ${budget}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="123"/>
+        <location filename="../main_window.py" line="247"/>
         <source>Running: {job} — {stage}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="127"/>
+        <location filename="../main_window.py" line="251"/>
         <source>Finished: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="129"/>
+        <location filename="../main_window.py" line="253"/>
         <source>Failed: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="134"/>
+        <location filename="../main_window.py" line="260"/>
         <source>Job running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="135"/>
+        <location filename="../main_window.py" line="261"/>
         <source>A job is running ({job}). Cancel it and close? It can be resumed later.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2176,6 +2201,50 @@ A new version is created; nothing is lost, and this rollback can itself be undon
     <message>
         <location filename="../views/character_dialog.py" line="127"/>
         <source>This id is already used by another character.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NewSeriesDialog</name>
+    <message>
+        <location filename="../main_window.py" line="40"/>
+        <location filename="../main_window.py" line="67"/>
+        <source>New series</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="43"/>
+        <source>short id, e.g. my-show</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="49"/>
+        <source>default: a subfolder of the shared work folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="50"/>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="51"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="52"/>
+        <source>Translation style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="53"/>
+        <source>Work folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="54"/>
+        <source>After creating it, the Bootstrap screen opens: calibrate the subtitles, write the cast and add voice clips, as for the first series.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2879,19 +2948,19 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
     </message>
     <message>
         <location filename="../views/settings.py" line="49"/>
-        <location filename="../views/settings.py" line="256"/>
+        <location filename="../views/settings.py" line="272"/>
         <source>API keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="50"/>
-        <location filename="../views/settings.py" line="291"/>
+        <location filename="../views/settings.py" line="307"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="51"/>
-        <location filename="../views/settings.py" line="331"/>
+        <location filename="../views/settings.py" line="347"/>
         <source>Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2899,14 +2968,14 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
         <location filename="../views/settings.py" line="67"/>
         <location filename="../views/settings.py" line="70"/>
         <location filename="../views/settings.py" line="179"/>
-        <location filename="../views/settings.py" line="213"/>
-        <location filename="../views/settings.py" line="216"/>
+        <location filename="../views/settings.py" line="229"/>
+        <location filename="../views/settings.py" line="232"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../views/settings.py" line="70"/>
-        <location filename="../views/settings.py" line="216"/>
+        <location filename="../views/settings.py" line="232"/>
         <source>Saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3068,97 +3137,107 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="193"/>
-        <source>config.yaml. It is validated before saving; comments are kept.</source>
+        <location filename="../views/settings.py" line="195"/>
+        <source>config.yaml (shared by every series)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="198"/>
+        <location filename="../views/settings.py" line="197"/>
+        <source>series.yaml (this series: {slug})</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/settings.py" line="201"/>
+        <source>Validated before saving; comments are kept. A series&apos; series.yaml overrides config.yaml for that series.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/settings.py" line="208"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="199"/>
+        <location filename="../views/settings.py" line="209"/>
         <source>Validate and save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="241"/>
+        <location filename="../views/settings.py" line="257"/>
         <source>Save keys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="245"/>
+        <location filename="../views/settings.py" line="261"/>
         <source>Test {role}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="258"/>
+        <location filename="../views/settings.py" line="274"/>
         <source>Keys saved to .env.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="265"/>
+        <location filename="../views/settings.py" line="281"/>
         <source>Testing {role}…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="267"/>
+        <location filename="../views/settings.py" line="283"/>
         <source>{role}: connected (reply: {reply})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="269"/>
+        <location filename="../views/settings.py" line="285"/>
         <source>{role}: failed — {error}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="279"/>
+        <location filename="../views/settings.py" line="295"/>
         <source>Apply (restarts the app)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="281"/>
+        <location filename="../views/settings.py" line="297"/>
         <source>Interface language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="283"/>
+        <location filename="../views/settings.py" line="299"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="283"/>
+        <location filename="../views/settings.py" line="299"/>
         <source>Follows the Windows light / dark setting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="292"/>
+        <location filename="../views/settings.py" line="308"/>
         <source>The language changes after a restart. Restart now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="303"/>
+        <location filename="../views/settings.py" line="319"/>
         <source>Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="303"/>
+        <location filename="../views/settings.py" line="319"/>
         <source>Shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="313"/>
+        <location filename="../views/settings.py" line="329"/>
         <source>Reset to defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="314"/>
+        <location filename="../views/settings.py" line="330"/>
         <source>Save shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/settings.py" line="331"/>
+        <location filename="../views/settings.py" line="347"/>
         <source>Saved. They apply when you open Review.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -222,8 +222,14 @@ RERUN_FROM = "ocr_fix"
 
 
 def _prompt_hash(paths: Paths, name: str) -> str | None:
+    """The general prompt, and the series' notes for it when there are some (both change what the model reads)."""
     p = paths.prompts / f"{name}.md"
-    return hash_path(p) if p.is_file() else None
+    if not p.is_file():
+        return None
+    notes = paths.series_prompts / f"{name}.md"
+    if paths.series and notes.is_file():
+        return f"{hash_path(p)}+{hash_path(notes)}"
+    return hash_path(p)
 
 
 def _counts_text(counts: dict[str, int]) -> str:

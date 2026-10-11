@@ -29,11 +29,20 @@ Role = Literal["translator", "evaluator", "utility"]
 Message = dict[str, str]
 
 
+SERIES_NOTES = "## Series notes"
+
+
 def load_prompt(paths: Paths, name: str) -> str:
+    """The general prompt (prompts/<name>.md), followed by the active series' notes for it when it has some
+    (data/series/<slug>/prompts/<name>.md): quirks of one show, such as how its font draws a character."""
     path = paths.prompts / f"{name}.md"
     if not path.is_file():
         raise LLMCallError(f"Prompt file missing: {path}", code="prompt_missing")
-    return path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8")
+    notes = paths.series_prompts / f"{name}.md"
+    if paths.series and notes.is_file() and notes.read_text(encoding="utf-8").strip():
+        text = text.rstrip() + f"\n\n{SERIES_NOTES}\n\n" + notes.read_text(encoding="utf-8").strip() + "\n"
+    return text
 
 
 def build_messages(static_prompt: str, memory_prefix: str, variable: str) -> list[Message]:

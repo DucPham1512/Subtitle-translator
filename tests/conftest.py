@@ -72,6 +72,11 @@ def project(tmp_path: Path, monkeypatch) -> tuple[Config, Paths]:
     root = tmp_path / "project dự án 项目"   # spaces, Vietnamese and Chinese in the path (NFR-S3)
     root.mkdir()
     data = yaml.safe_load((REPO / "config.yaml").read_text(encoding="utf-8"))
+    # the repo's default series' overrides are part of the tuned config; the temp project is single-series
+    from subagent.config import series_data
+
+    data = series_data(REPO, data, None)
+    data.pop("series", None)
     out = tmp_path / "output"
     out.mkdir()
     # Every location must live inside tmp_path: the user's config may point at real folders

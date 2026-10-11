@@ -1,0 +1,110 @@
+# series 'series-1': overrides of config.yaml sections for this show
+show:
+  name: <show name>
+  genre_register: co_trang_tien_hiep
+video:
+  sample_fps: 4
+  subtitle_band:
+    top: 0.8358
+    bottom: 0.8995
+    left: 0.2147
+    right: 0.7853
+  text_threshold: 200
+  change_threshold: 0.02
+  empty_text_ratio: 0.002
+  subtitle_detection: outline
+  outline_dark_threshold: 60
+  outline_reach_px: 2
+  min_outlined_ratio: 0.006
+  band_frames: 5
+ocr:
+  min_confidence: 0.6
+  merge_max_edit_distance: 1
+  fragment_max_samples: 1
+  fragment_merge_similarity: 0.6
+  preprocess: segment
+  recognize: line
+  mask_image: original
+  mask_scale: 1.0
+  # trim the line crop to be symmetric around the frame's centre (12 episodes, 2026-10-03: lines 91.9% -> 92.9%,
+  # junk events 312 -> 151, missed unchanged)
+  symmetric_crop: true
+  symmetric_crop_tolerance: 0.75   # 0: 16 lines broken by clipped edge letters; 0.25 / 0.5: 7; 0.75: 2; 1: 4
+non_dialogue:
+  enabled: true
+  box_height_tolerance: 0.25
+  box_center_tolerance: 0.15
+  max_duration_ms: 8000
+voice:
+  model: speechbrain/spkrec-ecapa-voxceleb
+  top_k: 3
+  accept_score: 0.6
+  min_margin: 0.08
+  unknown_below: 0.35
+  confusable_similarity: 0.75
+  learn_from_reviews: true
+  learn_min_ms: 800
+  learn_trim_ms: 80
+  learn_min_clips: 3
+  learn_outlier_share: 0.1
+  learn_from_auto: true
+  learn_auto_min_score: 0.7
+  learn_auto_min_margin: 0.15
+  learn_auto_allowed_flags:
+  - cps_exceeded
+  - check_pinyin
+  learn_auto_min_test_lines: 30
+  learn_auto_max_drop: 0.0
+  new_voices: true
+  new_voice_below: 0.7
+  new_voice_similarity: 0.6
+  new_voice_known_max: 0.65
+  new_voice_min_lines: 3
+  new_voice_prefix: npc
+cast:
+  enabled: true
+  detector_model: google/owlv2-base-patch16-ensemble
+  embed_model: facebook/dinov2-base
+  queries:
+  - a cartoon character
+  - a cartoon person
+  - a cartoon fish
+  - a dog
+  frame_width: 960
+  sample_fps: 5
+  min_score: 0.15
+  min_box_height: 0.12
+  min_box_width: 0.05
+  max_box_width: 0.9
+  nms_iou: 0.5
+  match_similarity: 0.7
+  match_margin: 0.03
+  unknown_similarity: 0.75
+  motion_fps: 10
+  motion_width: 480
+  talk_dominance: 1.6
+  learn: true
+  name_min_votes: 3
+  name_min_share: 0.75
+  add_similarity: 0.85
+  max_exemplars: 60
+script_review:
+  enabled: true
+  role: utility
+  repeat_merge_gap_ms: 300
+  repeat_window_ms: 4000
+  repeat_similarity: 0.6
+  remove_confidence: 0.9
+  max_remove_share: 0.1
+  example_limit: 30
+  memory_auto_remove_min: 2
+  memory_max_han: 2
+paths:
+  work_dir: E:/Video Data/Raw
+baseline:
+  # the ep001-ep016 replay (2026-10-04..06) is frozen in <work>/_baseline/replay-2026-10/; freezing is off
+  # since 2026-10-06 so finishing an episode again cannot overwrite that gold
+  name: null
+bench:
+  # the benchmark suite's gold (6.11e): 16 episodes re-reviewed in order, OCR answer key remapped onto them
+  baseline: replay-2026-10

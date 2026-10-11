@@ -5,14 +5,20 @@ from __future__ import annotations
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
     QSplitter,
     QStackedWidget,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -21,12 +27,57 @@ from app.messages import stage_label
 from app.services import Services
 from app.workers import run_async
 
+_WINDOWS: list = []      # windows opened by a series switch (kept alive; the first one is held by main())
+
+
+class NewSeriesDialog(QDialog):
+    """Slug, display name, translation register and (optional) work folder of a new series."""
+
+    def __init__(self, parent: QWidget, root):
+        super().__init__(parent)
+        from subagent import series as sr
+
+        self.setWindowTitle(self.tr("New series"))
+        form = QFormLayout(self)
+        self.slug = QLineEdit()
+        self.slug.setPlaceholderText(self.tr("short id, e.g. my-show"))
+        self.name = QLineEdit()
+        self.register = QComboBox()
+        for reg in sr.registers(root) or ["co_trang_tien_hiep"]:
+            self.register.addItem(reg, reg)
+        self.work = QLineEdit()
+        self.work.setPlaceholderText(self.tr("default: a subfolder of the shared work folder"))
+        form.addRow(self.tr("Id"), self.slug)
+        form.addRow(self.tr("Name"), self.name)
+        form.addRow(self.tr("Translation style"), self.register)
+        form.addRow(self.tr("Work folder"), self.work)
+        form.addRow(QLabel(self.tr("After creating it, the Bootstrap screen opens: calibrate the subtitles, write the "
+                                   "cast and add voice clips, as for the first series.")))
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self._check)
+        buttons.rejected.connect(self.reject)
+        form.addRow(buttons)
+
+    def _check(self) -> None:
+        from subagent import series as sr
+
+        try:
+            sr.check_slug(self.slug.text().strip())
+        except Exception as exc:  # noqa: BLE001 - shown to the user
+            QMessageBox.warning(self, self.tr("New series"), str(exc))
+            return
+        self.accept()
+
+    def values(self) -> tuple[str, str, str, str | None]:
+        slug = self.slug.text().strip()
+        return slug, self.name.text().strip() or slug, self.register.currentData(), self.work.text().strip() or None
+
 
 class MainWindow(QMainWindow):
     def __init__(self, services: Services):
         super().__init__()
         self.services = services
-        self.jobs = JobRunner(services.root, self)
+        self.jobs = JobRunner(services.root, self, services.paths.series)
         self.setWindowTitle(self.tr("Subtitle Agent"))
         self.resize(1400, 860)
 
@@ -66,7 +117,14 @@ class MainWindow(QMainWindow):
         row = QHBoxLayout(central)
         row.setContentsMargins(0, 0, 0, 0)
         splitter = QSplitter()
-        splitter.addWidget(self.sidebar)
+        left = QWidget()
+        left_col = QVBoxLayout(left)
+        left_col.setContentsMargins(0, 0, 0, 0)
+        self.series_box = self._series_picker()
+        left_col.addWidget(self.series_box)
+        left_col.addWidget(self.sidebar, 1)
+        left.setFixedWidth(170)
+        splitter.addWidget(left)
         splitter.addWidget(self.stack)
         splitter.setStretchFactor(1, 1)
         row.addWidget(splitter)
@@ -89,6 +147,72 @@ class MainWindow(QMainWindow):
         if geometry:
             self.restoreGeometry(geometry)
         self.sidebar.setCurrentRow(0)
+
+    # -- series ---------------------------------------------------------------------------------------
+
+    NEW_SERIES = "__new__"
+
+    def _series_picker(self) -> QComboBox:
+        """The series this window shows; hidden in the single-series layout (no data/series/ yet)."""
+        from subagent.config import list_series
+
+        box = QComboBox()
+        box.setToolTip(self.tr("The series (show) you are working on"))
+        names = list_series(self.services.root)
+        current = self.services.paths.series
+        for slug in names:
+            box.addItem(slug, slug)
+        box.addItem(self.tr("New series…"), self.NEW_SERIES)
+        if current in names:
+            box.setCurrentIndex(names.index(current))
+        box.setVisible(bool(names))
+        box.activated.connect(self._series_chosen)
+        return box
+
+    def _series_chosen(self, index: int) -> None:
+        slug = self.series_box.itemData(index)
+        if slug == self.services.paths.series:
+            return
+        if slug == self.NEW_SERIES:
+            dialog = NewSeriesDialog(self, self.services.root)
+            if dialog.exec():
+                from subagent import series as sr
+
+                try:
+                    sr.add(self.services.root, *dialog.values())
+                except Exception as exc:  # noqa: BLE001 - shown to the user
+                    from app.widgets import show_error
+
+                    show_error(self, self.tr("New series"), exc)
+                    self._reset_series_box()
+                    return
+                self.switch_series(dialog.values()[0], then="bootstrap")
+                return
+            self._reset_series_box()
+            return
+        self.switch_series(slug)
+
+    def _reset_series_box(self) -> None:
+        current = self.series_box.findData(self.services.paths.series)
+        self.series_box.setCurrentIndex(max(0, current))
+
+    def switch_series(self, slug: str, then: str | None = None) -> None:
+        """Make `slug` the default series and rebuild the window around it (every screen reloads)."""
+        from subagent import series as sr
+
+        if self.jobs.is_running() or self.services.jobs_running():
+            QMessageBox.information(self, self.tr("Series"),
+                                    self.tr("A job is running. Switch series when it has finished."))
+            self._reset_series_box()
+            return
+        sr.set_default(self.services.root, slug)
+        window = MainWindow(Services(self.services.root))
+        window.show()
+        if then:
+            window.go(then)
+        _WINDOWS.append(window)
+        self._switching = True
+        self.close()
 
     def _navigate(self, row: int) -> None:
         self.stack.setCurrentIndex(row)
@@ -129,6 +253,8 @@ class MainWindow(QMainWindow):
             self.job_label.setText(self.tr("Failed: {job}").format(job=name))
 
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802
+        if self in _WINDOWS and getattr(self, "_switching", False):
+            _WINDOWS.remove(self)
         if self.jobs.is_running():
             answer = QMessageBox.question(
                 self, self.tr("Job running"),

@@ -752,3 +752,26 @@ def test_memory_character_updates_tab_accepts_a_waiting_change(qapp, project):
         "Đệ tử của Sư tôn (shi_zun)"
     window.close()
     settle(qapp)
+
+
+def test_series_picker_switches_the_window_to_another_series(qapp, project):
+    from app import main_window as mw
+    from app.main_window import MainWindow
+    from app.services import Services
+    from subagent import series as sr
+
+    config, paths = project
+    seed_memory(config, paths)
+    sr.migrate(paths.root, "one")
+    sr.add(paths.root, "two", "Show Two")
+    window = MainWindow(Services(paths.root))
+    settle(qapp)
+    box = window.series_box
+    assert box.isVisibleTo(window) and [box.itemData(i) for i in range(box.count())] == ["one", "two", mw.MainWindow.NEW_SERIES]
+    window.switch_series("two")
+    settle(qapp)
+    new = mw._WINDOWS[-1]
+    assert new.services.paths.series == "two" and new.services.config.show.name == "Show Two"
+    assert new.jobs.series == "two"
+    new.close()
+    settle(qapp)

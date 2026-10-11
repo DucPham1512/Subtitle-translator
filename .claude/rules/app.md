@@ -18,6 +18,7 @@ The app covers everything: episodes and runs, review, bootstrap, memory and drea
 ### 6.2 Navigation
 
 - Left sidebar: Episodes, Review, Memory, Bootstrap, Dreaming, Audit, Settings. Episodes is the start screen.
+- **Series picker** at the top of the sidebar (5.2a; hidden in the single-series layout): the series this window shows. Choosing another one sets `series.default` and rebuilds the window around it (every screen reloads; refused while a job runs). **New series…** asks for an id, a name, the translation style (register) and an optional work folder, creates the series and opens its Bootstrap screen. Jobs run for the window's series (`$SUBAGENT_SERIES`).
 - Status bar: running job and stage, running cost vs budget, device in use (GPU / CPU).
 
 ### 6.3 Episodes and run screens
@@ -129,7 +130,7 @@ All edits go through `MemoryManager.apply(source="human")` and become locked. Ed
 
 - **General:** default review mode, device, budget, sprite check on / off, render encoder and quality, font sizes.
 - **Files:** output folder (folder picker; required before the first render), output name suffix, working folder location, automatic cleanup on / off, video extensions, episode-number patterns with a test field that shows the number detected from a sample file name.
-- **Advanced:** raw YAML editor, validated against the config model before saving.
+- **Advanced:** raw YAML editor for `config.yaml` (shared) or the active series' `series.yaml` (a selector above it), validated merged before saving. Values saved in the other tabs go to the right file (5.2a).
 - **API keys:** masked fields saved to `.env`; a test-connection button sends one minimal request.
 - **Language:** English / Tiếng Việt; applied after restart (the app offers to restart).
 - **Theme:** follows the Windows light / dark setting.

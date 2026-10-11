@@ -3,6 +3,8 @@ paths:
   - "subagent/config.py"
   - "config.yaml"
   - "tests/conftest.py"
+  - "subagent/series.py"
+  - "data/series/**"
 ---
 ### 5.2 Config (`config.py`, `config.yaml`)
 
@@ -234,3 +236,13 @@ bench:
 ```
 
 Values above are the code defaults (`config.py`), except `number_patterns` (code default: only the last pattern). The project's `config.yaml` holds the tuned values; each tuned key carries a comment with the measurement behind it.
+
+### 5.2a Series (`config.py`, `series.py`, `python -m subagent series …`)
+
+The project can hold several series (shows). User decisions 2026-10-11: one folder per series, shared settings plus per-series overrides, one series active at a time (switch in the app or with `--series`).
+
+- **Layout:** `data/series/<slug>/` per series: `memory/` (its own git repo), `bootstrap/` (cast, clips, sprites, `subtitle_style.json`, seed), `episodes/index.json`, `character_cards/` (card pins), `fonts/` (subtitle font; `render.font_dir` is relative to the series folder), `prompts/` (series notes) and `series.yaml`. **Throughout this spec, a path written `data/<x>` means the active series' folder `data/series/<slug>/<x>`.** Shared by every series: `config.yaml`, `.env`, `prompts/` (general prompts), `cache/` (LLM and model caches; character-card media in `cache/character_cards/<slug>/`), `app/fonts/` (the interface font). Without `data/series/` (no `series.default`) the single-series layout directly under `data/` still works (tests use it).
+- **Config:** `config.yaml` holds the shared settings and `series.default`; the active series' `series.yaml` overrides any section (deep merge: mappings key by key, lists replaced) and the merged result is validated as one `Config`. The active series is `--series SLUG`, else `$SUBAGENT_SERIES`, else `series.default`. `migrate` moves the show-describing sections (`config.SERIES_SECTIONS`: show, video, ocr, non_dialogue, voice, cast, script_review, paths, baseline, bench) into series.yaml. Settings saved while a series is active (`update_config_values`: the Settings screen, calibration) go to series.yaml when their section is one of those or already in series.yaml, else to config.yaml; the raw editor edits either file (`save_config_text(series_file=…)`), both validated merged.
+- **Work folder:** a series without its own `paths.work_dir` works in `<config.yaml work_dir>/<slug>/`, so episode ids (`ep001`) never collide between series. Job locks, the baseline and bench runs live in it, so they are per series too.
+- **Prompts:** the general prompt `prompts/<name>.md`, then the series' notes for it when `data/series/<slug>/prompts/<name>.md` exists, appended under `## Series notes` (`llm.load_prompt`). The stage input hash covers both (`pipeline._prompt_hash`). Show quirks belong in notes, not in the general prompt (series-1: `script_review_system.md`, the 了-drawn-as-7 font and the stray 楚 / 姬 / 史).
+- **Commands:** `series list`, `series add SLUG [--name N] [--register R] [--work-dir D]` (series.yaml with show name and register, the bundled subtitle font from `app/fonts/`, empty bootstrap folders; then bootstrap as for the first series), `series default SLUG`, `series rename OLD NEW` (folder, card cache, default work folder, `series.default`), `series migrate SLUG` (single-series layout → a named series; folders and sections move, effective settings unchanged). Each refuses while a job of that series runs. config.yaml is edited as text, so comments stay.

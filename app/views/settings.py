@@ -190,7 +190,17 @@ class SettingsView(QWidget):
     def _advanced_tab(self) -> QWidget:
         w = QWidget()
         layout = QVBoxLayout(w)
-        layout.addWidget(QLabel(self.tr("config.yaml. It is validated before saving; comments are kept.")))
+        top = QHBoxLayout()
+        self.yaml_file = QComboBox()
+        self.yaml_file.addItem(self.tr("config.yaml (shared by every series)"), "shared")
+        if self.services.paths.series:
+            self.yaml_file.addItem(self.tr("series.yaml (this series: {slug})").format(
+                slug=self.services.paths.series), "series")
+        self.yaml_file.currentIndexChanged.connect(lambda _: self._load_yaml())
+        top.addWidget(self.yaml_file)
+        top.addWidget(QLabel(self.tr("Validated before saving; comments are kept. A series' series.yaml overrides "
+                                     "config.yaml for that series.")), 1)
+        layout.addLayout(top)
         self.yaml = QPlainTextEdit()
         self.yaml.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         layout.addWidget(self.yaml, 1)
@@ -205,9 +215,15 @@ class SettingsView(QWidget):
         layout.addLayout(row)
         return w
 
+    def _load_yaml(self) -> None:
+        paths = self.services.paths
+        path = paths.series_file if self.yaml_file.currentData() == "series" else paths.config_file
+        self.yaml.setPlainText(path.read_text(encoding="utf-8") if path and path.is_file() else "")
+
     def _save_yaml(self) -> None:
         try:
-            save_config_text(self.services.root, self.yaml.toPlainText())
+            save_config_text(self.services.root, self.yaml.toPlainText(),
+                             series_file=self.yaml_file.currentData() == "series")
             self.services.reload()
         except Exception as exc:  # noqa: BLE001
             show_error(self, self.tr("Settings"), exc)
@@ -348,6 +364,6 @@ class SettingsView(QWidget):
         self.cleanup.setChecked(c.cleanup.auto)
         self.extensions.setText(", ".join(c.episodes.video_extensions))
         self.patterns.setPlainText("\n".join(c.episodes.number_patterns))
-        self.yaml.setPlainText(self.services.paths.config_file.read_text(encoding="utf-8"))
+        self._load_yaml()
         self.language.setCurrentIndex(max(0, self.language.findData(QSettings().value("ui/language", "en"))))
         self._build_keys()
