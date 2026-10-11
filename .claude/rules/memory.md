@@ -2,7 +2,7 @@
 paths:
   - "subagent/memory/**"
 ---
-### 5.15 Memory Manager (`memory/manager.py`)
+### 5.15 Memory Manager (`memory/manager/`)
 
 - **Responsibility:** the only component allowed to write memory. Everything else reads through `memory/store.py` read functions.
 - **Interface:** `apply(proposals: list[MemoryProposal]) -> ApplyResult`, `update_briefings(episode_id, approved_lines)`, `character_updates(...)`, `pending_updates()`, `resolve_update(update_id, accept)`, `commit(message)`, `history(limit)`, `diff(commit_sha)`, `entry_history(table, key)`, `rollback(commit_sha)`.
@@ -30,7 +30,7 @@ paths:
 - **Locking:** memory writes take `data/memory/.lock` so the app and a running job never write at the same time.
 - **All or nothing:** the episode update snapshots the memory files first and restores them if any step fails (NFR-R4).
 
-### 5.15a Character lifecycle (`memory/manager.py: update_lifecycle`)
+### 5.15a Character lifecycle (`memory/manager/episode.py: update_lifecycle`)
 
 - **Appearances:** after each episode, every character used as speaker or listener in an approved, non-deleted line gets an `appearances` row (rerun-safe). The first run backfills earlier episodes from their `approved.jsonl`.
 - **Generic characters** (`characters.generic`, set only by a person: Memory → Characters "Generic" checkbox): one name for many individuals (e.g. all fish, passers-by). Lines can be assigned to them and they keep their pronoun pairs, but they are left out of voice matching, voice learning, picture matching and sprite learning (`MemoryStore.unmatchable_ids`, with archived characters), never archived by the lifecycle, and marked "(generic: …)" in the prompt's characters block.
@@ -44,7 +44,7 @@ paths:
 - Every change is a `memory_log` row (source `system`, reason = `status_note`) inside the episode's commit, so it can be rolled back. A person can set `status` / `status_note` in Memory → Characters (that locks the character); model proposals cannot set them.
 - Until the visual cast check exists, an appearance is only as reliable as the speaker labels: confirmed in human mode, the machine's guess in auto mode.
 
-### 5.15b Probation for new characters (`memory/probation.py`, `memory/manager.py: probation`)
+### 5.15b Probation for new characters (`memory/probation.py`, `memory/manager/candidates.py: probation`)
 
 - **Candidate:** after an episode, a new voice of that episode (`npc_<ep>_<n>`) or an id the translator proposes as a new character, with ≥ `memory.probation_min_lines` approved, non-deleted dialogue lines as speaker, becomes a row in `candidates`: its name (from the translator's proposal, if any), its voice (mean of those lines in `voice_embeddings.npz`) and its look (the unrecognised talking sprites on those lines, `candidate_sprites`). Fewer lines: nothing is remembered (the proposal is logged as rejected). Candidates are not characters: not in the Characters list, prompts' characters block, voice bank or sprite bank; voice and sprite learning skip them.
 - **Waiting proposals:** pronoun pairs involving a candidate are stored with it (`pending_json`) and applied when it is promoted. A name proposed for a candidate is kept if it has none yet (first name wins).
@@ -54,7 +54,7 @@ paths:
 - **From review:** an NPC created in review ("New NPC", 6.4) is added to the episode's new voices at finish (`characters.review_voice_ids`); a candidate assigned by hand in a later episode counts as coming back like one the voice stage found.
 - Rerunning an episode's finish rebuilds that episode's candidates. With `memory.probation: false` the old behaviour applies (new voices become characters at once).
 
-### 5.15c Character updates (`memory/character_updates.py`, `memory/manager.py: character_updates`)
+### 5.15c Character updates (`memory/character_updates.py`, `memory/manager/updates.py: character_updates`)
 
 - **When:** at every finish (and chain-mode bench learning), before probation, when `memory.character_updates` is on and an LLM client is given. One `utility` call (task `character_update`, prompt `prompts/character_update_system.md`; prefix: the characters block) with the story so far, the present characters (everyone who is speaker or listener in an approved, non-deleted line: id, kind locked / unlocked / candidate / new voice, name, description, aliases), the pronoun pairs between them, and the approved script with event ids.
 - **It returns** per character: a name (only when a line states it), the full updated description (Vietnamese), new aliases (`"<zh> (<vi>)"`: titles, roles, forms of address), evidence; and the pronoun pairs the approved Vietnamese uses that are missing from the matrix or differ from it.
