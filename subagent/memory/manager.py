@@ -202,6 +202,19 @@ class MemoryManager:
         finally:
             conn.close()
 
+    @contextlib.contextmanager
+    def _transaction(self, *, lock: bool = True) -> Iterator[sqlite3.Connection]:
+        """One write transaction: BEGIN IMMEDIATE, COMMIT, or ROLLBACK on any error. `lock`: hold the memory lock
+        (False only inside a caller that already holds it)."""
+        with self.locked() if lock else contextlib.nullcontext(), self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                yield conn
+                conn.execute("COMMIT")
+            except BaseException:
+                conn.execute("ROLLBACK")
+                raise
+
     def _ensure_schema(self) -> None:
         if not self.db.is_file() or not (self.dir / ".git").exists():
             self.ensure_repo()
@@ -218,18 +231,13 @@ class MemoryManager:
         result = ApplyResult()
         proposals = sorted(merge_proposals(proposals), key=lambda p: KIND_ORDER.get(p.kind, 9))
         file_ops: list[MemoryProposal] = []
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
+        with self.locked():
+            with self._transaction() as conn:
                 for p in proposals:
                     if p.kind in ("style_rule", "briefing"):
                         file_ops.append(p)
                         continue
                     self._apply_row(conn, p, approved_ids, episode_id, result)
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
             self._apply_files(file_ops, result)
             if result.renamed:
                 self._name_in_briefings(result.renamed)
@@ -450,103 +458,85 @@ class MemoryManager:
         added: dict[str, int] = {}
         dropped: dict[str, int] = {}
         base = base or {}
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
+        with self._transaction() as conn:
+            known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
+            if episode_id is not None:
+                for ex_id, (_, _, was_added) in (undo or {}).items():
+                    if was_added:
+                        row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
+                        if row:
+                            conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+                            dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
+                    elif ex_id in base:
+                        conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (*base[ex_id], ex_id))
+                conn.execute("DELETE FROM sprite_feedback WHERE episode_id=?", (episode_id,))
+            for ex_id, (right, wrong) in stats.items():
+                conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (right, wrong, ex_id))
                 if episode_id is not None:
-                    for ex_id, (_, _, was_added) in (undo or {}).items():
-                        if was_added:
-                            row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
-                            if row:
-                                conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                                dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
-                        elif ex_id in base:
-                            conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (*base[ex_id], ex_id))
-                    conn.execute("DELETE FROM sprite_feedback WHERE episode_id=?", (episode_id,))
-                for ex_id, (right, wrong) in stats.items():
-                    conn.execute("UPDATE sprite_bank SET right=?, wrong=? WHERE id=?", (right, wrong, ex_id))
-                    if episode_id is not None:
-                        b_right, b_wrong = base.get(ex_id, (0, 0))
-                        if (right, wrong) != (b_right, b_wrong):
-                            conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
-                                         "VALUES (?,?,?,?,0)", (ex_id, episode_id, right - b_right, wrong - b_wrong))
-                for ex_id in remove:
-                    row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
-                    if row:
-                        conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                        dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
-                for char, emb, ep, event in add:
-                    if char not in known:
-                        continue
-                    vec = np.asarray(emb, np.float32)
-                    vec = (vec / (np.linalg.norm(vec) or 1.0)).astype(np.float16)
-                    cur = conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, "
-                                       "wrong, added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
-                    if episode_id is not None:
+                    b_right, b_wrong = base.get(ex_id, (0, 0))
+                    if (right, wrong) != (b_right, b_wrong):
                         conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
-                                     "VALUES (?,?,0,0,1)", (cur.lastrowid, episode_id))
-                    added[char] = added.get(char, 0) + 1
-                for char in {r["character_id"] for r in conn.execute("SELECT DISTINCT character_id FROM sprite_bank")}:
-                    ids = [r["id"] for r in conn.execute(
-                        "SELECT id FROM sprite_bank WHERE character_id=? ORDER BY (right - wrong) DESC, id DESC", (char,))]
-                    for ex_id in ids[max_per_character:]:
-                        conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
-                        dropped[char] = dropped.get(char, 0) + 1
-                conn.execute("DELETE FROM sprite_feedback WHERE exemplar_id NOT IN (SELECT id FROM sprite_bank)")
-                for char in sorted(set(added) | set(dropped)):
-                    self._log(conn, "update", "sprite_bank", char, None,
-                              {"added": added.get(char, 0), "removed": dropped.get(char, 0)}, None,
-                              added.get(char, 0), source=source)
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+                                     "VALUES (?,?,?,?,0)", (ex_id, episode_id, right - b_right, wrong - b_wrong))
+            for ex_id in remove:
+                row = conn.execute("SELECT character_id FROM sprite_bank WHERE id=?", (ex_id,)).fetchone()
+                if row:
+                    conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+                    dropped[row["character_id"]] = dropped.get(row["character_id"], 0) + 1
+            for char, emb, ep, event in add:
+                if char not in known:
+                    continue
+                vec = np.asarray(emb, np.float32)
+                vec = (vec / (np.linalg.norm(vec) or 1.0)).astype(np.float16)
+                cur = conn.execute("INSERT INTO sprite_bank (character_id, embedding, episode_id, event_id, right, "
+                                   "wrong, added_at) VALUES (?,?,?,?,0,0,?)", (char, vec.tobytes(), ep, event, now))
+                if episode_id is not None:
+                    conn.execute("INSERT INTO sprite_feedback (exemplar_id, episode_id, right, wrong, added) "
+                                 "VALUES (?,?,0,0,1)", (cur.lastrowid, episode_id))
+                added[char] = added.get(char, 0) + 1
+            for char in {r["character_id"] for r in conn.execute("SELECT DISTINCT character_id FROM sprite_bank")}:
+                ids = [r["id"] for r in conn.execute(
+                    "SELECT id FROM sprite_bank WHERE character_id=? ORDER BY (right - wrong) DESC, id DESC", (char,))]
+                for ex_id in ids[max_per_character:]:
+                    conn.execute("DELETE FROM sprite_bank WHERE id=?", (ex_id,))
+                    dropped[char] = dropped.get(char, 0) + 1
+            conn.execute("DELETE FROM sprite_feedback WHERE exemplar_id NOT IN (SELECT id FROM sprite_bank)")
+            for char in sorted(set(added) | set(dropped)):
+                self._log(conn, "update", "sprite_bank", char, None,
+                          {"added": added.get(char, 0), "removed": dropped.get(char, 0)}, None,
+                          added.get(char, 0), source=source)
         return {"added": sum(added.values()), "removed": sum(dropped.values())}
 
     # -- voices -------------------------------------------------------------------------------------
 
     def write_voices(self, centroids: dict[str, tuple[np.ndarray, int]], *, source: str = "bootstrap") -> None:
         self._ensure_schema()
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                for char_id, (emb, n_clips) in centroids.items():
-                    emb = np.asarray(emb, dtype=np.float32)
-                    norm = float(np.linalg.norm(emb))
-                    emb = emb / norm if norm else emb
-                    before = _fetch(conn, "voice_bank", char_id)
-                    row = {"character_id": char_id, "embedding": emb.tobytes(), "n_clips": int(n_clips),
-                           "updated_at": now_iso()}
-                    conn.execute("INSERT OR REPLACE INTO voice_bank VALUES (:character_id, :embedding, :n_clips, :updated_at)", row)
-                    self._log(conn, "update" if before else "insert", "voice_bank", char_id, before, row, None,
-                              int(n_clips), source=source)
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+        with self._transaction() as conn:
+            for char_id, (emb, n_clips) in centroids.items():
+                emb = np.asarray(emb, dtype=np.float32)
+                norm = float(np.linalg.norm(emb))
+                emb = emb / norm if norm else emb
+                before = _fetch(conn, "voice_bank", char_id)
+                row = {"character_id": char_id, "embedding": emb.tobytes(), "n_clips": int(n_clips),
+                       "updated_at": now_iso()}
+                conn.execute("INSERT OR REPLACE INTO voice_bank VALUES (:character_id, :embedding, :n_clips, :updated_at)", row)
+                self._log(conn, "update" if before else "insert", "voice_bank", char_id, before, row, None,
+                          int(n_clips), source=source)
 
     def write_confusable_pairs(self, pairs: dict[tuple[str, str], float], *, involving: set[str] | None = None,
                                source: str = "bootstrap") -> None:
         """Replace all pairs, or only the pairs involving the given characters."""
         self._ensure_schema()
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                if involving is None:
-                    conn.execute("DELETE FROM confusable_pairs")
-                else:
-                    for c in involving:
-                        conn.execute("DELETE FROM confusable_pairs WHERE a=? OR b=?", (c, c))
-                for (a, b), sim in pairs.items():
-                    a, b = sorted((a, b))
-                    conn.execute("INSERT OR REPLACE INTO confusable_pairs VALUES (?,?,?)", (a, b, float(sim)))
-                    self._log(conn, "insert", "confusable_pairs", f"{a}|{b}", None,
-                              {"a": a, "b": b, "similarity": float(sim)}, None, 0, source=source)
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+        with self._transaction() as conn:
+            if involving is None:
+                conn.execute("DELETE FROM confusable_pairs")
+            else:
+                for c in involving:
+                    conn.execute("DELETE FROM confusable_pairs WHERE a=? OR b=?", (c, c))
+            for (a, b), sim in pairs.items():
+                a, b = sorted((a, b))
+                conn.execute("INSERT OR REPLACE INTO confusable_pairs VALUES (?,?,?)", (a, b, float(sim)))
+                self._log(conn, "insert", "confusable_pairs", f"{a}|{b}", None,
+                          {"a": a, "b": b, "similarity": float(sim)}, None, 0, source=source)
 
     # -- episode update -----------------------------------------------------------------------------
 
@@ -615,117 +605,111 @@ class MemoryManager:
         keep: list[MemoryProposal] = []
         released: set[str] = set()
         now = now_iso()
-        with self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
-                rows = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM candidates")}
-                for cid, r in list(rows.items()):         # rerun-safe: this episode's candidates are rebuilt
-                    if r["first_episode"] == episode_id and r["status"] == "candidate":
-                        conn.execute("DELETE FROM candidate_sprites WHERE candidate_id=?", (cid,))
-                        conn.execute("DELETE FROM candidates WHERE id=?", (cid,))
-                        del rows[cid]
-                trusted = None
-                if mode == "auto":
-                    trusted = {x.event_id for x in trusted_auto_lines(self.paths, self.config, episode_id,
-                                                                       known | set(rows), min_ms=0)}
-                # 1. candidates that came back within their window
-                for cid, r in sorted(rows.items()):
-                    first = episode_number(r["first_episode"])
-                    if (r["status"] != "candidate" or cid in known or first is None or current is None
-                            or not first < current <= first + cfg.probation_window):
-                        continue
-                    lines = pb.speaker_lines(approved, cid)
-                    if trusted is not None:
-                        lines = [x for x in lines if x.event_id in trusted]
-                    if not lines:
-                        continue
-                    sprites = [np.frombuffer(s["embedding"], dtype=np.float16).astype(np.float32) for s in
-                               conn.execute("SELECT embedding FROM candidate_sprites WHERE candidate_id=?", (cid,))]
-                    check = pb.check_return(lines, cast, cast_embs, sprites, self.config.cast.match_similarity)
-                    if not check.promote and mode != "human":
-                        log.info("probation: %s is back in %s but its look disagrees: %s", cid, episode_id,
-                                 check.describe())
-                        continue
-                    # human mode: the reviewer assigned these lines, so the picture cannot veto the return; a look
-                    # the picture disagrees with is not copied into the sprite bank (sprite learning relearns it)
-                    evidence = check.describe() if check.promote else f"assigned by the reviewer; {check.describe()}"
-                    self._promote(conn, r, episode_id, evidence, now, with_look=check.promote)
-                    known.add(cid)
-                    counts["promoted"] += 1
-                    for d in json.loads(r["pending_json"] or "[]"):
-                        p = MemoryProposal.model_validate(d)
-                        keep.append(p)
-                        released |= set(p.evidence)
-                # 2. this episode's new voices and new names become candidates
-                named: dict[str, MemoryProposal] = {}
-                for p in proposals:
-                    cid = str(p.payload.get("id") or "")
-                    if p.kind == "character" and p.source == "translator" and cid and cid not in known:
-                        named.setdefault(cid, p)
-                for cid in dict.fromkeys([v.id for v in voices if not v.returning_from] + sorted(named)):
-                    if cid in known or cid in rows:
-                        continue
-                    lines = pb.speaker_lines(approved, cid)
-                    if len(lines) < cfg.probation_min_lines:
-                        continue
-                    payload = named[cid].payload if cid in named and set(named[cid].evidence) <= approved_ids else {}
-                    voice = pb.candidate_voice(lines, line_voices)
-                    row = {"id": cid, "first_episode": episode_id, "name_zh": payload.get("name_zh") or None,
-                           "name_vi": payload.get("name_vi") or None, "description": payload.get("description") or None,
-                           "embedding": voice.astype(np.float32).tobytes() if voice is not None else None,
-                           "n_lines": len(lines), "pending_json": "[]", "status": "candidate",
-                           "status_note": f"{len(lines)} lines in {episode_id}", "updated_at": now}
-                    _insert(conn, "candidates", row)
-                    for event_id, emb in pb.candidate_looks(lines, cast, cast_embs):
-                        conn.execute("INSERT INTO candidate_sprites (candidate_id, embedding, episode_id, event_id) "
-                                     "VALUES (?,?,?,?)", (cid, emb.astype(np.float16).tobytes(), episode_id, event_id))
-                    self._log(conn, "insert", "candidates", cid, None, row, None, len(lines), source="system",
-                              reason=f"on probation: {len(lines)} lines in {episode_id}")
-                    rows[cid] = row
-                    counts["candidates"] += 1
-                # 3. proposals about candidates wait for the promotion
-                waiting = {cid for cid, r in rows.items() if r["status"] == "candidate" and cid not in known}
-                pending: dict[str, list[dict]] = {}
-                for p in proposals:
-                    cid = str(p.payload.get("id") or "")
-                    if p.kind == "character" and p.source in EVIDENCE_SOURCES and cid and cid not in known:
-                        if cid in waiting and set(p.evidence) <= approved_ids:
-                            if p.source == "updater":
-                                self._update_candidate(conn, rows[cid], p, now)
-                            else:
-                                self._name_candidate(conn, rows[cid], p, now)
-                        else:
-                            self._log(conn, "rejected", "characters", cid or "?", None, p.payload, p,
-                                      len(p.evidence), reason="probation: fewer than "
-                                      f"{cfg.probation_min_lines} approved lines as speaker")
-                        continue
-                    if p.kind == "pronoun_pair":
-                        ids = {str(p.payload.get("speaker_id")), str(p.payload.get("listener_id"))}
-                        held = sorted(ids & waiting)
-                        if held and not ids - known - waiting and set(p.evidence) <= approved_ids:
-                            pending.setdefault(held[0], []).append(p.model_dump())
-                            continue
+        with self._transaction(lock=False) as conn:
+            known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
+            rows = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM candidates")}
+            for cid, r in list(rows.items()):         # rerun-safe: this episode's candidates are rebuilt
+                if r["first_episode"] == episode_id and r["status"] == "candidate":
+                    conn.execute("DELETE FROM candidate_sprites WHERE candidate_id=?", (cid,))
+                    conn.execute("DELETE FROM candidates WHERE id=?", (cid,))
+                    del rows[cid]
+            trusted = None
+            if mode == "auto":
+                trusted = {x.event_id for x in trusted_auto_lines(self.paths, self.config, episode_id,
+                                                                   known | set(rows), min_ms=0)}
+            # 1. candidates that came back within their window
+            for cid, r in sorted(rows.items()):
+                first = episode_number(r["first_episode"])
+                if (r["status"] != "candidate" or cid in known or first is None or current is None
+                        or not first < current <= first + cfg.probation_window):
+                    continue
+                lines = pb.speaker_lines(approved, cid)
+                if trusted is not None:
+                    lines = [x for x in lines if x.event_id in trusted]
+                if not lines:
+                    continue
+                sprites = [np.frombuffer(s["embedding"], dtype=np.float16).astype(np.float32) for s in
+                           conn.execute("SELECT embedding FROM candidate_sprites WHERE candidate_id=?", (cid,))]
+                check = pb.check_return(lines, cast, cast_embs, sprites, self.config.cast.match_similarity)
+                if not check.promote and mode != "human":
+                    log.info("probation: %s is back in %s but its look disagrees: %s", cid, episode_id,
+                             check.describe())
+                    continue
+                # human mode: the reviewer assigned these lines, so the picture cannot veto the return; a look
+                # the picture disagrees with is not copied into the sprite bank (sprite learning relearns it)
+                evidence = check.describe() if check.promote else f"assigned by the reviewer; {check.describe()}"
+                self._promote(conn, r, episode_id, evidence, now, with_look=check.promote)
+                known.add(cid)
+                counts["promoted"] += 1
+                for d in json.loads(r["pending_json"] or "[]"):
+                    p = MemoryProposal.model_validate(d)
                     keep.append(p)
-                for cid, items in pending.items():
-                    before = json.loads(rows[cid]["pending_json"] or "[]")
-                    conn.execute("UPDATE candidates SET pending_json=?, updated_at=? WHERE id=?",
-                                 (json.dumps(before + items, ensure_ascii=False), now, cid))
-                # 4. candidates whose window has passed
-                for cid, r in sorted(rows.items()):
-                    first = episode_number(r["first_episode"])
-                    if (r["status"] == "candidate" and cid not in known and first is not None and current is not None
-                            and current > first + cfg.probation_window):
-                        note = f"not back within {cfg.probation_window} episodes (checked at {episode_id})"
-                        conn.execute("UPDATE candidates SET status='dropped', status_note=?, updated_at=? WHERE id=?",
-                                     (note, now, cid))
-                        self._log(conn, "update", "candidates", cid, r, {**r, "status": "dropped"}, None, 0,
-                                  source="system", reason=note)
-                        counts["dropped"] += 1
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+                    released |= set(p.evidence)
+            # 2. this episode's new voices and new names become candidates
+            named: dict[str, MemoryProposal] = {}
+            for p in proposals:
+                cid = str(p.payload.get("id") or "")
+                if p.kind == "character" and p.source == "translator" and cid and cid not in known:
+                    named.setdefault(cid, p)
+            for cid in dict.fromkeys([v.id for v in voices if not v.returning_from] + sorted(named)):
+                if cid in known or cid in rows:
+                    continue
+                lines = pb.speaker_lines(approved, cid)
+                if len(lines) < cfg.probation_min_lines:
+                    continue
+                payload = named[cid].payload if cid in named and set(named[cid].evidence) <= approved_ids else {}
+                voice = pb.candidate_voice(lines, line_voices)
+                row = {"id": cid, "first_episode": episode_id, "name_zh": payload.get("name_zh") or None,
+                       "name_vi": payload.get("name_vi") or None, "description": payload.get("description") or None,
+                       "embedding": voice.astype(np.float32).tobytes() if voice is not None else None,
+                       "n_lines": len(lines), "pending_json": "[]", "status": "candidate",
+                       "status_note": f"{len(lines)} lines in {episode_id}", "updated_at": now}
+                _insert(conn, "candidates", row)
+                for event_id, emb in pb.candidate_looks(lines, cast, cast_embs):
+                    conn.execute("INSERT INTO candidate_sprites (candidate_id, embedding, episode_id, event_id) "
+                                 "VALUES (?,?,?,?)", (cid, emb.astype(np.float16).tobytes(), episode_id, event_id))
+                self._log(conn, "insert", "candidates", cid, None, row, None, len(lines), source="system",
+                          reason=f"on probation: {len(lines)} lines in {episode_id}")
+                rows[cid] = row
+                counts["candidates"] += 1
+            # 3. proposals about candidates wait for the promotion
+            waiting = {cid for cid, r in rows.items() if r["status"] == "candidate" and cid not in known}
+            pending: dict[str, list[dict]] = {}
+            for p in proposals:
+                cid = str(p.payload.get("id") or "")
+                if p.kind == "character" and p.source in EVIDENCE_SOURCES and cid and cid not in known:
+                    if cid in waiting and set(p.evidence) <= approved_ids:
+                        if p.source == "updater":
+                            self._update_candidate(conn, rows[cid], p, now)
+                        else:
+                            self._name_candidate(conn, rows[cid], p, now)
+                    else:
+                        self._log(conn, "rejected", "characters", cid or "?", None, p.payload, p,
+                                  len(p.evidence), reason="probation: fewer than "
+                                  f"{cfg.probation_min_lines} approved lines as speaker")
+                    continue
+                if p.kind == "pronoun_pair":
+                    ids = {str(p.payload.get("speaker_id")), str(p.payload.get("listener_id"))}
+                    held = sorted(ids & waiting)
+                    if held and not ids - known - waiting and set(p.evidence) <= approved_ids:
+                        pending.setdefault(held[0], []).append(p.model_dump())
+                        continue
+                keep.append(p)
+            for cid, items in pending.items():
+                before = json.loads(rows[cid]["pending_json"] or "[]")
+                conn.execute("UPDATE candidates SET pending_json=?, updated_at=? WHERE id=?",
+                             (json.dumps(before + items, ensure_ascii=False), now, cid))
+            # 4. candidates whose window has passed
+            for cid, r in sorted(rows.items()):
+                first = episode_number(r["first_episode"])
+                if (r["status"] == "candidate" and cid not in known and first is not None and current is not None
+                        and current > first + cfg.probation_window):
+                    note = f"not back within {cfg.probation_window} episodes (checked at {episode_id})"
+                    conn.execute("UPDATE candidates SET status='dropped', status_note=?, updated_at=? WHERE id=?",
+                                 (note, now, cid))
+                    self._log(conn, "update", "candidates", cid, r, {**r, "status": "dropped"}, None, 0,
+                              source="system", reason=note)
+                    counts["dropped"] += 1
         return keep, counts, released
 
     def _promote(self, conn: sqlite3.Connection, cand: dict, episode_id: str, evidence: str, now: str,
@@ -888,40 +872,34 @@ class MemoryManager:
                     present[cid] = present.get(cid, 0) + 1
         fate_by_id = {f.id: f for f in fates or []}
         moved: dict[str, int] = {}
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
-                if conn.execute("SELECT COUNT(*) FROM appearances").fetchone()[0] == 0:
-                    self._backfill_appearances(conn, known, skip=episode_id)
-                conn.execute("DELETE FROM appearances WHERE episode_id=?", (episode_id,))   # rerun-safe
-                for cid, n in sorted(present.items()):
-                    if cid in known:
-                        conn.execute("INSERT INTO appearances (character_id, episode_id, lines) VALUES (?,?,?)",
-                                     (cid, episode_id, n))
-                if self.config.memory.character_lifecycle:
-                    seen: dict[str, set[int]] = {}
-                    for r in conn.execute("SELECT character_id, episode_id FROM appearances"):
-                        number = episode_number(r["episode_id"])
-                        if number is not None:
-                            seen.setdefault(r["character_id"], set()).add(number)
-                    processed = set().union(*seen.values()) if seen else set()
-                    current = episode_number(episode_id)
-                    for row in [dict(r) for r in conn.execute("SELECT * FROM characters WHERE locked=0 AND generic=0")]:
-                        status, note = _next_status(row, seen.get(row["id"], set()), processed, current,
-                                                    fate_by_id.get(row["id"]), episode_id,
-                                                    self.config.memory.archive_after_absent)
-                        if status == (row.get("status") or "active"):
-                            continue
-                        after = {**row, "status": status, "status_note": note, "updated_at": now_iso()}
-                        _update(conn, "characters", row["id"], after)
-                        self._log(conn, "update", "characters", row["id"], row, after, None, 0, source="system",
-                                  reason=note)
-                        moved[status] = moved.get(status, 0) + 1
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+        with self._transaction() as conn:
+            known = {r["id"] for r in conn.execute("SELECT id FROM characters")}
+            if conn.execute("SELECT COUNT(*) FROM appearances").fetchone()[0] == 0:
+                self._backfill_appearances(conn, known, skip=episode_id)
+            conn.execute("DELETE FROM appearances WHERE episode_id=?", (episode_id,))   # rerun-safe
+            for cid, n in sorted(present.items()):
+                if cid in known:
+                    conn.execute("INSERT INTO appearances (character_id, episode_id, lines) VALUES (?,?,?)",
+                                 (cid, episode_id, n))
+            if self.config.memory.character_lifecycle:
+                seen: dict[str, set[int]] = {}
+                for r in conn.execute("SELECT character_id, episode_id FROM appearances"):
+                    number = episode_number(r["episode_id"])
+                    if number is not None:
+                        seen.setdefault(r["character_id"], set()).add(number)
+                processed = set().union(*seen.values()) if seen else set()
+                current = episode_number(episode_id)
+                for row in [dict(r) for r in conn.execute("SELECT * FROM characters WHERE locked=0 AND generic=0")]:
+                    status, note = _next_status(row, seen.get(row["id"], set()), processed, current,
+                                                fate_by_id.get(row["id"]), episode_id,
+                                                self.config.memory.archive_after_absent)
+                    if status == (row.get("status") or "active"):
+                        continue
+                    after = {**row, "status": status, "status_note": note, "updated_at": now_iso()}
+                    _update(conn, "characters", row["id"], after)
+                    self._log(conn, "update", "characters", row["id"], row, after, None, 0, source="system",
+                              reason=note)
+                    moved[status] = moved.get(status, 0) + 1
         return moved
 
     def new_voice_characters(self, episode_id: str, approved: list[ReviewedLine],
@@ -952,36 +930,30 @@ class MemoryManager:
                     changes[key] = (rem + 1, keep) if idx == 0 else (rem, keep + 1)
         self._ensure_schema()
         written = 0
-        with self.locked(), self._connect() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                old = {r["zh"]: (r["removed"], r["kept"]) for r in conn.execute(
-                    "SELECT zh, removed, kept FROM line_decision_episodes WHERE episode_id=?", (episode_id,))}
-                conn.execute("DELETE FROM line_decision_episodes WHERE episode_id=?", (episode_id,))
-                conn.executemany("INSERT INTO line_decision_episodes (zh, episode_id, removed, kept) VALUES (?,?,?,?)",
-                                 [(key, episode_id, rem, keep) for key, (rem, keep) in changes.items()])
-                for key in sorted(set(changes) | set(old)):
-                    rem, keep = changes.get(key, (0, 0))
-                    old_rem, old_keep = old.get(key, (0, 0))
-                    if (rem, keep) == (old_rem, old_keep):
-                        continue                   # this episode's share is unchanged
-                    before = _fetch(conn, "line_decisions", key)
-                    if before and before["locked"]:
-                        continue
-                    after = {"zh": key,
-                             "remove_count": max(0, (before["remove_count"] if before else 0) - old_rem + rem),
-                             "keep_count": max(0, (before["keep_count"] if before else 0) - old_keep + keep),
-                             "last_episode": episode_id, "locked": 0, "updated_at": now_iso()}
-                    conn.execute("INSERT OR REPLACE INTO line_decisions (zh, remove_count, keep_count, last_episode, "
-                                 "locked, updated_at) VALUES (:zh, :remove_count, :keep_count, :last_episode, :locked, "
-                                 ":updated_at)", after)
-                    self._log(conn, "update" if before else "insert", "line_decisions", key, before, after, None,
-                              rem + keep, source="human", reason=f"review of {episode_id}")
-                    written += 1
-                conn.execute("COMMIT")
-            except BaseException:
-                conn.execute("ROLLBACK")
-                raise
+        with self._transaction() as conn:
+            old = {r["zh"]: (r["removed"], r["kept"]) for r in conn.execute(
+                "SELECT zh, removed, kept FROM line_decision_episodes WHERE episode_id=?", (episode_id,))}
+            conn.execute("DELETE FROM line_decision_episodes WHERE episode_id=?", (episode_id,))
+            conn.executemany("INSERT INTO line_decision_episodes (zh, episode_id, removed, kept) VALUES (?,?,?,?)",
+                             [(key, episode_id, rem, keep) for key, (rem, keep) in changes.items()])
+            for key in sorted(set(changes) | set(old)):
+                rem, keep = changes.get(key, (0, 0))
+                old_rem, old_keep = old.get(key, (0, 0))
+                if (rem, keep) == (old_rem, old_keep):
+                    continue                   # this episode's share is unchanged
+                before = _fetch(conn, "line_decisions", key)
+                if before and before["locked"]:
+                    continue
+                after = {"zh": key,
+                         "remove_count": max(0, (before["remove_count"] if before else 0) - old_rem + rem),
+                         "keep_count": max(0, (before["keep_count"] if before else 0) - old_keep + keep),
+                         "last_episode": episode_id, "locked": 0, "updated_at": now_iso()}
+                conn.execute("INSERT OR REPLACE INTO line_decisions (zh, remove_count, keep_count, last_episode, "
+                             "locked, updated_at) VALUES (:zh, :remove_count, :keep_count, :last_episode, :locked, "
+                             ":updated_at)", after)
+                self._log(conn, "update" if before else "insert", "line_decisions", key, before, after, None,
+                          rem + keep, source="human", reason=f"review of {episode_id}")
+                written += 1
         return written
 
     @contextlib.contextmanager
