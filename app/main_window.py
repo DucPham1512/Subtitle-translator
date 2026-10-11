@@ -2,17 +2,28 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
     QSplitter,
     QStackedWidget,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -21,12 +32,154 @@ from app.messages import stage_label
 from app.services import Services
 from app.workers import run_async
 
+_WINDOWS: list = []      # windows opened by a series switch (kept alive; the first one is held by main())
+
+
+class StyleDialog(QDialog):
+    """A new translation style: id, name, the pronoun words the rule check looks for, and the translator's
+    instructions (saved as prompts/registers/<id>.md, shared by every series)."""
+
+    def __init__(self, parent: QWidget, root):
+        super().__init__(parent)
+        from subagent.registers import TEMPLATE
+
+        self.root = root
+        self.saved: str | None = None
+        self.setWindowTitle(self.tr("New translation style"))
+        self.resize(720, 560)
+        form = QFormLayout(self)
+        self.style_id = QLineEdit()
+        self.style_id.setPlaceholderText(self.tr("short id, e.g. hien_dai"))
+        self.style_name = QLineEdit()
+        self.style_name.setPlaceholderText(self.tr("e.g. Hiện đại"))
+        self.style_name.textChanged.connect(self._name_changed)
+        self.terms = QLineEdit()
+        self.terms.setPlaceholderText(self.tr("e.g. tôi, bạn, anh, em, chị, mày, tao"))
+        self.body = QPlainTextEdit()
+        self.body.setPlainText(TEMPLATE.format(name="…"))
+        self._template = self.body.toPlainText()
+        form.addRow(self.tr("Id"), self.style_id)
+        form.addRow(self.tr("Name"), self.style_name)
+        form.addRow(self.tr("Pronoun words"), self.terms)
+        form.addRow(QLabel(self.tr("Instructions for the translator (setting, names and terms, pronoun system, "
+                                   "tone). They replace the register section of the translator prompt.")))
+        form.addRow(self.body)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self._save)
+        buttons.rejected.connect(self.reject)
+        form.addRow(buttons)
+
+    def _name_changed(self, name: str) -> None:
+        from subagent.registers import TEMPLATE
+
+        if self.body.toPlainText() == self._template:          # untouched template: follow the name
+            self.body.setPlainText(TEMPLATE.format(name=name.strip() or "…"))
+            self._template = self.body.toPlainText()
+
+    def _save(self) -> None:
+        from subagent.registers import save_register, split_terms
+
+        rid = self.style_id.text().strip()
+        try:
+            save_register(self.root, rid, self.style_name.text(), self.body.toPlainText(),
+                          split_terms(self.terms.text()))
+        except Exception as exc:  # noqa: BLE001 - shown to the user
+            QMessageBox.warning(self, self.windowTitle(), str(exc))
+            return
+        self.saved = rid
+        self.accept()
+
+
+class NewSeriesDialog(QDialog):
+    """Slug, display name, translation register and (optional) work folder of a new series."""
+
+    def __init__(self, parent: QWidget, root):
+        super().__init__(parent)
+        self.root = root
+        self.setWindowTitle(self.tr("New series"))
+        form = QFormLayout(self)
+        self.slug = QLineEdit()
+        self.slug.setPlaceholderText(self.tr("short id, e.g. my-show"))
+        self.name = QLineEdit()
+        self.register = QComboBox()
+        self._fill_styles()
+        new_style = QPushButton(self.tr("New style…"))
+        new_style.clicked.connect(self._new_style)
+        style_row = QHBoxLayout()
+        style_row.addWidget(self.register, 1)
+        style_row.addWidget(new_style)
+        self.work = QLineEdit()
+        self.work.setPlaceholderText(self.tr("default: a subfolder of the shared work folder"))
+        browse = QPushButton(self.tr("Choose…"))
+        browse.clicked.connect(self._pick_work)
+        work_row = QHBoxLayout()
+        work_row.addWidget(self.work, 1)
+        work_row.addWidget(browse)
+        form.addRow(self.tr("Id"), self.slug)
+        form.addRow(self.tr("Name"), self.name)
+        form.addRow(self.tr("Translation style"), style_row)
+        form.addRow(self.tr("Work folder"), work_row)
+        form.addRow(QLabel(self.tr("After creating it, the Bootstrap screen opens: calibrate the subtitles, write the "
+                                   "cast and add voice clips, as for the first series.")))
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self._check)
+        buttons.rejected.connect(self.reject)
+        form.addRow(buttons)
+
+    def _pick_work(self) -> None:
+        """Choose the series' work folder; starts at the typed folder, else the shared work folder."""
+        start = self.work.text().strip() or str(self._shared_work())
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose a folder"), start)
+        if folder:
+            self.work.setText(str(Path(folder)))
+
+    def _shared_work(self) -> Path:
+        import yaml
+
+        try:
+            data = yaml.safe_load((Path(self.root) / "config.yaml").read_text(encoding="utf-8")) or {}
+        except (OSError, yaml.YAMLError):
+            return Path(self.root)
+        work = Path((data.get("paths") or {}).get("work_dir") or "work")
+        return work if work.is_absolute() else Path(self.root) / work
+
+    def _fill_styles(self, select: str | None = None) -> None:
+        from subagent.registers import list_registers
+
+        self.register.clear()
+        for style in list_registers(self.root):
+            self.register.addItem(f"{style.name} ({style.id})", style.id)
+        if select:
+            self.register.setCurrentIndex(max(0, self.register.findData(select)))
+
+    def _new_style(self) -> None:
+        dialog = StyleDialog(self, self.root)
+        if dialog.exec() and dialog.saved:
+            self._fill_styles(select=dialog.saved)
+
+    def _check(self) -> None:
+        from subagent import series as sr
+
+        try:
+            sr.check_slug(self.slug.text().strip())
+        except Exception as exc:  # noqa: BLE001 - shown to the user
+            QMessageBox.warning(self, self.tr("New series"), str(exc))
+            return
+        if not self.register.currentData():
+            QMessageBox.warning(self, self.tr("New series"), self.tr("Choose a translation style, or create one."))
+            return
+        self.accept()
+
+    def values(self) -> tuple[str, str, str, str | None]:
+        slug = self.slug.text().strip()
+        return slug, self.name.text().strip() or slug, self.register.currentData(), self.work.text().strip() or None
+
 
 class MainWindow(QMainWindow):
     def __init__(self, services: Services):
         super().__init__()
         self.services = services
-        self.jobs = JobRunner(services.root, self)
+        self.jobs = JobRunner(services.root, self, services.paths.series)
         self.setWindowTitle(self.tr("Subtitle Agent"))
         self.resize(1400, 860)
 
@@ -66,7 +219,14 @@ class MainWindow(QMainWindow):
         row = QHBoxLayout(central)
         row.setContentsMargins(0, 0, 0, 0)
         splitter = QSplitter()
-        splitter.addWidget(self.sidebar)
+        left = QWidget()
+        left_col = QVBoxLayout(left)
+        left_col.setContentsMargins(0, 0, 0, 0)
+        self.series_box = self._series_picker()
+        left_col.addWidget(self.series_box)
+        left_col.addWidget(self.sidebar, 1)
+        left.setFixedWidth(170)
+        splitter.addWidget(left)
         splitter.addWidget(self.stack)
         splitter.setStretchFactor(1, 1)
         row.addWidget(splitter)
@@ -89,6 +249,72 @@ class MainWindow(QMainWindow):
         if geometry:
             self.restoreGeometry(geometry)
         self.sidebar.setCurrentRow(0)
+
+    # -- series ---------------------------------------------------------------------------------------
+
+    NEW_SERIES = "__new__"
+
+    def _series_picker(self) -> QComboBox:
+        """The series this window shows; hidden in the single-series layout (no data/series/ yet)."""
+        from subagent.config import list_series
+
+        box = QComboBox()
+        box.setToolTip(self.tr("The series (show) you are working on"))
+        names = list_series(self.services.root)
+        current = self.services.paths.series
+        for slug in names:
+            box.addItem(slug, slug)
+        box.addItem(self.tr("New series…"), self.NEW_SERIES)
+        if current in names:
+            box.setCurrentIndex(names.index(current))
+        box.setVisible(bool(names))
+        box.activated.connect(self._series_chosen)
+        return box
+
+    def _series_chosen(self, index: int) -> None:
+        slug = self.series_box.itemData(index)
+        if slug == self.services.paths.series:
+            return
+        if slug == self.NEW_SERIES:
+            dialog = NewSeriesDialog(self, self.services.root)
+            if dialog.exec():
+                from subagent import series as sr
+
+                try:
+                    sr.add(self.services.root, *dialog.values())
+                except Exception as exc:  # noqa: BLE001 - shown to the user
+                    from app.widgets import show_error
+
+                    show_error(self, self.tr("New series"), exc)
+                    self._reset_series_box()
+                    return
+                self.switch_series(dialog.values()[0], then="bootstrap")
+                return
+            self._reset_series_box()
+            return
+        self.switch_series(slug)
+
+    def _reset_series_box(self) -> None:
+        current = self.series_box.findData(self.services.paths.series)
+        self.series_box.setCurrentIndex(max(0, current))
+
+    def switch_series(self, slug: str, then: str | None = None) -> None:
+        """Make `slug` the default series and rebuild the window around it (every screen reloads)."""
+        from subagent import series as sr
+
+        if self.jobs.is_running() or self.services.jobs_running():
+            QMessageBox.information(self, self.tr("Series"),
+                                    self.tr("A job is running. Switch series when it has finished."))
+            self._reset_series_box()
+            return
+        sr.set_default(self.services.root, slug)
+        window = MainWindow(Services(self.services.root))
+        window.show()
+        if then:
+            window.go(then)
+        _WINDOWS.append(window)
+        self._switching = True
+        self.close()
 
     def _navigate(self, row: int) -> None:
         self.stack.setCurrentIndex(row)
@@ -129,6 +355,8 @@ class MainWindow(QMainWindow):
             self.job_label.setText(self.tr("Failed: {job}").format(job=name))
 
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802
+        if self in _WINDOWS and getattr(self, "_switching", False):
+            _WINDOWS.remove(self)
         if self.jobs.is_running():
             answer = QMessageBox.question(
                 self, self.tr("Job running"),

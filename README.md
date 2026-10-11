@@ -1,14 +1,40 @@
 # Subtitle Agent
 
-Translates the burned-in Chinese subtitles of one cartoon series into Vietnamese, adds pinyin, and renders
-both back onto the video. Design and rules: [CLAUDE.md](CLAUDE.md).
+Translates the burned-in Chinese subtitles of cartoon series into Vietnamese, adds pinyin, and renders both back
+onto the video. One project holds several series, each with its own memory, settings and work folder.
+Design and rules: [CLAUDE.md](CLAUDE.md).
 
 ```
 video → frames + change detection → OCR → events → OCR fix ─┐
-      → audio → voice match ────────────────────────────────┤
-                                  pinyin, scene windows ────┴→ translate ⇄ evaluate → sprite check
+      → audio → voice match → cast (who is on screen) ───────┤
+                                  pinyin, scene windows ────┴→ translate ⇄ evaluate → sprite check → script review
       → review (app or auto) → memory update → ASS + mask + burn-in → output folder
 ```
+
+## Quick start
+
+After [setup](#setup), with the virtual environment active and UTF-8 mode on:
+
+```powershell
+$env:PYTHONUTF8 = "1"
+.\.venv\Scripts\Activate.ps1          # Linux: source .venv/bin/activate
+
+python -m subagent check              # binaries, GPU, fonts, output folder, API keys
+python -m app                         # the desktop app: everything below can be done from it
+```
+
+Translating one episode from the command line:
+
+```powershell
+python -m subagent add "D:\show\第1集.mp4"     # register the video (linked, never copied)
+python -m subagent run ep001                   # human mode: stops when the draft is ready for review
+python -m app                                  # review it: Review screen, then Finish review
+# or, without the app, after editing work\ep001\review_draft.jsonl:
+python -m subagent finish-review ep001         # memory update, render; the video lands in the output folder
+```
+
+`python -m subagent run ep001 --mode auto` approves everything automatically and lists flagged lines in
+`work/ep001/report.md`.
 
 ## Requirements
 
@@ -45,73 +71,117 @@ download into `cache/models/hf` on first use:
 pip install -e ".[cast]"
 ```
 
-To fill the sprite bank from episodes you already finished: `python -m subagent sprites learn`.
-
 GPU OCR: `onnxruntime-gpu` 1.30 needs the CUDA 13 runtime and cuDNN 9 DLLs. Either install the CUDA 13
 toolkit + cuDNN 9 system-wide, or let pip fetch them: `pip install "onnxruntime-gpu[cuda,cudnn]"` (the app calls
 `onnxruntime.preload_dlls()`). Without them OCR runs on the CPU (about 1 s per changed frame), and
 `python -m subagent check` reports the device in use.
 
-API keys go in `.env` (copy `.env.example`), or in the app under Settings → API keys:
+API keys go in `.env` (copy `.env.example`), or in the app under Settings → API keys. The names are the
+`api_key_env` values in `config.yaml` (`llm.providers`):
 
 ```
-DEEPSEEK_API_KEY=...
-QWEN_API_KEY=...
+DEEPSEEK_API_KEY=...      # translator and utility calls
+GEMINI_API_KEY=...        # evaluator
 ```
 
 Check everything with `python -m subagent check`. Verify the model ids in `config.yaml`
 (`llm.providers.*.model`) and fill `llm.prices` before the first run, so cost reports and the budget work.
 
-A subtitle font covering Vietnamese diacritics and pinyin tone marks must be in `fonts/`
-(Noto Sans is included, under the SIL Open Font License, `fonts/OFL.txt`).
+## Series
 
-## First episode
+Each series (show) has its own folder `data/series/<slug>/`: memory (its own git repo), bootstrap inputs, the
+episode registry, character cards, the subtitle font (`fonts/`, Noto Sans included under the SIL Open Font
+License), prompt notes for that show, and `series.yaml`, which overrides any section of the shared
+`config.yaml` for that show (subtitle band, OCR, cast, voice, work folder, …).
+
+```powershell
+python -m subagent series list                      # * marks the default series
+python -m subagent series add my-show --name "My Show" [--work-dir "E:\My Show\work"]
+python -m subagent series default my-show           # the series the app and the CLI use
+python -m subagent series rename series-1 my-first-show
+python -m subagent run ep001 --series my-show       # any command, for another series than the default
+```
+
+In the app, the series picker at the top of the sidebar switches series; **New series…** creates one and opens
+its Bootstrap screen. Without its own `paths.work_dir`, a series works in `<work_dir>/<slug>/`.
+
+Each series uses a **translation style** (`show.genre_register`): a file `prompts/registers/<id>.md` with the
+translator's instructions for that kind of show and the pronoun words the rule check looks for. Cổ trang /
+tiên hiệp is built in; create another in the app (New series… → **New style…**) or by adding a file in the same
+format. `series add --register <id>` picks one.
+
+## First episode of a series
+
+Paths below are in the series folder `data/series/<slug>/`.
 
 1. **Add videos** (they are linked, never copied): `python -m subagent add "D:\show\第1集.mp4"` or a folder
    (`--recursive` for subfolders). Numbers are detected from file names and you confirm them.
 2. **Calibrate** the subtitle band once: `python -m subagent calibrate ep001`, look at
-   `work/ep001/calibration/*.png`, adjust `video.subtitle_band` in `config.yaml` (or drag the rectangle in the
-   app: Bootstrap → Calibrate).
-3. **Bootstrap memory**: write `data/bootstrap/cast.md` (see `data/bootstrap/cast.example.md`), put 3–5 voice
-   clips per character in `data/bootstrap/voices/<char_id>/` and optional sprite crops in
-   `data/bootstrap/sprites/<char_id>/` (the app's Bootstrap wizard captures both from the video), then
-   `python -m subagent bootstrap`, review `data/bootstrap/seed_draft.json`, and
+   `<work>/ep001/calibration/*.png`, and set `video.subtitle_band` (or drag the rectangle in the app:
+   Bootstrap → Calibrate, which saves it to the series' `series.yaml`). Then learn the subtitle style:
+   `python -m subagent calibrate ep001 --style`.
+3. **Bootstrap memory**: write `bootstrap/cast.md` (see `data/series/series-1/bootstrap/cast.example.md`), put
+   3–5 voice clips per character in `bootstrap/voices/<char_id>/` and optional sprite crops in
+   `bootstrap/sprites/<char_id>/` (the app's Bootstrap wizard captures both from the video), then
+   `python -m subagent bootstrap`, review `bootstrap/seed_draft.json`, and
    `python -m subagent bootstrap --approve`.
 4. **Set the output folder** in `config.yaml` (`output.folder`) or Settings → Files.
 5. **Run**: `python -m subagent run ep001` (human mode stops at review) or `--mode auto`.
-6. **Review** in the app (`python -m app`) → Review, or edit `work/ep001/review_draft.jsonl`, then
+6. **Review** in the app (`python -m app`) → Review, or edit `<work>/ep001/review_draft.jsonl`, then
    `python -m subagent finish-review ep001`. Memory is updated and the video lands in the output folder as
    `<source name>_vi.mp4`.
-7. Between episodes: `python -m subagent dream` and review the proposals (app → Dreaming).
+7. **Next episodes**, in episode order (memory builds up episode by episode): `python -m subagent run ep002`, or
+   several at once: `python -m subagent batch --pending`. Between episodes: `python -m subagent dream` and
+   review the proposals (app → Dreaming).
 
-Tune thresholds in `config.yaml` after the first episode: `work/ep001/report.md` shows voice-match status
-shares, first-pass evaluator rate, flag counts, non-dialogue suspects and cost.
+Tune thresholds after the first episode: `<work>/ep001/report.md` shows voice-match status shares,
+first-pass evaluator rate, flag counts, non-dialogue suspects and cost.
 
 ## Commands
 
+Every command accepts `--series SLUG`, `--progress json` (one JSON object per line: `stage`, `status`,
+`done`, `total`, `cost`, `message`, `error_code`) and `--verbose`. `python -m subagent <command> --help`
+lists a command's options.
+
 ```
+# episodes
 python -m subagent add PATH... [--recursive] [--number N] [--yes]
 python -m subagent relink EPISODE PATH [--keep | --rerun]
-python -m subagent calibrate EPISODE
-python -m subagent bootstrap [--approve] [--voices CHAR_ID...]
-python -m subagent run EPISODE [--mode auto|human] [--from STAGE] [--force STAGE] [--no-cache] [--on-exists ...]
+python -m subagent calibrate EPISODE [--style]
+python -m subagent run EPISODE [--mode auto|human] [--from STAGE] [--force STAGE] [--rerun] [--no-cache] [--on-exists ...]
+python -m subagent batch [EPISODE...] [--pending] [--mode auto|human] [--rerun] [--max-total-cost USD] [--keep-going | --stop-on-error]
+python -m subagent partial-review EPISODE     # mid-review: learn from approved lines, re-check the rest
 python -m subagent finish-review EPISODE [--on-exists overwrite|keep-both|fail]
 python -m subagent render EPISODE [--on-exists overwrite|keep-both|fail]
 python -m subagent clean EPISODE
-python -m subagent dream [--auto-apply]
 python -m subagent status [EPISODE] [--json]
 python -m subagent check
+
+# memory
+python -m subagent bootstrap [--approve] [--voices CHAR_ID...]
+python -m subagent dream [--auto-apply]
+python -m subagent voices learn|evaluate
+python -m subagent sprites learn
+
+# series
+python -m subagent series list|add|default|rename|migrate ...
+
+# measuring
+python -m subagent audit sample|report|benchmark|ocr|remap-key [EPISODE...]
+python -m subagent baseline freeze|complete NAME [EPISODE...]
+python -m subagent bench score|run [EPISODE...] [--mode snapshot|chain] [--from STAGE] [--label L] [--no-cache] [--resume RUN]
 ```
 
-Every command accepts `--progress json` (one JSON object per line: `stage`, `status`, `done`, `total`, `cost`,
-`message`, `error_code`) and `--verbose`. Stages: `ingest ocr events ocr_fix audio voice pinyin windows
-translate sprite review`. Stages resume: a finished stage is skipped while its inputs and config are unchanged.
+Stages, in order: `ingest ocr events ocr_fix audio voice cast pinyin windows translate sprite script_review
+review`. Stages resume: a finished stage is skipped while its inputs, prompts and config are unchanged.
 
 ## Desktop app
 
 `python -m app`. Screens: Episodes (add, run, resume, rerun, render, relink, cleanup, live run panel), Review
-(flagged lines first, live preview, keyboard shortcuts), Memory (edit, history, diff, rollback), Bootstrap
-wizard, Dreaming, Settings. Interface language: English or Tiếng Việt (Settings → Language).
+(live preview, character cards, On screen view, keyboard shortcuts), Memory (edit, history, diff, rollback,
+character updates), Bootstrap wizard, Dreaming, Audit, Settings (Advanced: every setting as a form with search; changes are saved in
+place, so the comments in config.yaml and series.yaml stay). Interface language: English or Tiếng Việt
+(Settings → Language).
 
 After changing UI strings, refresh the translations:
 

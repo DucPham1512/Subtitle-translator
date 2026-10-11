@@ -363,6 +363,12 @@ class BaselineConfig(_Section):
     name: str | None = None
 
 
+class SeriesConfig(_Section):
+    # the series to work on (data/series/<slug>/, with its own series.yaml overrides); null: the single-series
+    # layout directly under data/. load_config sets it to the active series (--series, $SUBAGENT_SERIES)
+    default: str | None = None
+
+
 class BenchConfig(_Section):
     # the frozen baseline the benchmark suite scores against (6.11e); null: the one baseline.name freezes into
     baseline: str | None = None
@@ -396,6 +402,7 @@ class Config(_Section):
     cleanup: CleanupConfig = Field(default_factory=CleanupConfig)
     baseline: BaselineConfig = Field(default_factory=BaselineConfig)
     bench: BenchConfig = Field(default_factory=BenchConfig)
+    series: SeriesConfig = Field(default_factory=SeriesConfig)
 
     def section(self, name: str) -> dict:
         """JSON-able dump of one top-level section (used in stage input hashes)."""
@@ -403,26 +410,54 @@ class Config(_Section):
         return value.model_dump(mode="json") if isinstance(value, BaseModel) else value
 
 
+SERIES_DIR = "series"           # data/series/<slug>/
+SERIES_FILE = "series.yaml"     # a series' overrides of config.yaml sections
+# config.yaml sections that describe one show: `series migrate` moves them to series.yaml, and settings saved for
+# them while a series is active are written there
+SERIES_SECTIONS = ("show", "video", "ocr", "non_dialogue", "voice", "cast", "script_review", "paths", "baseline",
+                   "bench")
+
+
+def series_root(root: Path) -> Path:
+    return root / "data" / SERIES_DIR
+
+
+def list_series(root: Path) -> list[str]:
+    folder = series_root(root)
+    return sorted(p.name for p in folder.iterdir() if p.is_dir()) if folder.is_dir() else []
+
+
 class Paths:
-    """All project locations, derived from the project root and config."""
+    """All project locations, derived from the project root and config.
+
+    Shared by every series: config.yaml, .env, prompts/ (general prompts), cache/. Per series (data/series/<slug>/,
+    or data/ itself in the single-series layout): memory/, bootstrap/, episodes/index.json, character_cards/,
+    fonts/ (subtitle font, `render.font_dir` relative to the series folder), prompts/ (series notes), and the work
+    folder (`paths.work_dir`)."""
 
     def __init__(self, root: Path, config: Config | None = None):
         self.root = root.resolve()
+        self.series = config.series.default if config else None
         work = Path(config.paths.work_dir) if config else Path("work")
         self.work = work if work.is_absolute() else self.root / work
         self.config_file = self.root / "config.yaml"
         self.env_file = self.root / ".env"
         self.prompts = self.root / "prompts"
-        self.data = self.root / "data"
+        self.data = series_root(self.root) / self.series if self.series else self.root / "data"
+        self.series_file = self.data / SERIES_FILE if self.series else None
+        self.series_prompts = self.data / "prompts"
         self.episodes_index = self.data / "episodes" / "index.json"
         self.bootstrap = self.data / "bootstrap"
         self.memory = self.data / "memory"
         self.memory_db = self.memory / "memory.db"
+        self.card_pins = self.data / "character_cards"
         self.cache = self.root / "cache"
         self.llm_cache = self.cache / "llm"
         self.models_cache = self.cache / "models"
+        self.card_cache = self.cache / "character_cards" / self.series if self.series else \
+            self.cache / "character_cards"
         font_dir = Path(config.render.font_dir) if config else Path("fonts")
-        self.fonts = font_dir if font_dir.is_absolute() else self.root / font_dir
+        self.fonts = font_dir if font_dir.is_absolute() else (self.data if self.series else self.root) / font_dir
 
     def episode_dir(self, episode_id: str) -> Path:
         return self.work / episode_id
@@ -447,16 +482,58 @@ def parse_config(data: dict) -> Config:
         raise ConfigError(f"config.yaml is invalid:\n{exc}") from exc
 
 
-def load_config(root: Path | None = None) -> tuple[Config, Paths]:
+def merge_sections(base: dict, override: dict) -> dict:
+    """Deep merge: nested mappings are merged key by key, any other value (lists included) replaces."""
+    out = dict(base)
+    for key, value in (override or {}).items():
+        out[key] = merge_sections(out[key], value) if isinstance(value, dict) and isinstance(out.get(key), dict) \
+            else value
+    return out
+
+
+def _read_yaml(path: Path) -> dict:
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"{path.name} is not valid YAML: {exc}") from exc
+
+
+def active_series(root: Path, data: dict, series: str | None = None) -> str | None:
+    return series or os.environ.get("SUBAGENT_SERIES") or (data.get("series") or {}).get("default")
+
+
+def series_data(root: Path, data: dict, series: str | None) -> dict:
+    """config.yaml's data with the active series' series.yaml merged in. The series is `series`, else
+    $SUBAGENT_SERIES, else `series.default`; none: the single-series layout. A series without its own
+    `paths.work_dir` works in <work_dir>/<slug>/."""
+    slug = active_series(root, data, series)
+    if not slug:
+        return data
+    folder = series_root(root) / slug
+    if not folder.is_dir():
+        known = ", ".join(list_series(root)) or "none yet"
+        raise ConfigError(f"series '{slug}' not found in {series_root(root)} (series: {known})")
+    own = _read_yaml(folder / SERIES_FILE) if (folder / SERIES_FILE).is_file() else {}
+    merged = merge_sections(data, own)
+    if not (own.get("paths") or {}).get("work_dir"):
+        base = Path((data.get("paths") or {}).get("work_dir") or "work")
+        merged = merge_sections(merged, {"paths": {"work_dir": str(base / slug)}})
+    return merge_sections(merged, {"series": {"default": slug}})
+
+
+def load_config(root: Path | None = None, series: str | None = None) -> tuple[Config, Paths]:
     root = root or find_root()
     path = root / "config.yaml"
     if not path.is_file():
         raise ConfigError(f"config.yaml not found in {root}")
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as exc:
-        raise ConfigError(f"config.yaml is not valid YAML: {exc}") from exc
-    config = parse_config(data)
+    data = _read_yaml(path)
+    config = parse_config(series_data(root, data, series))
+    if not config.translate.pronoun_terms:           # the translation style's pronoun words (5.11)
+        from subagent.registers import load_register
+
+        style = load_register(root, config.show.genre_register)
+        if style is not None and style.pronoun_terms:
+            config.translate.pronoun_terms = list(style.pronoun_terms)
     _load_env(root / ".env")
     return config, Paths(root, config)
 
@@ -468,31 +545,68 @@ def _load_env(env_file: Path) -> None:
         load_dotenv(env_file, override=False, encoding="utf-8")
 
 
-def save_config_text(root: Path, text: str) -> Config:
-    """Validate raw YAML against the config model, then write it atomically."""
+def save_config_text(root: Path, text: str, *, series_file: bool = False, series: str | None = None) -> Config:
+    """Validate raw YAML, then write it atomically: config.yaml, or with `series_file` the active series'
+    series.yaml. Validation uses the merged result (config.yaml + the active series' overrides)."""
     from subagent.util import atomic_write_text
 
     try:
-        data = yaml.safe_load(text)
+        data = yaml.safe_load(text) or {}
     except yaml.YAMLError as exc:
         raise ConfigError(f"Not valid YAML: {exc}") from exc
-    config = parse_config(data)
-    atomic_write_text(root / "config.yaml", text)
+    shared = _read_yaml(root / "config.yaml")
+    slug = active_series(root, shared, series)
+    if series_file:
+        if not slug:
+            raise ConfigError("no series is active: there is no series.yaml to save")
+        target = series_root(root) / slug / SERIES_FILE
+        config = parse_config(merge_sections(series_data(root, shared, slug), data))
+    else:
+        target = root / "config.yaml"
+        config = parse_config(series_data(root, data, slug) if active_series(root, data, series) else data)
+    atomic_write_text(target, text)
     return config
 
 
-def update_config_values(root: Path, updates: dict[str, object]) -> Config:
-    """Set dotted keys (e.g. "video.subtitle_band") in config.yaml, validate and save.
+def update_config_values(root: Path, updates: dict[str, object], series: str | None = None) -> Config:
+    """Set dotted keys (e.g. "video.subtitle_band"), validate the merged result and save (see `save_settings`)."""
+    return save_settings(root, [(key.split("."), value) for key, value in updates.items()], series)
 
-    Comments are not preserved for rewritten files; the raw editor keeps them.
-    """
-    path = root / "config.yaml"
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    for dotted, value in updates.items():
-        node = data
-        keys = dotted.split(".")
-        for key in keys[:-1]:
-            node = node.setdefault(key, {})
-        node[keys[-1]] = value
-    text = yaml.safe_dump(data, allow_unicode=True, sort_keys=False)
-    return save_config_text(root, text)
+
+def save_settings(root: Path, changes: list[tuple[list[str], object]], series: str | None = None) -> Config:
+    """Apply changes (key path, value) and save. With a series active, a change whose section is a series
+    section (`SERIES_SECTIONS`) or already in its series.yaml goes to series.yaml, any other to config.yaml
+    (5.2a). Values are rewritten in place (`yaml_edit`), so the comment on every line stays; a mapping value
+    replaces the mapping (missing keys are removed). The merged result is validated before anything is written."""
+    from subagent.util import atomic_write_text
+    from subagent.yaml_edit import set_mapping, set_value
+
+    shared_path = root / "config.yaml"
+    shared_text = shared_path.read_text(encoding="utf-8")
+    shared = yaml.safe_load(shared_text) or {}
+    slug = active_series(root, shared, series)
+    own_path = series_root(root) / slug / SERIES_FILE if slug else None
+    own_text = own_path.read_text(encoding="utf-8") if own_path and own_path.is_file() else \
+        (f"# series '{slug}': overrides of config.yaml sections for this show\n" if slug else "")
+    own = yaml.safe_load(own_text) or {} if slug else {}
+    texts = {"shared": shared_text, "series": own_text}
+    touched: set[str] = set()
+    for path, value in changes:
+        which = "series" if slug and (path[0] in SERIES_SECTIONS or path[0] in own) else "shared"
+        edit = set_mapping if isinstance(value, dict) else set_value
+        texts[which] = edit(texts[which], list(path), value)
+        touched.add(which)
+    shared_new = yaml.safe_load(texts["shared"]) or {}
+    if slug:
+        merged = merge_sections(shared_new, yaml.safe_load(texts["series"]) or {})
+        base_work = Path((shared_new.get("paths") or {}).get("work_dir") or "work")
+        if not ((yaml.safe_load(texts["series"]) or {}).get("paths") or {}).get("work_dir"):
+            merged = merge_sections(merged, {"paths": {"work_dir": str(base_work / slug)}})
+        config = parse_config(merge_sections(merged, {"series": {"default": slug}}))
+    else:
+        config = parse_config(shared_new)
+    if "shared" in touched:
+        atomic_write_text(shared_path, texts["shared"])
+    if "series" in touched and own_path is not None:
+        atomic_write_text(own_path, texts["series"])
+    return config

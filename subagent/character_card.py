@@ -52,7 +52,7 @@ class CharacterCard:
 
 
 def pin_dir(paths: Paths, char_id: str) -> Path:
-    return paths.data / "character_cards" / char_id
+    return paths.card_pins / char_id
 
 
 def _episode_ids(paths: Paths) -> list[str]:
@@ -209,7 +209,7 @@ def card_media(paths: Paths, config: Config, card: CharacterCard) -> CharacterCa
     """For a sample from a reviewed line: cut its voice clip and the picture of its confirmed box (cached)."""
     if card.source != "reviewed" or card.episode_id is None or card.event_id is None:
         return card
-    folder = paths.cache / "character_cards" / card.id
+    folder = paths.card_cache / card.id
     stem = card.event_id.replace(":", "_")
     clip, picture = folder / f"{stem}.wav", folder / f"{stem}.png"
     try:

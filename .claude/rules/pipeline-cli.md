@@ -41,6 +41,7 @@ python -m subagent clean EPISODE             # delete temporary files now
 python -m subagent dream [--auto-apply]
 python -m subagent voices learn|evaluate      # rebuild the voice bank now / measure voice-match accuracy (5.8a)
 python -m subagent sprites learn             # cast stage where missing + sprite learning, finished episodes (5.8b)
+python -m subagent series list|add|default|rename|migrate ...   # several series (5.2a)
 python -m subagent partial-review EPISODE    # mid-review: learn from approved lines, re-check the remaining (6.4b)
 python -m subagent audit sample|report|benchmark|ocr|remap-key [EPISODE...] [--redraw] [--label NAME] [--no-cache] [--existing] [--archive DIR]   # 6.11, 6.11b, 6.11c
 python -m subagent baseline freeze NAME [EPISODE...]   # copy finished reviews into a fixed baseline (6.11d)
@@ -51,7 +52,7 @@ python -m subagent status [EPISODE] [--json] # stage completion, cost (total and
 python -m subagent check                     # binaries, fonts, output folder, API keys, missing prices, device
 ```
 
-- Every command accepts `--progress json` and `--verbose`. With `--progress json`: one JSON object per line on stdout (`stage`, `status`, `done`, `total`, `cost`, `message`, `error_code`). The desktop app uses this.
+- Every command accepts `--series SLUG` (the series to work on, 5.2a; default `series.default`; the app's jobs pass it as `$SUBAGENT_SERIES`), `--progress json` and `--verbose`. With `--progress json`: one JSON object per line on stdout (`stage`, `status`, `done`, `total`, `cost`, `message`, `error_code`). The desktop app uses this.
 - `run` in human mode stops at `awaiting_review`; the app (or `finish-review`) continues through memory update and render.
 - `run --rerun` (`pipeline.RERUN_FROM`): every stage from `ocr_fix` (the first that reads memory) runs again with today's memory, also for a `done` or `awaiting_review` episode; the stages before it rerun only if their video or config changed (their output would be identical otherwise). In human mode the review draft is rebuilt (a review in progress is lost); memory and the delivered video change only when the new run is finished. Unchanged LLM calls come from the cache.
 - **Batch** (`Pipeline.run_batch`, `batch`): several episodes in episode-number order in one process (models load once; each episode's memory update happens before the next starts). Episodes already `done` or `awaiting_review` are skipped unless `--rerun` (each episode then runs as `run --rerun`); `--pending` takes every other registered episode. On a failure, auto mode stops (later episodes build on earlier memory) and human mode carries on; `--keep-going` / `--stop-on-error` override. `--max-total-cost` stops before starting another episode once the batch has spent that much (the per-episode budget still applies). Progress: `batch` events (`progress` with "epXXX (i/N)" before each episode, `info` for skips/failures, `done` with a summary); the command exits 1 when an episode failed. In auto mode with `on_exists: ask`, the CLI asks once for all episodes whose output exists (non-interactive: `fail`).

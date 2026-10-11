@@ -18,9 +18,10 @@ class JobRunner(QObject):
     log_line = Signal(str)                # stderr (logging) and non-JSON stdout
     finished = Signal(str, int, dict)     # job name, exit code, last error payload ({} when none)
 
-    def __init__(self, root: Path, parent: QObject | None = None):
+    def __init__(self, root: Path, parent: QObject | None = None, series: str | None = None):
         super().__init__(parent)
         self.root = root
+        self.series = series
         self.proc: QProcess | None = None
         self.name = ""
         self.cost = 0.0
@@ -45,6 +46,8 @@ class JobRunner(QObject):
         env.insert("PYTHONUTF8", "1")
         env.insert("PYTHONIOENCODING", "utf-8")
         env.insert("SUBAGENT_ROOT", str(self.root))
+        if self.series:
+            env.insert("SUBAGENT_SERIES", self.series)
         proc.setProcessEnvironment(env)
         proc.setWorkingDirectory(str(self.root))
         proc.readyReadStandardOutput.connect(self._read_stdout)

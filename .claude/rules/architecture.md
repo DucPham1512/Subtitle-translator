@@ -54,6 +54,10 @@ subagent/
   bench_run.py         sandbox re-run of the baseline's episodes for the suite: snapshot / chain memory (6.11e)
   character_card.py    who an id is: name, description, first episode, voice clip, picture (6.4)
   subtitle_style.py    generic subtitle segmentation: stroke-width transform, series style calibration (5.4a)
+  series.py            several series: add, rename, default, migrate the single-series layout (5.2a)
+  registers.py         translation styles: prompts/registers/<id>.md, text + pronoun words (5.11)
+  settings_schema.py   what the settings form shows: field kinds, help, known sets, which file (6.9)
+  yaml_edit.py         set / delete YAML values in place, keeping comments (5.2a)
   stages/
     ingest.py  ocr.py  events.py  ocr_fix.py  audio.py  voice.py
     pinyin_gen.py  windows.py  translate.py  evaluate.py  sprite.py
@@ -81,21 +85,26 @@ app/                   desktop app (PySide6); imports `subagent`, never the reve
   shortcuts.py  widgets.py
   views/
     episodes.py  run.py  review.py  memory.py  bootstrap.py  dreaming.py  settings.py
-    character_dialog.py  character_browser.py  common.py
+    character_dialog.py  character_browser.py  common.py  settings_form.py
   i18n/                app_en.ts, app_vi.ts (+ compiled .qm), fill_vi.py (Vietnamese strings)
-prompts/               one .md file per prompt, loaded at runtime
-data/
+prompts/               one .md file per prompt, loaded at runtime; registers/<id>.md: translation styles (5.11)
+data/series/<slug>/    one folder per series (5.2a); "data/<x>" in this spec means data/series/<slug>/<x>
+  series.yaml          overrides of config.yaml sections for this show
   episodes/index.json  episode registry: links to source videos, which stay where they are
   bootstrap/
     cast.md            cast list + synopsis written by the user
     subtitle_style.json  the series' subtitle style, learned once by `calibrate --style` (5.4a)
     voices/<char_id>/*.wav
     sprites/<char_id>/*.png
+  character_cards/     card samples the reviewer pinned (6.4)
+  fonts/               subtitle font(s) with Vietnamese + pinyin coverage
+  prompts/             series notes appended to the general prompts (5.2a)
   memory/              git repo: memory.db, briefings/, style_rules.md, conflicts.json/.md,
                        speaker_corrections.jsonl, dream_proposals.json, dream_state.json, dream_rejections.json,
                        character_updates.json, character_update_rejections.json
-fonts/                 subtitle font(s) with Vietnamese + pinyin coverage
-work/<episode_id>/     per-episode artifacts (not committed); the folder is `paths.work_dir`, may be anywhere
+app/fonts/             the interface's own font (Noto Sans), independent of any series
+work/<slug>/<episode_id>/  per-episode artifacts (not committed); the folder is `paths.work_dir` (a series' own, or
+                       <shared work_dir>/<slug>/), may be anywhere
 cache/llm/             LLM response cache (not committed)
 tests/
 config.yaml

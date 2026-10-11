@@ -8,6 +8,8 @@ work/
 cache/
 data/episodes/
 data/memory/
+data/series/*/episodes/
+data/series/*/memory/
 libmpv-2.dll
 knowledge_vault/.obsidian/
 .claude/autoharness/

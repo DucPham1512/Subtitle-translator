@@ -752,3 +752,127 @@ def test_memory_character_updates_tab_accepts_a_waiting_change(qapp, project):
         "Đệ tử của Sư tôn (shi_zun)"
     window.close()
     settle(qapp)
+
+
+def test_series_picker_switches_the_window_to_another_series(qapp, project):
+    from app import main_window as mw
+    from app.main_window import MainWindow
+    from app.services import Services
+    from subagent import series as sr
+
+    config, paths = project
+    seed_memory(config, paths)
+    sr.migrate(paths.root, "one")
+    sr.add(paths.root, "two", "Show Two")
+    window = MainWindow(Services(paths.root))
+    settle(qapp)
+    box = window.series_box
+    assert box.isVisibleTo(window) and [box.itemData(i) for i in range(box.count())] == ["one", "two", mw.MainWindow.NEW_SERIES]
+    window.switch_series("two")
+    settle(qapp)
+    new = mw._WINDOWS[-1]
+    assert new.services.paths.series == "two" and new.services.config.show.name == "Show Two"
+    assert new.jobs.series == "two"
+    new.close()
+    settle(qapp)
+
+
+def test_new_series_dialog_creates_a_translation_style(qapp, project):
+    from PySide6.QtWidgets import QWidget
+
+    from app.main_window import NewSeriesDialog, StyleDialog
+    from subagent.registers import load_register
+
+    _, paths = project
+    parent = QWidget()
+    dialog = NewSeriesDialog(parent, paths.root)
+    assert [dialog.register.itemData(i) for i in range(dialog.register.count())] == ["co_trang_tien_hiep"]
+    style = StyleDialog(dialog, paths.root)
+    style.style_id.setText("hien_dai")
+    style.style_name.setText("Hiện đại")
+    assert "## Register: Hiện đại" in style.body.toPlainText()        # the untouched template follows the name
+    style.terms.setText("tôi, bạn, anh, em")
+    style._save()
+    assert style.saved == "hien_dai" and load_register(paths.root, "hien_dai").pronoun_terms == ["tôi", "bạn", "anh", "em"]
+    dialog._fill_styles(select=style.saved)
+    assert dialog.register.currentData() == "hien_dai"
+    dialog.slug.setText("modern")
+    assert dialog.values()[2] == "hien_dai"
+
+
+def test_new_series_work_folder_can_be_chosen(qapp, project, monkeypatch, tmp_path):
+    from PySide6.QtWidgets import QFileDialog, QWidget
+
+    from app.main_window import NewSeriesDialog
+
+    _, paths = project
+    parent = QWidget()                                        # kept alive: Qt deletes the children with it
+    dialog = NewSeriesDialog(parent, paths.root)
+    asked = {}
+
+    def fake(parent, title, start):
+        asked["start"] = start
+        return str(tmp_path / "chosen")
+
+    monkeypatch.setattr(QFileDialog, "getExistingDirectory", fake)
+    dialog._pick_work()
+    assert asked["start"] == str(paths.work)                    # empty field: starts at the shared work folder
+    assert dialog.work.text() == str(tmp_path / "chosen") and dialog.values()[3] == str(tmp_path / "chosen")
+    monkeypatch.setattr(QFileDialog, "getExistingDirectory", lambda *a: "")      # cancelled: unchanged
+    dialog._pick_work()
+    assert dialog.work.text() == str(tmp_path / "chosen")
+
+
+def test_advanced_settings_form_edits_in_place_and_keeps_comments(qapp, project):
+    import yaml
+
+    from app.services import Services
+    from app.views.settings_form import PricesEditor, SettingsForm, TagEditor
+
+    config, paths = project
+    text = (paths.root / "config.yaml").read_text(encoding="utf-8")
+    text = text.replace("  min_score: 3\n", "  min_score: 3   # measured: a 3 passes\n", 1)
+    (paths.root / "config.yaml").write_text(text, encoding="utf-8")
+    services = Services(paths.root)
+    form = SettingsForm(services)
+    form.load()
+    settle(qapp)
+    assert form.changes() == []                                  # loading changes nothing
+    by = {f.spec.key: f for f in form.fields}
+    assert by["device"].widget.metaObject().className() == "QComboBox"
+    assert isinstance(by["cast.queries"].widget, TagEditor)
+    assert isinstance(by["llm.prices"].widget, PricesEditor)
+    by["evaluate.min_score"].widget.setValue(4)
+    by["cast.queries"].widget.add("a cartoon cat")
+    by["cast.queries"].widget.remove(0)
+    by["device"].widget.setCurrentText("cpu")
+    by["review.predelete_fragments"].widget.setChecked(not config.review.predelete_fragments)
+    prices = by["llm.prices"].widget
+    prices._add_row()
+    prices.table.item(prices.table.rowCount() - 1, 0).setText("new-model")
+    prices.table.item(prices.table.rowCount() - 1, 1).setText("1.5")
+    assert {".".join(p) for p, _ in form.changes()} == {"evaluate.min_score", "cast.queries", "device",
+                                                         "review.predelete_fragments", "llm.prices"}
+    assert form.save()
+    saved = (paths.root / "config.yaml").read_text(encoding="utf-8")
+    assert "  min_score: 4   # measured: a 3 passes\n" in saved           # value changed, comment kept
+    data = yaml.safe_load(saved)
+    assert data["device"] == "cpu" and data["cast"]["queries"][-1] == "a cartoon cat"
+    assert data["llm"]["prices"]["new-model"]["input"] == 1.5
+    assert services.config.evaluate.min_score == 4 and form.changes() == []
+
+
+def test_tag_editor_adds_removes_and_validates_numbers(qapp):
+    from app.views.settings_form import TagEditor
+
+    tags = TagEditor(["cps_exceeded", "check_pinyin"])
+    tags.input.setText("a, b,")
+    tags._maybe_split(tags.input.text())
+    tags.add("a")                                                  # duplicates are ignored
+    assert tags.values() == ["a", "b"]
+    tags.remove(0)
+    assert tags.values() == ["b"]
+    numbers = TagEditor(numeric=True)
+    for text in ("0.6", "1", "x"):
+        numbers.add(text)
+    assert numbers.values() == [0.6, 1]                            # "x" is not a number

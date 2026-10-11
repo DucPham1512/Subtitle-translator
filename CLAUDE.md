@@ -4,7 +4,7 @@ Implementation guide for Claude Code. Read this fully before writing code. When 
 
 ## 1. Project overview
 
-A local Python pipeline that translates the burned-in Chinese subtitles (hardsubs) of one specific cartoon series into Vietnamese, adds pinyin, and renders the result back onto the video.
+A local Python pipeline that translates the burned-in Chinese subtitles (hardsubs) of cartoon series into Vietnamese, adds pinyin, and renders the result back onto the video. It was built on one series (`series-1`) and holds several, each with its own memory, bootstrap, settings and work folder (`data/series/<slug>/`, 5.2a).
 
 Key facts about the source material that drive the design:
 
@@ -64,7 +64,7 @@ The detailed spec (old sections 3.2–6.11) lives in `.claude/rules/`, verbatim 
 
 - **Pipeline** ([architecture.md](.claude/rules/architecture.md), 3.2–3.3): stages in order ingest → ocr → events → ocr_fix → audio → voice → cast → pinyin → windows → translate (+ evaluate) → sprite → script_review → review gate; `finish-review` (or auto mode right after the gate) runs memory update → voice / sprite learning → render + deliver → report → cleanup. Each stage reads the previous artifact from `work/<episode_id>/` and is skipped when its input hash in `state.json` is unchanged. Core package `subagent/` (stages, memory, CLI), desktop app `app/` (PySide6, never imported by `subagent/`), prompts in `prompts/`, series data in `data/`.
 - **Data models** ([data-models.md](.claude/rules/data-models.md), 4): every artifact is a Pydantic model from `subagent/models.py`, one per JSONL line; the SQLite schema of `data/memory/memory.db` (characters, appearances, glossary, pronoun_pairs, voice_bank, sprite_bank, line_decisions, candidates, memory_log, …) and the Markdown memory (briefings, style rules).
-- **Config** ([config.md](.claude/rules/config.md), 5.2): every threshold is a key in `config.yaml`, validated by `config.py`; the block lists the code defaults. The project's `config.yaml` holds tuned values with a comment per measurement.
+- **Config and series** ([config.md](.claude/rules/config.md), 5.2, 5.2a): every threshold is a key in `config.yaml`, validated by `config.py`; the block lists the code defaults. Several series: `data/series/<slug>/` each (memory, bootstrap, registry, cards, fonts, prompt notes, `series.yaml` overriding config.yaml sections); a path written `data/<x>` in the spec means the active series' folder; active series = `--series`, `$SUBAGENT_SERIES` or `series.default`.
 - **OCR** ([ocr.md](.claude/rules/ocr.md), 5.3–5.6, 5.4a): frame sampling with an outline test, RapidOCR in line mode on the calibrated series style (`ocr.preprocess: segment`, symmetric crop), event building (merge, flicker, fragments, non-dialogue flags), OCR correction by the utility model.
 - **Voice and cast** ([voice-cast.md](.claude/rules/voice-cast.md), 5.1, 5.7–5.8b, 5.13): the LLM client (cache, cost records, budget, prompt caching rule), ECAPA voice match with statuses fixed / confusable / unknown / too_short / new_voice, automatic `npc_<ep>_<n>` voices, voice learning, OWLv2 + DINOv2 cast recognition and sprite learning, the optional sprite check.
 - **Translation** ([translation.md](.claude/rules/translation.md), 5.9–5.14): pinyin, scene windows, translator rules per voice status, register (cổ trang / tiên hiệp, Hán-Việt), evaluator rule checks + rubric and the retry loop, script review (repeats, noise, OCR fixes never applied), review gate and finish review.
@@ -112,7 +112,7 @@ The detailed spec (old sections 3.2–6.11) lives in `.claude/rules/`, verbatim 
 
 ### Security
 - NFR-S1: API keys only from environment / `.env`; never logged, never written to artifacts or cache keys.
-- NFR-S2: `.env`, `data/episodes/`, `work/`, `cache/` are git-ignored.
+- NFR-S2: `.env`, `data/episodes/`, `data/memory/`, `data/series/*/episodes/`, `data/series/*/memory/`, `work/`, `cache/` are git-ignored.
 - NFR-S3: The output folder and working folder may be anywhere on disk, including paths with spaces and Vietnamese or Chinese characters; all path handling must support this.
 
 ### Portability

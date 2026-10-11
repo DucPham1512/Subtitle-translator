@@ -692,6 +692,45 @@ VI = {
     "auto mode: lines not checked": "chế độ tự động: dòng chưa được kiểm tra",
     "Evidence:": "Bằng chứng:",
     "Evaluator suggests: <b>{vi}</b>": "Evaluator đề xuất: <b>{vi}</b>",
+    # series
+    "The series (show) you are working on": "Bộ phim đang làm",
+    "New series…": "Bộ phim mới…",
+    "New series": "Bộ phim mới",
+    "Series": "Bộ phim",
+    "A job is running. Switch series when it has finished.": "Đang có một job chạy. Hãy đổi bộ phim khi job xong.",
+    "short id, e.g. my-show": "mã ngắn, ví dụ my-show",
+    "default: a subfolder of the shared work folder": "mặc định: một thư mục con của thư mục làm việc chung",
+    "Translation style": "Văn phong dịch",
+    "New style…": "Văn phong mới…",
+    "New translation style": "Văn phong dịch mới",
+    "short id, e.g. hien_dai": "mã ngắn, ví dụ hien_dai",
+    "e.g. Hiện đại": "ví dụ Hiện đại",
+    "e.g. tôi, bạn, anh, em, chị, mày, tao": "ví dụ tôi, bạn, anh, em, chị, mày, tao",
+    "Pronoun words": "Từ xưng hô",
+    "Instructions for the translator (setting, names and terms, pronoun system, tone). They replace the register section of the translator prompt.":
+        "Hướng dẫn cho translator (bối cảnh, tên và thuật ngữ, hệ xưng hô, giọng văn). Phần này thay cho mục văn phong trong prompt của translator.",
+    "Choose a translation style, or create one.": "Hãy chọn một văn phong dịch, hoặc tạo mới.",
+    # advanced settings form
+    "add…": "thêm…",
+    "Remove": "Xoá",
+    "Model": "Model",
+    "USD per 1M tokens.": "USD cho mỗi 1 triệu token.",
+    "Price for {model}: '{text}' is not a number": "Giá của {model}: '{text}' không phải là số",
+    "Search settings…": "Tìm thiết lập…",
+    "Edit as YAML…": "Sửa dạng YAML…",
+    "this series": "bộ phim này",
+    "shared": "dùng chung",
+    "Saved in series.yaml (this series only)": "Lưu trong series.yaml (chỉ bộ phim này)",
+    "Saved in config.yaml (every series)": "Lưu trong config.yaml (mọi bộ phim)",
+    "Saved {n} changes.": "Đã lưu {n} thay đổi.",
+    "Edit as YAML": "Sửa dạng YAML",
+    "Work folder": "Thư mục làm việc",
+    "After creating it, the Bootstrap screen opens: calibrate the subtitles, write the cast and add voice clips, as for the first series.":
+        "Sau khi tạo, màn Bootstrap sẽ mở: căn chỉnh phụ đề, viết danh sách nhân vật và thêm mẫu giọng, như với bộ phim đầu tiên.",
+    "config.yaml (shared by every series)": "config.yaml (dùng chung cho mọi bộ phim)",
+    "series.yaml (this series: {slug})": "series.yaml (bộ phim này: {slug})",
+    "Validated before saving; comments are kept. A series' series.yaml overrides config.yaml for that series.":
+        "Được kiểm tra trước khi lưu; giữ nguyên chú thích. series.yaml của một bộ phim ghi đè config.yaml cho bộ phim đó.",
 }
 
 _PH = re.compile(r"\{[a-z_]+\}")
