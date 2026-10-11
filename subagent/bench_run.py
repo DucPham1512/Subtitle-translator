@@ -135,23 +135,11 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     from subagent.context import EpisodeContext
     from subagent.episodes import Registry
     from subagent.errors import SubagentError
-    from subagent.pipeline import _BY_NAME, RERUN_FROM
+    from subagent.pipeline import _BY_NAME
 
-    if resume is not None:
-        if not (resume / STATE).is_file():
-            raise SubagentError(f"not a benchmark run folder (no {STATE}): {resume}", code="no_run")
-        state = json.loads((resume / STATE).read_text(encoding="utf-8"))
-        mode, from_stage, episodes, label = state["mode"], state["from_stage"], state["episodes"], state["label"]
-        use_cache = state.get("use_cache", use_cache)
-        folder = resume
-    else:
-        if mode not in MODES:
-            raise SubagentError(f"Unknown mode '{mode}'. Modes: {', '.join(MODES)}", code="unknown_mode")
-        from_stage = from_stage or RERUN_FROM
-        stamp = now_iso().replace(":", "").replace("-", "")[:15]
-        folder = paths.work / suite.FOLDER / f"{stamp}-{label or mode}"
-        state = {"mode": mode, "from_stage": from_stage, "episodes": episodes, "label": label,
-                 "use_cache": use_cache, "started_at": now_iso(), "done": [], "memory": {}}
+    state, folder = _start_or_resume(paths, mode, from_stage, episodes, label, use_cache, resume)
+    mode, from_stage, episodes, label = state["mode"], state["from_stage"], state["episodes"], state["label"]
+    use_cache = state.get("use_cache", use_cache)
     plan = stage_plan(from_stage, mode)
     gold = suite.load_gold(gold_folder, episodes)
     every = suite.load_gold(gold_folder).episodes
@@ -185,18 +173,9 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
             if mode == "snapshot":
                 checkout_memory(paths, sp, commits[ep])
             _frozen_inputs(src, work, plan)
-            for name in plan:
-                if progress:
-                    progress.emit("bench", "progress", done=n - 1, total=last + 1, message=f"{ep}: {name}")
-                stage(name, ctx)
-            dst = out / ep
-            if dst.exists():
-                shutil.rmtree(dst)
-            dst.mkdir(parents=True)
-            for name in SCORED:
-                if (work / name).is_file():
-                    shutil.copy2(work / name, dst / name)
-            (work / "cost.jsonl").unlink(missing_ok=True)       # kept in out/; what stays in work/ is learning cost
+            report = (lambda msg, n=n: progress.emit("bench", "progress", done=n - 1, total=last + 1,
+                                                     message=msg)) if progress else None
+            _rerun_episode(ctx, plan, stage, out / ep, report)
         _install_review(src, work)
         if mode == "chain" and n <= last:          # the last episode teaches nothing that is scored
             if progress:
@@ -210,6 +189,42 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     suite.save(paths, result, folder)
     _drop_heavy(sp.work)
     return result
+
+
+def _start_or_resume(paths: Paths, mode: str, from_stage: str | None, episodes: list[str] | None, label: str,
+                     use_cache: bool, resume: Path | None) -> tuple[dict, Path]:
+    """(run state, run folder): a new run's settings, or a stopped run's own (run.json)."""
+    from subagent import suite
+    from subagent.errors import SubagentError
+    from subagent.pipeline import RERUN_FROM
+
+    if resume is not None:
+        if not (resume / STATE).is_file():
+            raise SubagentError(f"not a benchmark run folder (no {STATE}): {resume}", code="no_run")
+        return json.loads((resume / STATE).read_text(encoding="utf-8")), resume
+    if mode not in MODES:
+        raise SubagentError(f"Unknown mode '{mode}'. Modes: {', '.join(MODES)}", code="unknown_mode")
+    from_stage = from_stage or RERUN_FROM
+    stamp = now_iso().replace(":", "").replace("-", "")[:15]
+    folder = paths.work / suite.FOLDER / f"{stamp}-{label or mode}"
+    return {"mode": mode, "from_stage": from_stage, "episodes": episodes, "label": label,
+            "use_cache": use_cache, "started_at": now_iso(), "done": [], "memory": {}}, folder
+
+
+def _rerun_episode(ctx, plan: list[str], stage, dst: Path, report) -> None:
+    """Run the plan's stages on one episode and keep its scored machine files in `dst`."""
+    work = ctx.work
+    for name in plan:
+        if report:
+            report(f"{ctx.episode.id}: {name}")
+        stage(name, ctx)
+    if dst.exists():
+        shutil.rmtree(dst)
+    dst.mkdir(parents=True)
+    for name in SCORED:
+        if (work / name).is_file():
+            shutil.copy2(work / name, dst / name)
+    (work / "cost.jsonl").unlink(missing_ok=True)       # kept in out/; what stays in work/ is learning cost
 
 
 def _save_state(folder: Path, state: dict) -> None:
