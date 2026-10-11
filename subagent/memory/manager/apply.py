@@ -92,10 +92,32 @@ class ApplyMixin:
 
     def _apply_row(self, conn: sqlite3.Connection, p: MemoryProposal, approved_ids: set[str] | None,
                    episode_id: str | None, result: ApplyResult) -> None:
+        """One proposal under the write rules (5.15): delete, update or insert one row, or reject it."""
         table = KIND_TABLE[p.kind]
+        payload = self._clean_payload(conn, p, table, result)
+        if payload is None:
+            return
+        try:
+            key = row_key(table, payload)
+        except KeyError:
+            self._reject(conn, result, table, "?", p, "missing key fields")
+            return
+        if p.source in EVIDENCE_SOURCES and (approved_ids is None or not p.evidence
+                                             or not set(p.evidence) <= approved_ids):
+            self._reject(conn, result, table, key, p, "evidence lines not approved")
+            return
+        existing = _fetch(conn, table, key)
+        if payload.pop("_delete", False):
+            self._delete_row(conn, p, table, key, existing, result)
+        elif existing is not None:
+            self._update_row(conn, p, table, key, existing, payload, result)
+        else:
+            self._insert_row(conn, p, table, key, payload, episode_id, result)
+
+    def _clean_payload(self, conn: sqlite3.Connection, p: MemoryProposal, table: str,
+                       result: ApplyResult) -> dict | None:
+        """The proposal's columns, trimmed and normalised; None when it was rejected (a bad status)."""
         payload = {k: v for k, v in p.payload.items() if k in COLUMNS[table] or k == "_delete"}
-        # the app's lock toggle: only a human may set the lock explicitly (including unlocking)
-        explicit_lock = p.payload.get("_locked") if p.source == "human" else None
         if table == "pronoun_pairs":
             payload["context"] = (payload.get("context") or "").strip()
         for k, v in list(payload.items()):
@@ -115,70 +137,70 @@ class ApplyMixin:
             elif payload["status"] not in STATUSES:
                 self._reject(conn, result, table, str(payload.get("id", "?")), p,
                              f"status must be one of {', '.join(STATUSES)}")
-                return
-        try:
-            key = row_key(table, payload)
-        except KeyError:
-            self._reject(conn, result, table, "?", p, "missing key fields")
-            return
+                return None
+        return payload
+
+    @staticmethod
+    def _explicit_lock(p: MemoryProposal) -> object:
+        """The app's lock toggle: only a human may set the lock explicitly (including unlocking)."""
+        return p.payload.get("_locked") if p.source == "human" else None
+
+    def _delete_row(self, conn: sqlite3.Connection, p: MemoryProposal, table: str, key: str,
+                    existing: dict | None, result: ApplyResult) -> None:
         label = f"{table}:{key}"
-
-        if p.source in EVIDENCE_SOURCES and (approved_ids is None or not p.evidence
-                                             or not set(p.evidence) <= approved_ids):
-            self._reject(conn, result, table, key, p, "evidence lines not approved")
+        if existing is None:
+            result.unchanged.append(label)
             return
-
-        existing = _fetch(conn, table, key)
-        if payload.pop("_delete", False):
-            if existing is None:
-                result.unchanged.append(label)
-                return
-            if existing["locked"] and p.source != "human":
-                self._reject(conn, result, table, key, p, "entry is locked")
-                return
-            if p.source not in ("human",):
-                self._reject(conn, result, table, key, p, "only human edits may delete entries")
-                return
-            _delete(conn, table, key)
-            self._log(conn, "delete", table, key, existing, None, p, len(p.evidence))
-            result.applied.append(label)
+        if existing["locked"] and p.source != "human":
+            self._reject(conn, result, table, key, p, "entry is locked")
             return
-
-        if existing is not None:
-            changes = {k: v for k, v in payload.items() if k in COLUMNS[table] and existing.get(k) != v
-                       and not (v in (None, "") and existing.get(k) in (None, ""))}
-            target_lock = (int(bool(explicit_lock)) if explicit_lock is not None
-                           else 1 if p.source in LOCKING_SOURCES else existing["locked"])
-            if not changes and target_lock == existing["locked"]:
-                result.unchanged.append(label)
-                return
-            if existing["locked"] and p.source == "updater":
-                result.held += held_updates(table, key, existing, changes, p, "locked")
-                return
-            if existing["locked"] and p.source not in LOCKING_SOURCES:
-                self._reject(conn, result, table, key, p, "entry is locked")
-                return
-            # an automatically found character nobody has named yet takes the first name proposed for it
-            first_name = (table == "characters" and is_unnamed(existing, self.config.voice.new_voice_prefix)
-                          and bool(changes.get("name_vi")) and changes["name_vi"] != key)
-            # character updates (5.15c) replace what an unlocked entry says: no evidence comparison
-            if (not existing["locked"] and p.source not in LOCKING_SOURCES and p.source != "updater" and changes
-                    and not first_name):
-                current_evidence = _current_evidence(conn, table, key)
-                if len(p.evidence) <= current_evidence:
-                    self._conflict(conn, result, table, key, existing, p,
-                                   f"{len(p.evidence)} evidence vs {current_evidence} for the current entry")
-                    return
-            after = {**existing, **changes, "updated_at": now_iso(), "locked": target_lock}
-            if table == "glossary":
-                after["source"] = p.source
-            _update(conn, table, key, after)
-            self._log(conn, "update", table, key, existing, after, p, len(p.evidence))
-            result.applied.append(label)
-            if first_name:
-                result.renamed.append((key, after["name_vi"]))
+        if p.source not in ("human",):
+            self._reject(conn, result, table, key, p, "only human edits may delete entries")
             return
+        _delete(conn, table, key)
+        self._log(conn, "delete", table, key, existing, None, p, len(p.evidence))
+        result.applied.append(label)
 
+    def _update_row(self, conn: sqlite3.Connection, p: MemoryProposal, table: str, key: str, existing: dict,
+                    payload: dict, result: ApplyResult) -> None:
+        label = f"{table}:{key}"
+        explicit_lock = self._explicit_lock(p)
+        changes = {k: v for k, v in payload.items() if k in COLUMNS[table] and existing.get(k) != v
+                   and not (v in (None, "") and existing.get(k) in (None, ""))}
+        target_lock = (int(bool(explicit_lock)) if explicit_lock is not None
+                       else 1 if p.source in LOCKING_SOURCES else existing["locked"])
+        if not changes and target_lock == existing["locked"]:
+            result.unchanged.append(label)
+            return
+        if existing["locked"] and p.source == "updater":
+            result.held += held_updates(table, key, existing, changes, p, "locked")
+            return
+        if existing["locked"] and p.source not in LOCKING_SOURCES:
+            self._reject(conn, result, table, key, p, "entry is locked")
+            return
+        # an automatically found character nobody has named yet takes the first name proposed for it
+        first_name = (table == "characters" and is_unnamed(existing, self.config.voice.new_voice_prefix)
+                      and bool(changes.get("name_vi")) and changes["name_vi"] != key)
+        # character updates (5.15c) replace what an unlocked entry says: no evidence comparison
+        if (not existing["locked"] and p.source not in LOCKING_SOURCES and p.source != "updater" and changes
+                and not first_name):
+            current_evidence = _current_evidence(conn, table, key)
+            if len(p.evidence) <= current_evidence:
+                self._conflict(conn, result, table, key, existing, p,
+                               f"{len(p.evidence)} evidence vs {current_evidence} for the current entry")
+                return
+        after = {**existing, **changes, "updated_at": now_iso(), "locked": target_lock}
+        if table == "glossary":
+            after["source"] = p.source
+        _update(conn, table, key, after)
+        self._log(conn, "update", table, key, existing, after, p, len(p.evidence))
+        result.applied.append(label)
+        if first_name:
+            result.renamed.append((key, after["name_vi"]))
+
+    def _insert_row(self, conn: sqlite3.Connection, p: MemoryProposal, table: str, key: str, payload: dict,
+                    episode_id: str | None, result: ApplyResult) -> None:
+        explicit_lock = self._explicit_lock(p)
         missing = [c for c in REQUIRED[table] if not payload.get(c)]
         if missing:
             self._reject(conn, result, table, key, p, f"missing fields: {', '.join(missing)}")
@@ -202,8 +224,7 @@ class ApplyMixin:
             row["aliases"] = row.get("aliases") or "[]"
         _insert(conn, table, row)
         self._log(conn, "insert", table, key, None, row, p, len(p.evidence))
-        result.applied.append(label)
-
+        result.applied.append(f"{table}:{key}")
 
     def _log(self, conn: sqlite3.Connection, op: str, table: str, key: str, before: dict | None,
              after: dict | None, p: MemoryProposal | None, evidence: int, source: str | None = None,
