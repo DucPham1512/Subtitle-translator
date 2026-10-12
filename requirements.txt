@@ -1,0 +1,38 @@
+# Full install for the target machine (Windows, NVIDIA GPU), pinned to the tested versions (Python 3.13).
+#   pip install -r requirements.txt
+# Ranges and optional groups: pyproject.toml. CPU-only machine: see README ("CPU only").
+
+# PyTorch with CUDA 12.8 (driver >= 570; `nvidia-smi` shows the driver's CUDA version)
+--extra-index-url https://download.pytorch.org/whl/cu128
+
+# core pipeline
+pydantic==2.13.5
+openai==3.22.1
+PyYAML==6.0.3
+python-dotenv==1.2.3
+numpy==2.5.3
+opencv-python-headless==5.0.0.93
+pypinyin==0.55.0
+jieba==0.42.1
+pysubs2==1.9.0
+
+# OCR: RapidOCR on ONNX Runtime; [cuda,cudnn] brings the CUDA 13 + cuDNN 9 DLLs it needs
+rapidocr==3.9.2
+onnxruntime-gpu[cuda,cudnn]==1.30.0
+
+# voice match (SpeechBrain ECAPA)
+torch==2.11.0+cu128
+torchaudio==2.11.0+cu128
+speechbrain==1.1.1
+
+# cast recognition (OWLv2 + DINOv2)
+transformers==5.18.0
+pillow==12.3.0
+
+# desktop app
+PySide6==6.11.2
+python-mpv==1.0.8
+
+# tests and lint
+pytest==9.1.1
+ruff==0.16.9

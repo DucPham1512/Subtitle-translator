@@ -11,81 +11,124 @@ video → frames + change detection → OCR → events → OCR fix ─┐
       → review (app or auto) → memory update → ASS + mask + burn-in → output folder
 ```
 
-## Quick start
+## Install
 
-After [setup](#setup), with the virtual environment active and UTF-8 mode on:
+### 1. What you need
+
+- Windows 10/11 (Linux also works) and **Python 3.11 or newer** (tested with 3.13).
+- An NVIDIA GPU with a recent driver (≥ 570 for CUDA 12.8; `nvidia-smi` shows it). Without a GPU everything
+  still runs on the CPU, more slowly: see [CPU only](#cpu-only).
+- On `PATH`:
+  - **ffmpeg** and **ffprobe**: `winget install Gyan.FFmpeg`
+  - **git**: `winget install Git.Git`
+- API keys for the LLMs: DeepSeek (translator and utility calls) and Google Gemini (evaluator, free tier).
+- Optional, for the live video preview in the review screen: `libmpv-2.dll` in the project folder. Download
+  *mpv-dev-x86_64* from the mpv website and copy `libmpv-2.dll` from it. Without it, review still works, just
+  without the preview.
+
+### 2. Turn on UTF-8 mode
+
+Always run with UTF-8 mode. Otherwise the legacy Windows code page corrupts Chinese and Vietnamese text.
 
 ```powershell
-$env:PYTHONUTF8 = "1"
-.\.venv\Scripts\Activate.ps1          # Linux: source .venv/bin/activate
-
-python -m subagent check              # binaries, GPU, fonts, output folder, API keys
-python -m app                         # the desktop app: everything below can be done from it
+setx PYTHONUTF8 1          # permanent, for new terminals
+$env:PYTHONUTF8 = "1"      # this terminal
 ```
 
-Translating one episode from the command line:
+### 3. Create a virtual environment and install the packages
+
+From the project folder:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1          # Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+`requirements.txt` installs everything at the tested versions, including PyTorch for CUDA 12.8 (from the
+PyTorch wheel index) and the CUDA / cuDNN libraries GPU OCR needs. It is a large download (several GB).
+
+An older driver that does not support CUDA 12.8: in `requirements.txt`, change `cu128` in the index URL and in
+the two torch versions to the CUDA version your driver supports (for example `cu126`:
+`https://download.pytorch.org/whl/cu126`, `torch==2.11.0+cu126`), then run the install again.
+
+### 4. Add the API keys
+
+Copy `.env.example` to `.env` and fill in the keys. You can also do this in the app later, under Settings → API
+keys. The key names are the `api_key_env` values in `config.yaml` (`llm.providers`):
+
+```
+DEEPSEEK_API_KEY=...
+GEMINI_API_KEY=...
+```
+
+Keys are read only from `.env` or the environment. They are never written to logs or artifacts.
+
+### 5. Check the setup
+
+```powershell
+python -m subagent check
+```
+
+This reports missing binaries (with install hints), the device in use (GPU / CPU), fonts, the output folder and
+API keys. Before the first run, also:
+
+- check the model ids in `config.yaml` (`llm.providers.*.model`);
+- fill `llm.prices`, so the cost report and the per-episode budget work;
+- set the output folder: `output.folder` in `config.yaml`, or in the app under Settings → Files.
+
+The two cast-recognition models (about 0.9 GB) and the voice model download into `cache/models/` the first time
+an episode uses them.
+
+### CPU only
+
+`requirements.txt` works on a machine without an NVIDIA GPU too: torch and ONNX Runtime fall back to the CPU.
+Set `device: cpu` in `config.yaml` (or Settings) so nothing tries CUDA first. OCR then takes about 1 s per
+changed frame.
+
+To use the smaller CPU builds instead (several GB less on disk), replace them after installing:
+
+```powershell
+pip uninstall -y onnxruntime-gpu
+pip install onnxruntime==1.30.0
+pip install --force-reinstall --no-deps torch==2.11.0 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+```
+
+## Run
+
+Every time, in a new terminal, from the project folder:
+
+```powershell
+$env:PYTHONUTF8 = "1"                 # unless set permanently with setx
+.\.venv\Scripts\Activate.ps1          # Linux: source .venv/bin/activate
+```
+
+### The desktop app
+
+```powershell
+python -m app
+```
+
+Everything can be done from the app: add episodes, run them, review, bootstrap, memory, settings. A new series
+starts at **New series…** in the series picker (top of the sidebar). It then opens the Bootstrap screen. See
+[First episode of a series](#first-episode-of-a-series) for the steps.
+
+### The command line
+
+Translating one episode:
 
 ```powershell
 python -m subagent add "D:\show\第1集.mp4"     # register the video (linked, never copied)
 python -m subagent run ep001                   # human mode: stops when the draft is ready for review
 python -m app                                  # review it: Review screen, then Finish review
-# or, without the app, after editing work\ep001\review_draft.jsonl:
+# or, without the app, after editing <work>\ep001\review_draft.jsonl:
 python -m subagent finish-review ep001         # memory update, render; the video lands in the output folder
 ```
 
 `python -m subagent run ep001 --mode auto` approves everything automatically and lists flagged lines in
-`work/ep001/report.md`.
-
-## Requirements
-
-- Windows 10/11 (Linux also works), Python 3.11+, an NVIDIA GPU (CPU works too, slower).
-- On `PATH`: **ffmpeg** and **ffprobe** (`winget install Gyan.FFmpeg`), **git** (`winget install Git.Git`).
-- Optional, for the live preview: `libmpv-2.dll` next to the project (download *mpv-dev-x86_64* from the
-  mpv website, copy `libmpv-2.dll` into this folder). Without it, review still works without a preview.
-
-## Setup
-
-Always run with UTF-8 mode, or Chinese and Vietnamese text gets corrupted by the legacy Windows code page:
-
-```powershell
-$env:PYTHONUTF8 = "1"          # or set it permanently: setx PYTHONUTF8 1
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e ".[app,ocr,dev]"
-```
-
-Voice match needs PyTorch with CUDA. Install torch from the CUDA wheel index that matches your driver
-(`nvidia-smi` shows the driver's CUDA version; drivers ≥ 570 support CUDA 12.8), **then** SpeechBrain:
-
-```powershell
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
-pip install "speechbrain>=1.0"
-```
-
-(For CPU only: `pip install torch torchaudio` from the default index.)
-
-Characters on screen (the cast stage) needs `transformers` on top of torch; the two models (about 0.9 GB)
-download into `cache/models/hf` on first use:
-
-```powershell
-pip install -e ".[cast]"
-```
-
-GPU OCR: `onnxruntime-gpu` 1.30 needs the CUDA 13 runtime and cuDNN 9 DLLs. Either install the CUDA 13
-toolkit + cuDNN 9 system-wide, or let pip fetch them: `pip install "onnxruntime-gpu[cuda,cudnn]"` (the app calls
-`onnxruntime.preload_dlls()`). Without them OCR runs on the CPU (about 1 s per changed frame), and
-`python -m subagent check` reports the device in use.
-
-API keys go in `.env` (copy `.env.example`), or in the app under Settings → API keys. The names are the
-`api_key_env` values in `config.yaml` (`llm.providers`):
-
-```
-DEEPSEEK_API_KEY=...      # translator and utility calls
-GEMINI_API_KEY=...        # evaluator
-```
-
-Check everything with `python -m subagent check`. Verify the model ids in `config.yaml`
-(`llm.providers.*.model`) and fill `llm.prices` before the first run, so cost reports and the budget work.
+`<work>/ep001/report.md`. A stopped run resumes where it left off: run the same command again. All commands
+are listed in [Commands](#commands).
 
 ## Series
 
@@ -130,7 +173,7 @@ Paths below are in the series folder `data/series/<slug>/`.
    `python -m subagent calibrate ep001 --style`.
 3. **Bootstrap memory**: write `bootstrap/cast.md` (see `data/series/series-1/bootstrap/cast.example.md`), put
    3–5 voice clips per character in `bootstrap/voices/<char_id>/` and optional sprite crops in
-   `bootstrap/sprites/<char_id>/` (the app's Bootstrap wizard captures both from the video), then
+   `bootstrap/sprites/<char_id>/` (only with character identification on; the app's Bootstrap wizard captures both from the video), then
    `python -m subagent bootstrap`, review `bootstrap/seed_draft.json`, and
    `python -m subagent bootstrap --approve`.
 4. **Set the output folder** in `config.yaml` (`output.folder`) or Settings → Files.
@@ -199,6 +242,8 @@ python app\i18n\fill_vi.py      # add new strings to the VI table in that file f
 ```
 
 ## Development
+
+`requirements.txt` already includes pytest and ruff.
 
 ```powershell
 pytest          # unit + pipeline + offscreen app tests; LLM calls use the fake client in tests/conftest.py

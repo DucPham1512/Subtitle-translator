@@ -120,7 +120,7 @@ The detailed spec (old sections 3.2–6.11) lives in `.claude/rules/`, verbatim 
 - NFR-PT2: External binaries required: ffmpeg, ffprobe, git (Git for Windows). Check at startup and print install hints if missing.
 - NFR-PT3: Text encoding: open every text file with `encoding="utf-8"` explicitly, and set `PYTHONUTF8=1` in the run instructions. Windows defaults to a legacy code page that corrupts Chinese and Vietnamese text.
 - NFR-PT4: SpeechBrain model fetching must use its copy strategy instead of symlinks, because symlinks need admin rights or Developer Mode on Windows.
-- NFR-PT5: Install torch from the CUDA wheel index matching the installed driver; document the exact command in `README.md`.
+- NFR-PT5: Install torch from the CUDA wheel index matching the installed driver; document the exact command in `README.md`; `requirements.txt` pins the tested versions of everything, torch from the cu128 index.
 
 ### UX (desktop app)
 - NFR-UX1: The UI thread never blocks for more than 100 ms; I/O, model loading and jobs run off the UI thread or in child processes.
