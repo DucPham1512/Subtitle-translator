@@ -1589,117 +1589,117 @@ Replaced: {files}</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="183"/>
+        <location filename="../main_window.py" line="219"/>
         <source>Subtitle Agent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="207"/>
+        <location filename="../main_window.py" line="243"/>
         <source>Episodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="207"/>
+        <location filename="../main_window.py" line="243"/>
         <source>Review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="207"/>
+        <location filename="../main_window.py" line="243"/>
         <source>Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="208"/>
+        <location filename="../main_window.py" line="244"/>
         <source>Bootstrap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="208"/>
+        <location filename="../main_window.py" line="244"/>
         <source>Dreaming</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="208"/>
+        <location filename="../main_window.py" line="244"/>
         <source>Audit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="209"/>
+        <location filename="../main_window.py" line="245"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="235"/>
+        <location filename="../main_window.py" line="271"/>
         <source>No job running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="237"/>
+        <location filename="../main_window.py" line="273"/>
         <source>Device: …</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="243"/>
+        <location filename="../main_window.py" line="279"/>
         <source>Running: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="262"/>
+        <location filename="../main_window.py" line="298"/>
         <source>The series (show) you are working on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="267"/>
+        <location filename="../main_window.py" line="303"/>
         <source>New series…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="288"/>
+        <location filename="../main_window.py" line="324"/>
         <source>New series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="306"/>
+        <location filename="../main_window.py" line="342"/>
         <source>Series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="307"/>
+        <location filename="../main_window.py" line="343"/>
         <source>A job is running. Switch series when it has finished.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="340"/>
+        <location filename="../main_window.py" line="376"/>
         <source>Device: {device}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="344"/>
+        <location filename="../main_window.py" line="380"/>
         <source>Cost ${cost} / ${budget}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="349"/>
+        <location filename="../main_window.py" line="385"/>
         <source>Running: {job} — {stage}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="353"/>
+        <location filename="../main_window.py" line="389"/>
         <source>Finished: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="355"/>
+        <location filename="../main_window.py" line="391"/>
         <source>Failed: {job}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="362"/>
+        <location filename="../main_window.py" line="398"/>
         <source>Job running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="363"/>
+        <location filename="../main_window.py" line="399"/>
         <source>A job is running ({job}). Cancel it and close? It can be resumed later.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2207,65 +2207,111 @@ A new version is created; nothing is lost, and this rollback can itself be undon
 <context>
     <name>NewSeriesDialog</name>
     <message>
-        <location filename="../main_window.py" line="99"/>
-        <location filename="../main_window.py" line="166"/>
-        <location filename="../main_window.py" line="169"/>
+        <location filename="../main_window.py" line="101"/>
+        <location filename="../main_window.py" line="192"/>
+        <location filename="../main_window.py" line="195"/>
+        <location filename="../main_window.py" line="198"/>
         <source>New series</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="102"/>
+        <location filename="../main_window.py" line="104"/>
         <source>short id, e.g. my-show</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="106"/>
+        <location filename="../main_window.py" line="108"/>
         <source>New style…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="112"/>
+        <location filename="../main_window.py" line="114"/>
         <source>default: a subfolder of the shared work folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="113"/>
+        <location filename="../main_window.py" line="115"/>
         <source>Choose…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="118"/>
-        <source>Id</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../main_window.py" line="119"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../main_window.py" line="120"/>
-        <source>Translation style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../main_window.py" line="121"/>
-        <source>Work folder</source>
+        <source>Identify characters (speaker and listener per line)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../main_window.py" line="122"/>
+        <source>On: voices and pictures find who speaks to whom, and the pronoun matrix decides xưng hô per pair. Off: no character identification; every line uses the default pronoun pair below.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="125"/>
+        <source>how the speaker says &quot;I&quot;, e.g. ta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="127"/>
+        <source>how the speaker says &quot;you&quot;, e.g. ngươi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="135"/>
+        <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="136"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="137"/>
+        <source>Translation style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="138"/>
+        <source>Pronouns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="139"/>
+        <source>Default pronoun pair</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="141"/>
+        <source>Work folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="143"/>
         <source>After creating it, the Bootstrap screen opens: calibrate the subtitles, write the cast and add voice clips, as for the first series.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="132"/>
+        <location filename="../main_window.py" line="152"/>
+        <source>Used only if you turn character identification off later (Settings).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="153"/>
+        <source>Required: every line of this series uses this pair.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="158"/>
         <source>Choose a folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="169"/>
+        <location filename="../main_window.py" line="195"/>
         <source>Choose a translation style, or create one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="199"/>
+        <source>Without character identification every line uses the default pronoun pair: fill in both words.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2487,463 +2533,469 @@ Download libmpv for Windows (mpv-dev-x86_64 from the mpv website), put libmpv-2.
 <context>
     <name>ReviewView</name>
     <message>
-        <location filename="../views/review.py" line="73"/>
+        <location filename="../views/review.py" line="93"/>
         <source>Episode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="83"/>
+        <location filename="../views/review.py" line="103"/>
         <source>Unapproved only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="85"/>
+        <location filename="../views/review.py" line="105"/>
         <source>Search Chinese and Vietnamese…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="87"/>
+        <location filename="../views/review.py" line="108"/>
         <source>Flag:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="87"/>
+        <location filename="../views/review.py" line="107"/>
         <source>Speaker:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="96"/>
+        <location filename="../views/review.py" line="119"/>
         <source>Read-only: this episode&apos;s review is finished.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="103"/>
+        <location filename="../views/review.py" line="127"/>
         <source>State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="103"/>
+        <location filename="../views/review.py" line="127"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="103"/>
-        <location filename="../views/review.py" line="172"/>
+        <location filename="../views/review.py" line="127"/>
+        <location filename="../views/review.py" line="169"/>
+        <location filename="../views/review.py" line="699"/>
         <source>Speaker → listener</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="104"/>
-        <location filename="../views/review.py" line="162"/>
+        <location filename="../views/review.py" line="128"/>
+        <location filename="../views/review.py" line="159"/>
         <source>Chinese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="104"/>
-        <location filename="../views/review.py" line="171"/>
+        <location filename="../views/review.py" line="128"/>
+        <location filename="../views/review.py" line="168"/>
         <source>Vietnamese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="123"/>
+        <location filename="../views/review.py" line="146"/>
         <source>Regenerate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="124"/>
+        <location filename="../views/review.py" line="147"/>
         <source>Discard the manual pinyin and generate it from the Chinese text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="133"/>
+        <location filename="../views/review.py" line="156"/>
         <source>Dialogue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="133"/>
+        <location filename="../views/review.py" line="156"/>
         <source>Sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="134"/>
+        <location filename="../views/review.py" line="157"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="134"/>
+        <location filename="../views/review.py" line="157"/>
         <source>Sound effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="140"/>
+        <location filename="../views/review.py" line="200"/>
         <source>New character…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="141"/>
+        <location filename="../views/review.py" line="201"/>
         <source>Add a character to memory and assign it to this line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="164"/>
+        <location filename="../views/review.py" line="161"/>
         <source>The original subtitle in the video at this line (the preview hides it)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="165"/>
+        <location filename="../views/review.py" line="162"/>
         <source>Original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="170"/>
+        <location filename="../views/review.py" line="167"/>
         <source>Pinyin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="219"/>
+        <location filename="../views/review.py" line="258"/>
         <source>On screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="192"/>
+        <location filename="../views/review.py" line="227"/>
         <source>Approve and next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="144"/>
+        <location filename="../views/review.py" line="204"/>
         <source>New NPC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="146"/>
+        <location filename="../views/review.py" line="206"/>
         <source>Give this line&apos;s speaker a new automatic id (npc_&lt;episode&gt;_&lt;n&gt;) without saving anything to memory. Use the same id on the character&apos;s other lines: at Finish review, with at least 3 approved lines as speaker it goes on probation, and becomes a character only if it speaks again in the next 2 episodes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="151"/>
+        <location filename="../views/review.py" line="211"/>
         <source>Browse characters…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="152"/>
+        <location filename="../views/review.py" line="212"/>
         <source>See every character&apos;s picture, first episode and voice sample, and assign one to this line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="157"/>
+        <location filename="../views/review.py" line="217"/>
         <source>Use the speaker Partial review suggests (the line is then flagged so you check its pronouns)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="167"/>
+        <location filename="../views/review.py" line="164"/>
         <source>What OCR read for this line after pre-processing (segmentation and cropping), at its position in the band; grey was not read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="169"/>
+        <location filename="../views/review.py" line="166"/>
         <source>OCR read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="178"/>
+        <location filename="../views/review.py" line="176"/>
         <source>Who the speaker is: picture, first episode, description and a voice sample from an episode you reviewed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="193"/>
+        <location filename="../views/review.py" line="228"/>
         <source>Approve all remaining non-flagged…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="194"/>
+        <location filename="../views/review.py" line="229"/>
         <source>Finish review…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="196"/>
+        <location filename="../views/review.py" line="231"/>
         <source>Reset line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="197"/>
+        <location filename="../views/review.py" line="232"/>
         <source>Undo every review change to this line (back to the pipeline&apos;s version)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="198"/>
-        <location filename="../views/review.py" line="675"/>
+        <location filename="../views/review.py" line="233"/>
+        <location filename="../views/review.py" line="737"/>
         <source>Delete line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="199"/>
+        <location filename="../views/review.py" line="234"/>
         <source>Remove this line from the video (e.g. OCR noise). It can be restored.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="200"/>
+        <location filename="../views/review.py" line="235"/>
         <source>Discard review…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="201"/>
-        <location filename="../views/review.py" line="952"/>
+        <location filename="../views/review.py" line="236"/>
+        <location filename="../views/review.py" line="1014"/>
         <source>Partial review…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="203"/>
+        <location filename="../views/review.py" line="238"/>
         <source>Learn from the lines you approved so far (speakers, talking marks, character boxes, voices) and re-check the remaining lines. Nothing is saved to memory until you finish the review.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="218"/>
+        <location filename="../views/review.py" line="257"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="319"/>
+        <location filename="../views/review.py" line="359"/>
         <source>No episode is waiting for review. Run an episode in human mode first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="337"/>
+        <location filename="../views/review.py" line="377"/>
         <source>(archived)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="350"/>
+        <location filename="../views/review.py" line="390"/>
         <source>Review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="376"/>
-        <location filename="../views/review.py" line="380"/>
+        <location filename="../views/review.py" line="416"/>
+        <location filename="../views/review.py" line="420"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="423"/>
+        <location filename="../views/review.py" line="463"/>
         <source>Loading…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="446"/>
+        <location filename="../views/review.py" line="486"/>
         <source>Saving the sample…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="448"/>
+        <location filename="../views/review.py" line="488"/>
         <source>Use this line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="467"/>
+        <location filename="../views/review.py" line="507"/>
         <source>{id} (on probation since {ep})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="469"/>
+        <location filename="../views/review.py" line="509"/>
         <source>{id} (new NPC)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="505"/>
-        <location filename="../views/review.py" line="517"/>
+        <location filename="../views/review.py" line="545"/>
+        <location filename="../views/review.py" line="557"/>
         <source>New character</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="571"/>
+        <location filename="../views/review.py" line="611"/>
         <source>No flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="580"/>
+        <location filename="../views/review.py" line="620"/>
         <source>Deleted: not shown in the video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="591"/>
+        <location filename="../views/review.py" line="631"/>
         <source>Flagged remaining: {flagged} · Approved: {approved} / {total}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="594"/>
+        <location filename="../views/review.py" line="634"/>
         <source>Deleted: {n}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="651"/>
+        <location filename="../views/review.py" line="699"/>
+        <source>Line type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../views/review.py" line="713"/>
         <source>{id} (unknown)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="660"/>
+        <location filename="../views/review.py" line="722"/>
         <source>Use {name}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="675"/>
+        <location filename="../views/review.py" line="737"/>
         <source>Restore line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="783"/>
+        <location filename="../views/review.py" line="845"/>
         <source>Approve remaining lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="784"/>
+        <location filename="../views/review.py" line="846"/>
         <source>Approve all {n} remaining lines that have no flags?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="819"/>
+        <location filename="../views/review.py" line="881"/>
         <source>Discard review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="820"/>
+        <location filename="../views/review.py" line="882"/>
         <source>Discard the whole review of {ep}?
 
 All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos;s output. This cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="842"/>
-        <location filename="../views/review.py" line="862"/>
+        <location filename="../views/review.py" line="904"/>
+        <location filename="../views/review.py" line="924"/>
         <source>Finish review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="843"/>
+        <location filename="../views/review.py" line="905"/>
         <source>Finish the review of {ep}?
 
 {edited} edited lines will update memory (glossary changes are locked), then the video is rendered to the output folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="871"/>
+        <location filename="../views/review.py" line="933"/>
         <source>{marked} / {total} sampled lines marked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="927"/>
+        <location filename="../views/review.py" line="989"/>
         <source>Audit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="944"/>
-        <location filename="../views/review.py" line="954"/>
-        <location filename="../views/review.py" line="984"/>
-        <location filename="../views/review.py" line="1048"/>
+        <location filename="../views/review.py" line="1006"/>
+        <location filename="../views/review.py" line="1016"/>
+        <location filename="../views/review.py" line="1046"/>
+        <location filename="../views/review.py" line="1110"/>
         <source>Partial review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="944"/>
+        <location filename="../views/review.py" line="1006"/>
         <source>Another job is running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="948"/>
+        <location filename="../views/review.py" line="1010"/>
         <source>Partial review running…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="985"/>
+        <location filename="../views/review.py" line="1047"/>
         <source>Re-checked the remaining lines with what you approved so far.
 {n} lines got a new speaker (flag: Speaker set by partial review). Check their pronouns; Undo on a line restores its speaker.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1023"/>
+        <location filename="../views/review.py" line="1085"/>
         <source>This line is not shown in the video. Use Restore line to bring it back.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1024"/>
+        <location filename="../views/review.py" line="1086"/>
         <source>Deleted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1026"/>
+        <location filename="../views/review.py" line="1088"/>
         <source>Flags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1030"/>
+        <location filename="../views/review.py" line="1092"/>
         <source>Script review: {note}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1032"/>
+        <location filename="../views/review.py" line="1094"/>
         <source>Reasons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1039"/>
+        <location filename="../views/review.py" line="1101"/>
         <source>Suggested speaker: &lt;b&gt;{name}&lt;/b&gt; ({reason})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1042"/>
+        <location filename="../views/review.py" line="1104"/>
         <source>Talking on screen: {name}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1045"/>
+        <location filename="../views/review.py" line="1107"/>
         <source>Voice: {name} {score:.2f} ({status})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1055"/>
+        <location filename="../views/review.py" line="1117"/>
         <source>Evaluator suggests: &lt;b&gt;{vi}&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1056"/>
+        <location filename="../views/review.py" line="1118"/>
         <source>Evaluator (attempt {n})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1062"/>
+        <location filename="../views/review.py" line="1124"/>
         <source>Glossary terms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1068"/>
+        <location filename="../views/review.py" line="1130"/>
         <source>No pronoun pair in memory yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1069"/>
+        <location filename="../views/review.py" line="1131"/>
         <source>Pronouns {speaker} → {listener}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1072"/>
+        <location filename="../views/review.py" line="1134"/>
         <source>No notes for this line.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1099"/>
+        <location filename="../views/review.py" line="1161"/>
         <source>The video is not available: {error}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1110"/>
+        <location filename="../views/review.py" line="1172"/>
         <source>Not saved: the episode&apos;s temporary files were cleaned up, or OCR ran without pre-processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1129"/>
+        <location filename="../views/review.py" line="1191"/>
         <source>No cast data for this episode (the Characters on screen stage did not run).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../views/review.py" line="1238"/>
+        <location filename="../views/review.py" line="1300"/>
         <source>Autosave failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3577,42 +3629,42 @@ All edits, approvals and deletions ({n} lines) are replaced by the pipeline&apos
 <context>
     <name>StyleDialog</name>
     <message>
-        <location filename="../main_window.py" line="48"/>
+        <location filename="../main_window.py" line="49"/>
         <source>New translation style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="52"/>
+        <location filename="../main_window.py" line="53"/>
         <source>short id, e.g. hien_dai</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="54"/>
+        <location filename="../main_window.py" line="55"/>
         <source>e.g. Hiện đại</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="57"/>
+        <location filename="../main_window.py" line="58"/>
         <source>e.g. tôi, bạn, anh, em, chị, mày, tao</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="61"/>
+        <location filename="../main_window.py" line="62"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="62"/>
+        <location filename="../main_window.py" line="63"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="63"/>
+        <location filename="../main_window.py" line="64"/>
         <source>Pronoun words</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="64"/>
+        <location filename="../main_window.py" line="65"/>
         <source>Instructions for the translator (setting, names and terms, pronoun system, tone). They replace the register section of the translator prompt.</source>
         <translation type="unfinished"></translation>
     </message>

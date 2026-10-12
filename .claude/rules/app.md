@@ -18,7 +18,7 @@ The app covers everything: episodes and runs, review, bootstrap, memory and drea
 ### 6.2 Navigation
 
 - Left sidebar: Episodes, Review, Memory, Bootstrap, Dreaming, Audit, Settings. Episodes is the start screen.
-- **Series picker** at the top of the sidebar (5.2a; hidden in the single-series layout): the series this window shows. Choosing another one sets `series.default` and rebuilds the window around it (every screen reloads; refused while a job runs). **New series…** asks for an id, a name, the translation style (register; listed by name from `prompts/registers/`, **New style…** creates one: id, name, pronoun words, translator instructions prefilled from a template, 5.11) and an optional work folder (typed, or **Choose…** for a folder picker that opens at the shared work folder), creates the series and opens its Bootstrap screen. Jobs run for the window's series (`$SUBAGENT_SERIES`).
+- **Series picker** at the top of the sidebar (5.2a; hidden in the single-series layout): the series this window shows. Choosing another one sets `series.default` and rebuilds the window around it (every screen reloads; refused while a job runs). **New series…** asks for an id, a name, the translation style (register; listed by name from `prompts/registers/`, **New style…** creates one: id, name, pronoun words, translator instructions prefilled from a template, 5.11), how pronouns are decided (**Identify characters** checkbox, unchecked by default, and the **Default pronoun pair** self / address words, required while unchecked; 5.11a) and an optional work folder (typed, or **Choose…** for a folder picker that opens at the shared work folder), creates the series and opens its Bootstrap screen. Jobs run for the window's series (`$SUBAGENT_SERIES`).
 - Status bar: running job and stage, running cost vs budget, device in use (GPU / CPU).
 
 ### 6.3 Episodes and run screens
@@ -33,6 +33,8 @@ The app covers everything: episodes and runs, review, bootstrap, memory and drea
 - **Run panel:** per-stage progress bars (every pipeline stage including Script review, plus memory, voices, render, report, cleanup), live log tail, cost so far vs budget, Cancel. On failure: the error in plain language and the stage to resume from.
 
 ### 6.4 Review screen
+
+With character identification off (5.11a) everything about speakers below is hidden (dropdowns, character buttons and card, speaker column and filter, On screen view, Partial review); the row shows only the line type.
 
 Three regions:
 

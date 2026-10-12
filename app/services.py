@@ -100,7 +100,7 @@ class Services:
         for ep in self.registry.load():
             st = episode_status(self.paths, ep, self.config.llm.prices)
             stages = st["stages"]
-            done = sum(1 for s in stages.values() if s in ("done", "purged"))
+            done = sum(1 for s in stages.values() if s in ("done", "purged", "off"))
             rows.append(EpisodeRow(episode=ep, status=self.effective_status(ep), stages_done=done,
                                    stages_total=len(stages), flags=st["flag_total"], cost=st["cost"],
                                    stage_states=stages, unpriced_models=st["unpriced_models"],

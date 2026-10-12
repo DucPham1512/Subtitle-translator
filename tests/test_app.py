@@ -876,3 +876,60 @@ def test_tag_editor_adds_removes_and_validates_numbers(qapp):
     for text in ("0.6", "1", "x"):
         numbers.add(text)
     assert numbers.values() == [0.6, 1]                            # "x" is not a number
+
+
+def test_new_series_dialog_asks_for_the_default_pronoun_pair(qapp, project, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox, QWidget
+
+    from app.main_window import NewSeriesDialog
+
+    _, paths = project
+    parent = QWidget()
+    dialog = NewSeriesDialog(parent, paths.root)
+    warned = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a: warned.append(a[2]))
+    dialog.slug.setText("show-b")
+    assert not dialog.identify.isChecked()                       # off unless the user turns it on
+    dialog.self_term.setText("ta")
+    dialog._check()
+    assert warned and dialog.result() == 0                       # the address word is missing
+    dialog.address_term.setText("ngươi")
+    dialog._check()
+    assert len(warned) == 1 and dialog.result() == 1
+    assert dialog.pronouns() == {"identify": False, "self_term": "ta", "address_term": "ngươi"}
+    dialog.identify.setChecked(True)
+    dialog.self_term.clear()
+    dialog.address_term.clear()
+    dialog._check()
+    assert len(warned) == 1                                      # identification on: the pair is optional
+
+
+def test_review_hides_speakers_when_identification_is_off(qapp, project):
+    from app.main_window import MainWindow
+    from app.services import Services
+    from subagent.config import ShowConfig
+
+    config, paths = project
+    seed_memory(config, paths)
+    ep = register_episode(paths, 1)
+    work = paths.episode_dir(ep.id)
+    events = sample_events()
+    write_events(work, events)
+    write_jsonl(work / "pinyin.jsonl", [PinyinLine(event_id=e.id, pinyin="pīnyīn") for e in events])
+    write_jsonl(work / "translations.jsonl", [
+        LineTranslation(event_id=e.id, speaker=None, listener=None, speaker_conf=0.0, vi="Ta đã Trúc Cơ.", attempts=1)
+        for e in events])
+    gate(work, "human")
+    Registry(paths).set_status(ep.id, "awaiting_review")
+    window = MainWindow(Services(paths.root))
+    window.services.config.show = ShowConfig(character_identification=False, self_term="ta", address_term="ngươi")
+    review = window.views["review"]
+    window.show_review(ep.id)
+    settle(qapp)
+    assert review.table.rowCount() == 4 and review.table.isColumnHidden(2)
+    assert review.speaker.isHidden() and review.listener.isHidden() and review.new_npc_btn.isHidden()
+    assert review.partial_btn.isHidden() and review.speaker_filter.isHidden()
+    assert not review.line_type.isHidden() and not review.right_tabs.isTabVisible(1)
+    assert review.form.labelForField(review.who).text() == "Line type"
+    window.close()
+    settle(qapp)

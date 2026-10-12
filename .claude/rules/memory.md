@@ -24,6 +24,7 @@ paths:
   - Record the reviewer's remove / keep decisions in `line_decisions` (5.13a).
   - One `utility` call writes `briefings/<episode_id>.md`, updates `story_so_far.md` within its word cap, and appends to `INDEX.md`. The same call returns `character_fates`: only fates the script states explicitly (`dies`, `leaves`, `returns`) with the stating line as evidence.
   - Character lifecycle (5.15a): record appearances, then update statuses. The commit message counts the moves (`episode ep006: 12 writes, 1 archived`).
+  - With character identification off (5.11a): translator `character` / `pronoun_pair` proposals are dropped, and character updates, probation and lifecycle are skipped.
   - `git add -A && git commit -m "episode <id>: <n> writes"` in `data/memory/`, then fill `commit_sha` on the new `memory_log` rows.
 - **Manual edits from the app:** go through `apply()` with `source="human"`, become locked, and are committed as one commit per save (`manual edit: <n> changes`).
 - **Rollback:** `rollback(sha)` closes all DB connections, restores the folder with `git checkout <sha> -- .`, and commits `rollback to <sha>`. History is never rewritten (no `reset --hard`), so a rollback can itself be undone. Refused while any job is running.

@@ -111,7 +111,7 @@ def test_cli_series_commands(project, capsys):
     from subagent.__main__ import main
 
     _, paths = project
-    assert main(["series", "add", "show-b", "--name", "Show B"]) == 0
+    assert main(["series", "add", "show-b", "--name", "Show B", "--identify-characters"]) == 0
     assert main(["series", "list"]) == 0
     assert "show-b" in capsys.readouterr().out
     assert main(["series", "default", "show-b"]) == 0

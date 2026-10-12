@@ -50,6 +50,7 @@ class StageDef:
     prompts: list[str] = field(default_factory=list)
     llm_roles: list[str] = field(default_factory=list)
     extra: Callable[[EpisodeContext], object] | None = None
+    identification: bool = False          # skipped while show.character_identification is off (5.11a)
 
 
 def _source_key(ctx: EpisodeContext) -> object:
@@ -91,17 +92,18 @@ STAGES: list[StageDef] = [
     StageDef("events", _lazy("events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
     StageDef("ocr_fix", _lazy("ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
              prompts=["ocr_fix_system"], llm_roles=["utility"]),
-    StageDef("audio", _lazy("audio"), [], ["audio"], ["audio.wav"], extra=_source_key),
-    StageDef("voice", _lazy("voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"]),
+    StageDef("audio", _lazy("audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
+    StageDef("voice", _lazy("voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
+             identification=True),
     StageDef("cast", _lazy("cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
-             extra=_source_key),
+             extra=_source_key, identification=True),
     StageDef("pinyin", _lazy("pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
              prompts=["polyphone_system"], llm_roles=["utility"]),
     StageDef("windows", _lazy("windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
     StageDef("translate", _lazy("translate"), ["ocr_fix", "voice", "cast", "windows"],
              ["translate", "evaluate", "show", "sprite"], ["translations.jsonl", "evaluations.jsonl"],
              prompts=["translator_system", "evaluator_system"], llm_roles=["translator", "evaluator"]),
-    StageDef("sprite", _lazy("sprite"), ["translate"], ["sprite"], ["translations.jsonl"]),
+    StageDef("sprite", _lazy("sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
     StageDef("script_review", _lazy("script_review"), ["translate", "sprite"], ["script_review"],
              ["script_review.jsonl"], prompts=["script_review_system"], llm_roles=["utility"]),
     StageDef("review", _review_run, ["pinyin", "sprite", "script_review"], ["review"], []),
@@ -158,6 +160,16 @@ class Runner:
     def outputs_exist(self, stage: StageDef) -> bool:
         return all(self.ctx.artifact(o).exists() for o in self.outputs(stage))
 
+    def is_off(self, stage: StageDef) -> bool:
+        return stage.identification and not self.ctx.config.show.character_identification
+
+    def mark_off(self, stage: StageDef) -> None:
+        """A stage that does not run in this mode: recorded so downstream hashes change with the mode."""
+        self.state.stages[stage.name] = StageState(status="off", input_hash="off", output_hash="off",
+                                                   finished_at=now_iso())
+        save_state(self.ctx.work, self.state)
+        self.ctx.progress.emit(stage.name, "skipped", message="character identification is off")
+
     def is_current(self, stage: StageDef) -> bool:
         st = self.state.stages.get(stage.name)
         if st is None or st.input_hash != self.input_hash(stage):
@@ -169,6 +181,8 @@ class Runner:
         for name in stage.upstream:
             up = _BY_NAME[name]
             st = self.state.stages.get(name)
+            if self.is_off(up):
+                continue
             if st is None or not self.outputs_exist(up):
                 self.ensure_available(up)
                 self.execute(up)
@@ -208,6 +222,9 @@ class Runner:
                 raise SubagentError(f"Unknown stage '{name}'. Stages: {', '.join(names)}", code="unknown_stage")
         from_index = names.index(from_stage) if from_stage else None
         for i, stage in enumerate(STAGES):
+            if self.is_off(stage):
+                self.mark_off(stage)
+                continue
             forced = stage.name == force_stage or (from_index is not None and i >= from_index)
             if not forced and self.is_current(stage):
                 self.ctx.progress.emit(stage.name, "skipped")
@@ -527,7 +544,9 @@ class Pipeline:
 
     def learn_sprites_backfill(self) -> list[tuple[str, dict[str, int]]]:
         """Finished episodes in episode order: run the cast stage where it never ran, then learn sprites."""
-        out = []
+        out: list[tuple[str, dict[str, int]]] = []
+        if not self.config.show.character_identification:
+            return out
         for episode in sorted(self.registry.load(), key=lambda e: e.number):
             ctx = self.context(episode)
             if episode.status != "done" or not ctx.artifact("approved.jsonl").is_file():
@@ -542,7 +561,7 @@ class Pipeline:
 
     def _learn_sprites(self, ctx: EpisodeContext) -> None:
         """The episode's trusted speakers teach the sprite bank (5.8b). Never fails the episode."""
-        if not (self.config.cast.enabled and self.config.cast.learn) or not ctx.artifact("cast.jsonl").is_file():
+        if not (self.config.show.character_identification and self.config.cast.enabled and self.config.cast.learn)                 or not ctx.artifact("cast.jsonl").is_file():
             return
         from subagent.memory.sprite_learning import learn_sprites
 
@@ -571,7 +590,7 @@ class Pipeline:
 
     def _learn_voices(self) -> None:
         """Reviewed speakers teach the voice bank. Never fails the episode: a missing model is only reported."""
-        if not self.config.voice.learn_from_reviews:
+        if not (self.config.show.character_identification and self.config.voice.learn_from_reviews):
             return
         from subagent.errors import ModelUnavailableError
         from subagent.memory.voice_learning import learn_voices

@@ -96,7 +96,8 @@ License), prompt notes for that show, and `series.yaml`, which overrides any sec
 
 ```powershell
 python -m subagent series list                      # * marks the default series
-python -m subagent series add my-show --name "My Show" [--work-dir "E:\My Show\work"]
+python -m subagent series add my-show --name "My Show" --pronouns ta ngươi [--work-dir "E:\My Show\work"]
+python -m subagent series add other-show --name "Other" --identify-characters
 python -m subagent series default my-show           # the series the app and the CLI use
 python -m subagent series rename series-1 my-first-show
 python -m subagent run ep001 --series my-show       # any command, for another series than the default
@@ -109,6 +110,13 @@ Each series uses a **translation style** (`show.genre_register`): a file `prompt
 translator's instructions for that kind of show and the pronoun words the rule check looks for. Cổ trang /
 tiên hiệp is built in; create another in the app (New series… → **New style…**) or by adding a file in the same
 format. `series add --register <id>` picks one.
+
+Each series also chooses how **pronouns** (xưng hô) are decided. With `--identify-characters` (the app's
+**Identify characters** box) the program finds who speaks to whom from voices and pictures and uses the pronoun
+matrix per pair; this needs voice clips in Bootstrap. With `--pronouns SELF ADDRESS` (box unchecked, the default
+pronoun pair filled in) there is no character identification: the voice, cast and sprite stages are skipped and
+every line uses that one pair. Change it later in Settings → Advanced → show (`character_identification`,
+`self_term`, `address_term`).
 
 ## First episode of a series
 

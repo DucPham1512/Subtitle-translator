@@ -104,7 +104,8 @@ class ReviewView(QWidget):
         self.search = QLineEdit()
         self.search.setPlaceholderText(self.tr("Search Chinese and Vietnamese…"))
         self.search.setClearButtonEnabled(True)
-        for w in (QLabel(self.tr("Flag:")), self.flag_filter, QLabel(self.tr("Speaker:")), self.speaker_filter,
+        self.speaker_filter_label = QLabel(self.tr("Speaker:"))
+        for w in (QLabel(self.tr("Flag:")), self.flag_filter, self.speaker_filter_label, self.speaker_filter,
                   self.unapproved, self.search):
             top.addWidget(w)
         self.flag_filter.currentIndexChanged.connect(self._apply_filters)
@@ -166,6 +167,7 @@ class ReviewView(QWidget):
         form.addRow(self.tr("Pinyin"), pinyin_row)
         form.addRow(self.tr("Vietnamese"), self.vi)
         form.addRow(self.tr("Speaker → listener"), who)
+        self.form, self.who = form, who
         from app.views.character_browser import CharacterStrip
         from app.widgets import ClipPlayer
 
@@ -191,7 +193,8 @@ class ReviewView(QWidget):
         """Speaker → listener, line type, and the character buttons (new character, new NPC, browse, suggestion)."""
         who = QHBoxLayout()
         who.addWidget(self.speaker, 1)
-        who.addWidget(QLabel("→"))
+        self.who_arrow = QLabel("→")
+        who.addWidget(self.who_arrow)
         who.addWidget(self.listener, 1)
         who.addWidget(self.line_type)
         self.new_char_btn = QPushButton(self.tr("New character…"))
@@ -674,6 +677,28 @@ class ReviewView(QWidget):
         if not on:
             self.approve_rest_btn.setEnabled(False)
             self.finish_btn.setEnabled(False)
+        self._show_identification()
+
+    @property
+    def identify(self) -> bool:
+        return self.services.config.show.character_identification
+
+    def _show_identification(self) -> None:
+        """Character identification off (5.11a): no speakers, so the speaker / listener fields, character cards,
+        the On screen view and partial review are hidden; the line type stays."""
+        on = self.identify
+        for w in (self.speaker, self.who_arrow, self.listener, self.new_char_btn, self.new_npc_btn, self.browse_btn,
+                  self.speaker_filter_label, self.speaker_filter):
+            w.setVisible(on)
+        if not on:
+            self.suggest_btn.hide()
+            self.partial_btn.hide()
+        self.form.setRowVisible(self.card_strip, on)
+        label = self.form.labelForField(self.who)
+        if label is not None:
+            label.setText(self.tr("Speaker → listener") if on else self.tr("Line type"))
+        self.table.setColumnHidden(2, not on)
+        self.right_tabs.setTabVisible(1, on)
 
     def _load_editor(self, line: ReviewedLine | None) -> None:
         self._loading = True
@@ -692,7 +717,7 @@ class ReviewView(QWidget):
         if self.audit_mode:
             self._show_audit(line)
         sug = self._suggestion(line) if line else None
-        self.suggest_btn.setVisible(sug is not None)
+        self.suggest_btn.setVisible(sug is not None and self.identify)
         if sug is not None:
             self.suggest_btn.setText(self.tr("Use {name}").format(name=self._name(sug.suggested_speaker)))
         self._loading = False

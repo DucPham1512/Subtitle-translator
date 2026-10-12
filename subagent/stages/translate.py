@@ -78,6 +78,23 @@ class TranslatorResponse(BaseModel):
 # -- prompt pieces ---------------------------------------------------------------------------------
 
 _REGISTER_BLOCK = re.compile(r"<!-- register:(?P<name>[\w-]+) -->\n(?P<body>.*?)<!-- /register -->\n?", re.S)
+# parts of the translator / evaluator prompts for one character identification mode (5.11a): `identify` (on)
+# or `default_pair` (off); the markers' lines are removed, so the on-mode prompt is unchanged
+_MODE_BLOCK = re.compile(r"<!-- if:(?P<name>\w+) -->\n(?P<body>.*?)<!-- /if -->\n?", re.S)
+MODES = ("identify", "default_pair")
+
+
+def mode_prompt(prompt: str, config: Config) -> str:
+    """Keep the blocks of the series' character identification mode; fill in the default pronoun pair."""
+    mode = "identify" if config.show.character_identification else "default_pair"
+
+    def keep(m: re.Match) -> str:
+        if m.group("name") not in MODES:
+            raise SubagentError(f"Unknown prompt block 'if:{m.group('name')}' (known: {', '.join(MODES)})",
+                                code="config_invalid")
+        return m.group("body") if m.group("name") == mode else ""
+    text = _MODE_BLOCK.sub(keep, prompt)
+    return text.replace("{{self_term}}", config.show.self_term).replace("{{address_term}}", config.show.address_term)
 
 
 def translator_static(prompt: str, register: str, config: Config, body: str | None = None) -> str:
@@ -92,7 +109,8 @@ def translator_static(prompt: str, register: str, config: Config, body: str | No
     if blocks and register not in blocks:
         raise SubagentError(f"No register block '{register}' in prompts/translator_system.md "
                             f"(available: {', '.join(blocks)})", code="config_invalid")
-    text = _REGISTER_BLOCK.sub(lambda m: m.group("body") if m.group("name") == register else "", prompt)
+    text = mode_prompt(_REGISTER_BLOCK.sub(lambda m: m.group("body") if m.group("name") == register else "", prompt),
+                       config)
     return (text.replace("{{max_line_chars}}", str(config.translate.max_line_chars))
                 .replace("{{max_lines_per_event}}", str(config.translate.max_lines_per_event))
                 .replace("{{new_voice_prefix}}", config.voice.new_voice_prefix))
@@ -114,6 +132,9 @@ def line_input(event: SubtitleEvent, cands: SpeakerCandidates | None, ctx: Episo
     }
     if event.suspect:
         row["non_dialogue_suspect"] = True
+    if not ctx.config.show.character_identification:      # no speakers: the default pronoun pair (5.11a)
+        del row["speaker_status"], row["speaker_candidates"]
+        return row
     mode = ctx.config.translate.picture_evidence
     if mode == "tiebreak" and row["speaker_status"] in PICTURE_SILENT:
         cast = None                     # a sure voice is never changed by the picture: do not show it
@@ -174,8 +195,8 @@ def translator_payload(lines: list[dict], context: list[dict], feedback: list[di
     return text
 
 
-def to_translation(t: TranslatedLine, attempt: int) -> LineTranslation:
-    speaker, listener = (t.speaker, t.listener) if t.line_type == "dialogue" else (None, None)
+def to_translation(t: TranslatedLine, attempt: int, identify: bool = True) -> LineTranslation:
+    speaker, listener = (t.speaker, t.listener) if t.line_type == "dialogue" and identify else (None, None)
     proposals = [
         MemoryProposal(kind=p.kind, payload=p.payload, source="translator", evidence=p.evidence or [t.event_id])
         for p in t.proposals
@@ -199,22 +220,25 @@ class WindowTranslator:
         from subagent.characters import load_new_voices
 
         store = MemoryStore(ctx.paths.memory_db)
-        voices = load_new_voices(ctx.work)
+        self.identify = ctx.config.show.character_identification
+        voices = load_new_voices(ctx.work) if self.identify else []
         self.rules = RuleContext(ctx.config, store, store.character_ids() | {v.id for v in voices})
         from subagent.registers import load_register
 
         style = load_register(ctx.paths.root, ctx.config.show.genre_register)
         self.t_static = translator_static(load_prompt(ctx.paths, "translator_system"), ctx.config.show.genre_register,
                                           ctx.config, style.body if style else None)
-        self.e_static = load_prompt(ctx.paths, "evaluator_system")
+        self.e_static = mode_prompt(load_prompt(ctx.paths, "evaluator_system"), ctx.config)
         # memory prefixes: built once per episode, byte-identical across calls (prefix caching)
         corrections = corrections_block(reviewer_corrections(ctx.paths, ctx.config.memory.correction_examples))
-        episode = new_voices_block(voices, store, {e.id: e.start_ms for e in events.values()})
-        self.t_prefix = translator_prefix(store, ctx.paths.memory, corrections, episode)
-        self.e_prefix = evaluator_prefix(store, ctx.paths.memory, corrections, episode)
+        episode = new_voices_block(voices, store, {e.id: e.start_ms for e in events.values()}) if self.identify \
+            else ""
+        self.t_prefix = translator_prefix(store, ctx.paths.memory, corrections, episode, pronouns=self.identify)
+        self.e_prefix = evaluator_prefix(store, ctx.paths.memory, corrections, episode, pronouns=self.identify)
         self.soft_codes = set() if ctx.config.translate.retry_on_cps else {"cps"}
         atomic_write_text(ctx.artifact("memory_prefix.md"), self.t_prefix)
-        self.cast = {c.event_id: c for c in read_jsonl(ctx.artifact("cast.jsonl"), CastLine)}
+        self.cast = {c.event_id: c for c in read_jsonl(ctx.artifact("cast.jsonl"), CastLine)} if self.identify \
+            else {}
         self.speakers = picture_veto(speakers, self.cast, ctx.config.translate.picture_veto)
         self.done: dict[str, LineTranslation] = {}
         self.evaluations: list[Evaluation] = []
@@ -247,7 +271,7 @@ class WindowTranslator:
             to_rubric = [(self.events[eid], line, self.speakers.get(eid))
                          for eid, line, hard, _, _, repeat in checked if line is not None and not hard and not repeat]
             scene = [context_row(self.events[i], None) for i in window.event_ids]
-            rubric = llm_rubric(self.ctx.llm, self.e_static, self.e_prefix, to_rubric, scene)
+            rubric = llm_rubric(self.ctx.llm, self.e_static, self.e_prefix, to_rubric, scene, self.identify)
             pending, feedback = self._judge_lines(checked, rubric, attempts, attempt)
             if not pending:
                 break
@@ -266,7 +290,7 @@ class WindowTranslator:
             if t is None:
                 checked.append((eid, None, [], [], [], None))
                 continue
-            line = to_translation(t, attempt)
+            line = to_translation(t, attempt, self.identify)
             repeat = next((ev for old, ev in attempts[eid] if _same(old, line)), None)
             failures, warnings = rule_checks(line, self.events[eid], self.speakers.get(eid), self.rules)
             hard = [f for f in failures if f.code not in self.soft_codes]
@@ -321,7 +345,8 @@ class WindowTranslator:
         cands = self.speakers.get(eid)
         if cands and cands.status == "fixed" and cands.candidates and line.speaker and line.speaker != cands.candidates[0][0]:
             flags.append("speaker_override")
-        if line.line_type == "dialogue" and line.speaker_conf < self.ctx.config.sprite.trigger_conf_below:
+        if self.identify and line.line_type == "dialogue" and \
+                line.speaker_conf < self.ctx.config.sprite.trigger_conf_below:
             flags.append("low_speaker_conf")
         line.flags = list(dict.fromkeys(line.flags + flags))
         return line
@@ -337,7 +362,8 @@ def _best(tries: list[tuple[LineTranslation, Evaluation]]) -> tuple[LineTranslat
 
 def run(ctx: EpisodeContext) -> dict[str, int]:
     events = {e.id: e for e in read_jsonl(ctx.artifact("events.jsonl"), SubtitleEvent)}
-    speakers = {s.event_id: s for s in read_jsonl(ctx.artifact("speakers.jsonl"), SpeakerCandidates)}
+    speakers = {s.event_id: s for s in read_jsonl(ctx.artifact("speakers.jsonl"), SpeakerCandidates)} \
+        if ctx.config.show.character_identification else {}     # off: an older run's file is not read (5.11a)
     windows = [Window.model_validate(w) for w in read_json(ctx.artifact("windows.json"), [])]
     translator = WindowTranslator(ctx, events, speakers)
     for i, window in enumerate(windows, 1):

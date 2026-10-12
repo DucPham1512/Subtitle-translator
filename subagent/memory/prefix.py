@@ -131,15 +131,18 @@ def new_voices_block(voices: list, store: MemoryStore, first_ms: dict[str, int])
     return "\n".join(lines) + "\n"
 
 
-def translator_prefix(store: MemoryStore, memory_dir: Path, corrections: str = "", episode: str = "") -> str:
-    parts = [characters_block(store), glossary_block(store), pronoun_block(store), story_block(memory_dir),
+def translator_prefix(store: MemoryStore, memory_dir: Path, corrections: str = "", episode: str = "",
+                      pronouns: bool = True) -> str:
+    """`pronouns`: the pronoun matrix, left out while character identification is off (5.11a)."""
+    parts = [characters_block(store), glossary_block(store), pronoun_block(store) if pronouns else "",
+             story_block(memory_dir),
              style_block(memory_dir), corrections, episode]
     return "# Series memory\n\n" + "\n".join(p for p in parts if p)
 
 
 def evaluator_prefix(store: MemoryStore, memory_dir: Path | None = None, corrections: str = "",
-                     episode: str = "") -> str:
-    parts = [characters_block(store), glossary_block(store), pronoun_block(store),
+                     episode: str = "", pronouns: bool = True) -> str:
+    parts = [characters_block(store), glossary_block(store), pronoun_block(store) if pronouns else "",
              style_block(memory_dir) if memory_dir else "", corrections, episode]
     return "# Series memory\n\n" + "\n".join(p for p in parts if p)
 

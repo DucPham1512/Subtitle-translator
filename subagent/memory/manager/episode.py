@@ -76,17 +76,21 @@ class EpisodeMixin:
             approved_ids = {line.event_id for line in approved if line.approved}
             proposals = reviewed_glossary([p for t in translations if t.event_id in approved_ids
                                            for p in t.proposals], edits)
+            # character identification off (5.11a): no characters, pronoun pairs, probation or lifecycle
+            identify = self.config.show.character_identification
+            if not identify:
+                proposals = [p for p in proposals if p.kind not in ("character", "pronoun_pair")]
             held: list[dict] = []
-            updating = self.config.memory.character_updates and llm is not None
+            updating = identify and self.config.memory.character_updates and llm is not None
             if updating:
                 updates, held = self.character_updates(episode_id, approved, new_voices or [], mode, llm)
                 proposals += updates
             probation: dict[str, int] = {}
-            if self.config.memory.probation:
+            if identify and self.config.memory.probation:
                 proposals, probation, extra_ids = self.probation(episode_id, approved, approved_ids, proposals,
                                                                  new_voices or [], mode)
                 approved_ids |= extra_ids
-            else:
+            elif identify:
                 proposals = self.new_voice_characters(episode_id, approved, new_voices or []) + proposals
             proposals += self.mine_edits(episode_id, approved, translations, edits)
             result = self.apply(proposals, approved_ids=approved_ids, episode_id=episode_id)
@@ -97,7 +101,7 @@ class EpisodeMixin:
             if line_decisions is not None:
                 self.record_line_decisions(episode_id, *line_decisions)
             fates = self.update_briefings(episode_id, approved, llm) if llm is not None else []
-            result.lifecycle = self.update_lifecycle(episode_id, approved, fates)
+            result.lifecycle = self.update_lifecycle(episode_id, approved, fates) if identify else {}
             moved = "".join(f", {n} {status}" for status, n in sorted(result.lifecycle.items()))
             moved += "".join(f", {n} {kind}" for kind, n in sorted(probation.items()) if n)
             if result.held:

@@ -296,7 +296,7 @@ class CostRecord(BaseModel):
 
 
 class StageState(BaseModel):
-    status: Literal["done", "purged", "failed", "running"] = "done"
+    status: Literal["done", "purged", "failed", "running", "off"] = "done"   # off: character identification off
     input_hash: str = ""
     output_hash: str = ""
     started_at: str | None = None

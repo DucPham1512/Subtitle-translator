@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from subagent.errors import ConfigError
 
@@ -19,6 +19,19 @@ class _Section(BaseModel):
 class ShowConfig(_Section):
     name: str = "<show name>"
     genre_register: str = "co_trang_tien_hiep"
+    # on: speaker / listener per line (voice, cast, sprite check) and the pronoun matrix decide xưng hô. off:
+    # those stages are skipped and every line uses the default pronoun pair below (5.11a)
+    character_identification: bool = True   # off: no speakers; every line uses the default pronoun pair below
+    self_term: str = ""                    # default pair: how the speaker refers to self, e.g. "ta"
+    address_term: str = ""                 # ...and how the speaker addresses the listener, e.g. "ngươi"
+
+    @model_validator(mode="after")
+    def _default_pair(self) -> ShowConfig:
+        self.self_term, self.address_term = self.self_term.strip(), self.address_term.strip()
+        if not self.character_identification and not (self.self_term and self.address_term):
+            raise ValueError("character identification is off: set the default pronoun pair "
+                             "(show.self_term and show.address_term)")
+        return self
 
 
 class Band(_Section):

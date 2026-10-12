@@ -52,6 +52,18 @@ paths:
 - **Retry input:** on a failed evaluation, only the failed lines are resent, with `earlier_attempts` (each earlier translation with its feedback), the `evaluator_suggestion`, and the rest of the window as context. A line that returns an answer it already tried keeps that verdict and is not retried again.
 - The prefix actually sent is saved to `work/<episode>/memory_prefix.md` for inspection.
 
+### 5.11a Character identification off (`show.character_identification`)
+
+User decision 2026-10-12: a series either lets the program decide xưng hô (on, the default for existing series: everything in 5.8–5.15 as written) or uses one default pronoun pair for every line (off). The pair is `show.self_term` / `show.address_term`; `ShowConfig` refuses off without both. New series: the New series dialog (6.2) shows the choice unchecked (off) with the pair required; `series add` needs `--identify-characters` or `--pronouns SELF ADDRESS`.
+
+When off:
+- **Stages:** audio, voice, cast and sprite (`StageDef.identification`) do not run; the runner records them with status `off` (input / output hash `off`, so switching the mode reruns translate and what follows) and never regenerates them for a downstream stage. An older run's `speakers.jsonl` / `cast.jsonl` is not read.
+- **Translator / evaluator prompts:** `<!-- if:identify -->` / `<!-- if:default_pair -->` blocks in `translator_system.md` and `evaluator_system.md` (`translate.mode_prompt`; marker lines removed, so the on-mode prompts are byte-identical to before; `{{self_term}}` / `{{address_term}}` filled in). Off: no speaker fields or speaker rules, a pronoun section that uses the pair for every dialogue line (overriding the register's pronoun guidance; names, titles and forms of address from the Chinese stay), only glossary proposals; the evaluator's `pronouns` criterion checks the pair, its `register` criterion does not penalise it, and there is no `speaker` criterion (`judge` ignores a `speaker` score).
+- **Inputs:** no `speaker_status` / `speaker_candidates` / picture fields per line; the memory prefix leaves out the pronoun matrix and the episode's new voices (the characters block stays, for names); the rubric payload has no speaker, listener or voice fields.
+- **Output:** speaker and listener are always null; no `low_speaker_conf` / `speaker_override` flags. The pronoun rule check never fires (it needs a speaker and listener).
+- **Memory (finish):** translator `character` / `pronoun_pair` proposals are dropped; no character updates (5.15c), probation or new-voice characters (5.15b), lifecycle or appearances (5.15a); voice and sprite learning (5.8a, 5.8b) and the sprite backfill are skipped. Glossary, style rules, line decisions, edit mining and briefings work as usual.
+- **Review screen (6.4):** the speaker / listener dropdowns, New character / New NPC / Browse characters, the character card, the speaker column and filter, the On screen view and Partial review are hidden; the row keeps the line type.
+
 ### 5.12 Evaluator (`stages/evaluate.py`)
 
 - **Responsibility:** decide whether each translated line is acceptable.

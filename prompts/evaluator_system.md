@@ -5,10 +5,22 @@ For every line in "Lines to evaluate", return one entry with the same `event_id`
 ## Criteria
 
 - `meaning`: the Vietnamese says what the Chinese says; nothing important added, dropped or reversed.
+<!-- if:identify -->
 - `pronouns`: xưng hô fits the speaker, the listener and their relationship, and follows the Pronoun matrix for that pair when one exists.
+<!-- /if -->
+<!-- if:default_pair -->
+- `pronouns`: this series uses one pronoun pair for all dialogue: `{{self_term}}` for the speaker and `{{address_term}}` for the person addressed. Any other first- or second-person pronoun scores at most 2 (names, titles and forms of address from the Chinese are fine).
+<!-- /if -->
+<!-- if:identify -->
 - `register`: classical, readable subtitle Vietnamese; Hán-Việt names, titles and terms; no modern slang or modern pronouns unless the matrix says so. Glossary terms are used exactly.
+<!-- /if -->
+<!-- if:default_pair -->
+- `register`: classical, readable subtitle Vietnamese; Hán-Việt names, titles and terms; no modern slang. The pronoun pair above is always right here. Glossary terms are used exactly.
+<!-- /if -->
 - `naturalness`: sounds like something a Vietnamese viewer would read comfortably; not a word-by-word calque.
+<!-- if:identify -->
 - `speaker`: the chosen speaker and listener are plausible given the scene and the voice-match candidates. For on-screen text (`line_type` sign / title / sfx) score 5 when speaker and listener are empty. When `voice_status` is `fixed` or `new_voice` and the speaker is not the first voice candidate, score `speaker` at most 2 unless the dialogue itself shows who speaks (a name, a form of address, an answer to a question); a picture on screen or a guess is not such a reason (see `translator_notes`).
+<!-- /if -->
 
 ## Reviewer preferences
 

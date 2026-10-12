@@ -115,17 +115,29 @@ def migrate(root: Path, slug: str) -> Path:
 
 
 def add(root: Path, slug: str, name: str, register: str = "co_trang_tien_hiep",
-        work_dir: str | None = None) -> Path:
-    """A new, empty series: series.yaml with its name and register (and work folder when given; else
+        work_dir: str | None = None, *, identify: bool = True, self_term: str = "", address_term: str = "") -> Path:
+    """A new, empty series: series.yaml with its name, register, character identification mode and default
+    pronoun pair (required when identification is off, 5.11a), its work folder when given (else
     <work_dir>/<slug>/), the bundled subtitle font, and the empty folders bootstrap starts from."""
+    from pydantic import ValidationError
+
+    from subagent.config import ShowConfig
+
     check_slug(slug)
+    show: dict = {"name": name, "genre_register": register, "character_identification": identify}
+    if self_term.strip() or address_term.strip():
+        show |= {"self_term": self_term.strip(), "address_term": address_term.strip()}
+    try:
+        ShowConfig.model_validate(show)
+    except ValidationError as exc:
+        raise SubagentError(exc.errors()[0]["msg"].removeprefix("Value error, "), code="bad_pronouns") from exc
     folder = series_root(root) / slug
     if folder.exists():
         raise SubagentError(f"series '{slug}' already exists", code="series_exists")
     styles = registers(root)
     if styles and register not in styles:
         raise SubagentError(f"no translation style '{register}' (styles: {', '.join(styles)})", code="bad_style")
-    data: dict = {"show": {"name": name, "genre_register": register}}
+    data: dict = {"show": show}
     if work_dir:
         data["paths"] = {"work_dir": work_dir}
     for sub in ("bootstrap/voices", "bootstrap/sprites", "prompts", "fonts"):

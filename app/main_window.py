@@ -7,6 +7,7 @@ from pathlib import Path
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -91,7 +92,8 @@ class StyleDialog(QDialog):
 
 
 class NewSeriesDialog(QDialog):
-    """Slug, display name, translation register and (optional) work folder of a new series."""
+    """Slug, display name, translation register, how pronouns are decided (character identification, or one
+    default pronoun pair, 5.11a) and (optional) work folder of a new series."""
 
     def __init__(self, parent: QWidget, root):
         super().__init__(parent)
@@ -115,16 +117,40 @@ class NewSeriesDialog(QDialog):
         work_row = QHBoxLayout()
         work_row.addWidget(self.work, 1)
         work_row.addWidget(browse)
+        self.identify = QCheckBox(self.tr("Identify characters (speaker and listener per line)"))
+        self.identify.setToolTip(self.tr(
+            "On: voices and pictures find who speaks to whom, and the pronoun matrix decides xưng hô per pair. "
+            "Off: no character identification; every line uses the default pronoun pair below."))
+        self.self_term = QLineEdit()
+        self.self_term.setPlaceholderText(self.tr("how the speaker says \"I\", e.g. ta"))
+        self.address_term = QLineEdit()
+        self.address_term.setPlaceholderText(self.tr("how the speaker says \"you\", e.g. ngươi"))
+        pair_row = QHBoxLayout()
+        pair_row.addWidget(self.self_term, 1)
+        pair_row.addWidget(QLabel("/"))
+        pair_row.addWidget(self.address_term, 1)
+        self.pair_note = QLabel()
+        self.pair_note.setWordWrap(True)
+        self.identify.toggled.connect(self._identify_changed)
         form.addRow(self.tr("Id"), self.slug)
         form.addRow(self.tr("Name"), self.name)
         form.addRow(self.tr("Translation style"), style_row)
+        form.addRow(self.tr("Pronouns"), self.identify)
+        form.addRow(self.tr("Default pronoun pair"), pair_row)
+        form.addRow("", self.pair_note)
         form.addRow(self.tr("Work folder"), work_row)
+        self._identify_changed(False)
         form.addRow(QLabel(self.tr("After creating it, the Bootstrap screen opens: calibrate the subtitles, write the "
                                    "cast and add voice clips, as for the first series.")))
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self._check)
         buttons.rejected.connect(self.reject)
         form.addRow(buttons)
+
+    def _identify_changed(self, on: bool) -> None:
+        self.pair_note.setText(self.tr(
+            "Used only if you turn character identification off later (Settings).") if on else self.tr(
+            "Required: every line of this series uses this pair."))
 
     def _pick_work(self) -> None:
         """Choose the series' work folder; starts at the typed folder, else the shared work folder."""
@@ -168,11 +194,21 @@ class NewSeriesDialog(QDialog):
         if not self.register.currentData():
             QMessageBox.warning(self, self.tr("New series"), self.tr("Choose a translation style, or create one."))
             return
+        if not self.identify.isChecked() and not (self.self_term.text().strip() and self.address_term.text().strip()):
+            QMessageBox.warning(self, self.tr("New series"), self.tr(
+                "Without character identification every line uses the default pronoun pair: fill in both words."))
+            (self.address_term if self.self_term.text().strip() else self.self_term).setFocus()
+            return
         self.accept()
 
     def values(self) -> tuple[str, str, str, str | None]:
         slug = self.slug.text().strip()
         return slug, self.name.text().strip() or slug, self.register.currentData(), self.work.text().strip() or None
+
+    def pronouns(self) -> dict:
+        """series.add keywords: the identification mode and the default pronoun pair."""
+        return {"identify": self.identify.isChecked(), "self_term": self.self_term.text().strip(),
+                "address_term": self.address_term.text().strip()}
 
 
 class MainWindow(QMainWindow):
@@ -281,7 +317,7 @@ class MainWindow(QMainWindow):
                 from subagent import series as sr
 
                 try:
-                    sr.add(self.services.root, *dialog.values())
+                    sr.add(self.services.root, *dialog.values(), **dialog.pronouns())
                 except Exception as exc:  # noqa: BLE001 - shown to the user
                     from app.widgets import show_error
 

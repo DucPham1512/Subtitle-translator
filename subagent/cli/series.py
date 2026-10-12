@@ -35,7 +35,13 @@ def cmd_series(args, config, paths, progress) -> int:
         print(f"series {args.action}: give the series slug")
         return 2
     if args.action == "add":
-        folder = sr.add(root, args.slug, args.name or args.slug, args.register, args.work_dir)
+        if bool(args.identify_characters) == bool(args.pronouns):
+            print("series add: choose how pronouns are decided: --identify-characters (speaker and listener per "
+                  "line, the pronoun matrix) or --pronouns SELF ADDRESS (one default pair for every line)")
+            return 2
+        self_term, address_term = args.pronouns or ("", "")
+        folder = sr.add(root, args.slug, args.name or args.slug, args.register, args.work_dir,
+                        identify=bool(args.identify_characters), self_term=self_term, address_term=address_term)
         print(f"series {args.slug} created in {folder}; next: `python -m subagent --series {args.slug} bootstrap` "
               "(or the app's Bootstrap screen)")
     elif args.action == "migrate":
@@ -64,6 +70,10 @@ def add_series(sub, common) -> None:
     p.add_argument("--name", help="add: the show's display name (default: the slug)")
     p.add_argument("--register", default="co_trang_tien_hiep", help="add: translation register (show.genre_register)")
     p.add_argument("--work-dir", help="add: its work folder (default: <work_dir>/<slug>/)")
+    p.add_argument("--identify-characters", action="store_true",
+                   help="add: find speaker and listener per line (voice, cast); the pronoun matrix decides xưng hô")
+    p.add_argument("--pronouns", nargs=2, metavar=("SELF", "ADDRESS"),
+                   help="add: no character identification; every line uses this pronoun pair, e.g. ta ngươi")
     p.set_defaults(func=cmd_series, no_config=True)
 
 

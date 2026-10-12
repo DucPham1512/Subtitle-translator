@@ -190,14 +190,15 @@ class RubricResponse(BaseModel):
 
 
 def rubric_payload(items: list[tuple[SubtitleEvent, LineTranslation, SpeakerCandidates | None]],
-                   context: list[dict]) -> str:
+                   context: list[dict], identify: bool = True) -> str:
+    """`identify` off (5.11a): no speaker, listener or voice fields."""
     rows = []
     for event, line, cands in items:
+        who = {"speaker": line.speaker, "listener": line.listener} if identify else {}
+        voice = {"voice_candidates": [c for c, _ in cands.candidates] if cands else [],
+                 "voice_status": cands.status if cands else "unknown"} if identify else {}
         rows.append({
-            "event_id": event.id, "zh": event.zh, "line_type": line.line_type, "speaker": line.speaker,
-            "listener": line.listener, "vi": line.vi,
-            "voice_candidates": [c for c, _ in cands.candidates] if cands else [],
-            "voice_status": cands.status if cands else "unknown",
+            "event_id": event.id, "zh": event.zh, "line_type": line.line_type, **who, "vi": line.vi, **voice,
             **({"translator_notes": line.notes} if line.notes else {}),
         })
     return (
@@ -208,10 +209,10 @@ def rubric_payload(items: list[tuple[SubtitleEvent, LineTranslation, SpeakerCand
 
 def llm_rubric(llm: LLMClient, static_prompt: str, prefix: str,
                items: list[tuple[SubtitleEvent, LineTranslation, SpeakerCandidates | None]],
-               context: list[dict]) -> dict[str, RubricLine]:
+               context: list[dict], identify: bool = True) -> dict[str, RubricLine]:
     if not items:
         return {}
-    messages = build_messages(static_prompt, prefix, rubric_payload(items, context))
+    messages = build_messages(static_prompt, prefix, rubric_payload(items, context, identify))
     resp: RubricResponse = llm.call("evaluator", messages, RubricResponse, task="evaluate")  # type: ignore[assignment]
     wanted = {e.id for e, _, _ in items}
     return {r.event_id: r for r in resp.lines if r.event_id in wanted}
@@ -220,7 +221,9 @@ def llm_rubric(llm: LLMClient, static_prompt: str, prefix: str,
 def judge(event_id: str, attempt: int, failures: list[RuleFailure], warnings: list[str],
           rubric: RubricLine | None, config: Config, evaluated: bool) -> Evaluation:
     min_score = config.evaluate.min_score
-    scores = {k: v for k, v in (rubric.scores if rubric else {}).items() if k in config.evaluate.criteria}
+    # no speaker criterion while character identification is off (5.11a)
+    criteria = [c for c in config.evaluate.criteria if c != "speaker" or config.show.character_identification]
+    scores = {k: v for k, v in (rubric.scores if rubric else {}).items() if k in criteria}
     low = [k for k, v in scores.items() if v < min_score]
     passed = not failures and not low
     parts = [str(f) for f in failures]

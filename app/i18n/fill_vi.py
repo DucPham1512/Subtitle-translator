@@ -731,6 +731,19 @@ VI = {
     "series.yaml (this series: {slug})": "series.yaml (bộ phim này: {slug})",
     "Validated before saving; comments are kept. A series' series.yaml overrides config.yaml for that series.":
         "Được kiểm tra trước khi lưu; giữ nguyên chú thích. series.yaml của một bộ phim ghi đè config.yaml cho bộ phim đó.",
+    # character identification mode (5.11a)
+    "Identify characters (speaker and listener per line)": "Nhận diện nhân vật (người nói và người nghe từng câu)",
+    "On: voices and pictures find who speaks to whom, and the pronoun matrix decides xưng hô per pair. Off: no character identification; every line uses the default pronoun pair below.":
+        "Bật: giọng nói và hình ảnh xác định ai nói với ai, và bảng xưng hô quyết định xưng hô theo từng cặp. Tắt: không nhận diện nhân vật; mọi câu dùng cặp xưng hô mặc định bên dưới.",
+    "how the speaker says \"I\", e.g. ta": "người nói tự xưng, ví dụ ta",
+    "how the speaker says \"you\", e.g. ngươi": "người nói gọi người nghe, ví dụ ngươi",
+    "Default pronoun pair": "Cặp xưng hô mặc định",
+    "Used only if you turn character identification off later (Settings).":
+        "Chỉ dùng nếu sau này bạn tắt nhận diện nhân vật (Settings).",
+    "Required: every line of this series uses this pair.": "Bắt buộc: mọi câu của bộ phim này dùng cặp này.",
+    "Without character identification every line uses the default pronoun pair: fill in both words.":
+        "Khi không nhận diện nhân vật, mọi câu dùng cặp xưng hô mặc định: hãy điền cả hai từ.",
+    "Line type": "Loại câu",
 }
 
 _PH = re.compile(r"\{[a-z_]+\}")

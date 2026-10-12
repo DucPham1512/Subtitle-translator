@@ -11,7 +11,7 @@ Key facts about the source material that drive the design:
 - The show is a cartoon built from reused, predrawn character art.
 - Voices are AI-generated and consistent per character, but two characters may sound alike.
 - Subtitles are hardsubs (pixels), so text must come from OCR.
-- Vietnamese pronouns (xưng hô) depend on speaker, listener and their relationship, so speaker/listener attribution is a first-class concern.
+- Vietnamese pronouns (xưng hô) depend on speaker, listener and their relationship, so speaker/listener attribution is a first-class concern. Per series this can be turned off (`show.character_identification: false`, 5.11a): no voice / cast / sprite stages, no speakers, and every line uses one default pronoun pair.
 - Setting is historical / fantasy (cổ trang, tiên hiệp). Translation uses a classical register and Hán-Việt terms (see 5.11).
 - Chinese subtitles are a single line in a fixed position. Resolution is unknown and read at runtime.
 - It is unknown whether other text (signs, titles, sound effects) appears in the subtitle area, so the pipeline detects and flags it (see 5.5).
