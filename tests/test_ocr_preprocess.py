@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 
 from subagent.kernel.models import OcrBox, ReviewedLine, SubtitleEvent
+from subagent.ocr.ocr import filter_boxes, prepare, subtitle_mask, to_band_coords
 from subagent.ocr_benchmark import score_episode
-from subagent.stages.ocr import filter_boxes, prepare, subtitle_mask, to_band_coords
 
 
 def _band() -> np.ndarray:
@@ -112,8 +112,8 @@ def test_stroke_and_brightness_tests_drop_outlined_surfaces(project):
 
 
 def test_frames_showing_the_same_subtitle_are_fused():
+    from subagent.ocr.ingest import detect_changes, fuse
     from subagent.settings.config import VideoConfig
-    from subagent.stages.ingest import detect_changes, fuse
 
     text = np.full((20, 60), 30, np.uint8)
     cv2.rectangle(text, (10, 5), (50, 15), 255, -1)
@@ -125,7 +125,7 @@ def test_frames_showing_the_same_subtitle_are_fused():
 
 
 def test_crop_view_places_what_ocr_read_in_the_band(project):
-    from subagent.stages.ocr import crop_view
+    from subagent.ocr.ocr import crop_view
 
     config, _ = project
     config.ocr.preprocess, config.ocr.recognize, config.ocr.mask_image, config.ocr.mask_scale = "mask", "line", "original", 1.0
@@ -140,7 +140,7 @@ def test_crop_view_places_what_ocr_read_in_the_band(project):
 
 
 def test_symmetric_span_trims_the_far_side_beyond_half_a_line(project):
-    from subagent.stages.ocr import symmetric_span
+    from subagent.ocr.geometry import symmetric_span
 
     assert symmetric_span((100, 0, 300, 40), 200, 0.5) == (100, 0, 300, 40)    # already centred
     assert symmetric_span((40, 0, 300, 40), 200, 0.5) == (80, 0, 300, 40)     # left 160 vs right 100: keep 100+20

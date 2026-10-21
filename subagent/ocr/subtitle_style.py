@@ -312,7 +312,7 @@ def style_preview(bands: list[np.ndarray], style: SubtitleStyle, ocr_cfg,
     """Rows of three per band: the band, its segmentation mask (black = kept as subtitle), and the crop OCR reads
     (original pixels at their position; grey where nothing is read). `center_x`: the frame's centre column in
     the band, for `ocr.symmetric_crop`."""
-    from subagent.stages.ocr import line_span, symmetric_span
+    from subagent.ocr.geometry import line_span, symmetric_span
 
     rows = []
     for b in bands:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from subagent.stages.ingest import binarize, detect_changes, has_subtitle, outlined_ratio
+from subagent.ocr.ingest import binarize, detect_changes, has_subtitle, outlined_ratio
 
 
 def _band(background: int) -> np.ndarray:

@@ -65,8 +65,8 @@ def stubs(monkeypatch, calls):
         tmp.write_bytes(b"mp4")
         return tmp
 
-    monkeypatch.setattr("subagent.stages.ingest.run", ingest)
-    monkeypatch.setattr("subagent.stages.ocr.run", ocr)
+    monkeypatch.setattr("subagent.ocr.ingest.run", ingest)
+    monkeypatch.setattr("subagent.ocr.ocr.run", ocr)
     monkeypatch.setattr("subagent.stages.audio.run", audio)
     monkeypatch.setattr("subagent.stages.render.render", render)
 
@@ -189,7 +189,7 @@ def test_purged_stage_is_regenerated_when_needed(project, stubs, calls):
 def test_missing_source_marks_episode(project, stubs, monkeypatch):
     from pathlib import Path
 
-    import subagent.stages.ingest as ingest
+    import subagent.ocr.ingest as ingest
     from subagent.kernel.errors import SourceMissingError
 
     config, paths = project

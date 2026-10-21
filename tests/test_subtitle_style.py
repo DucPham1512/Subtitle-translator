@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import pytest
 
-from subagent.subtitle_style import (
+from subagent.ocr.subtitle_style import (
     SubtitleStyle,
     calibrate,
     load_style,

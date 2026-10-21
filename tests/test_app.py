@@ -538,7 +538,7 @@ def test_bootstrap_learns_the_subtitle_style_as_a_job(qapp, project, monkeypatch
     from app.main_window import MainWindow
     from app.services import Services
     from subagent.infra.media import imwrite_png
-    from subagent.subtitle_style import SubtitleStyle, save_style
+    from subagent.ocr.subtitle_style import SubtitleStyle, save_style
 
     config, paths = project
     register_episode(paths, 5)

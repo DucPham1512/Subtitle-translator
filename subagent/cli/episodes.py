@@ -228,7 +228,7 @@ def cmd_check(args, config, paths, progress) -> int:
     for model in missing_prices(config):
         print(f"price: no entry for {model} under llm.prices (cost shows as unknown, budget not enforced)")
     if config.ocr.preprocess == "segment":
-        from subagent.subtitle_style import load_style
+        from subagent.ocr.subtitle_style import load_style
 
         if load_style(paths.bootstrap) is None:
             ok = False

@@ -62,7 +62,7 @@ def _style_key(ctx: EpisodeContext) -> object:
     values segmentation uses count; recalibrating to the same values changes nothing."""
     if ctx.config.ocr.preprocess != "segment":
         return None
-    from subagent.subtitle_style import load_style
+    from subagent.ocr.subtitle_style import load_style
 
     style = load_style(ctx.paths.bootstrap)
     return style.model_dump(exclude={"regions", "calibrated_from", "calibrated_at"}) if style else None
@@ -77,43 +77,44 @@ def _review_run(ctx: EpisodeContext) -> dict:
 
 
 def _lazy(module: str) -> Callable[[EpisodeContext], dict]:
+    """The `run` of a stage module, imported on first use (heavy models load only when a stage runs)."""
     def run(ctx: EpisodeContext) -> dict:
         import importlib
 
-        return importlib.import_module(f"subagent.stages.{module}").run(ctx)
+        return importlib.import_module(module).run(ctx)
 
-    run.__name__ = f"run_{module}"
+    run.__name__ = f"run_{module.rsplit('.', 1)[-1]}"
     return run
 
 
-def run_stage(module: str, ctx: EpisodeContext) -> dict:
-    """One stage module's `run(ctx)`, directly: no resume, state or progress (benchmarks)."""
-    return _lazy(module)(ctx)
-
-
 STAGES: list[StageDef] = [
-    StageDef("ingest", _lazy("ingest"), [], ["video"], ["bands", "changes.jsonl", "video.json"], extra=_source_key),
-    StageDef("ocr", _lazy("ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"], extra=_style_key),
-    StageDef("events", _lazy("events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
-    StageDef("ocr_fix", _lazy("ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
+    StageDef("ingest", _lazy("subagent.ocr.ingest"), [], ["video"], ["bands", "changes.jsonl", "video.json"], extra=_source_key),
+    StageDef("ocr", _lazy("subagent.ocr.ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"], extra=_style_key),
+    StageDef("events", _lazy("subagent.ocr.events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
+    StageDef("ocr_fix", _lazy("subagent.ocr.ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
              prompts=["ocr_fix_system"], llm_roles=["utility"]),
-    StageDef("audio", _lazy("audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
-    StageDef("voice", _lazy("voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
+    StageDef("audio", _lazy("subagent.stages.audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
+    StageDef("voice", _lazy("subagent.stages.voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
              identification=True),
-    StageDef("cast", _lazy("cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
+    StageDef("cast", _lazy("subagent.stages.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
              extra=_source_key, identification=True),
-    StageDef("pinyin", _lazy("pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
+    StageDef("pinyin", _lazy("subagent.stages.pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
              prompts=["polyphone_system"], llm_roles=["utility"]),
-    StageDef("windows", _lazy("windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
-    StageDef("translate", _lazy("translate"), ["ocr_fix", "voice", "cast", "windows"],
+    StageDef("windows", _lazy("subagent.stages.windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
+    StageDef("translate", _lazy("subagent.stages.translate"), ["ocr_fix", "voice", "cast", "windows"],
              ["translate", "evaluate", "show", "sprite"], ["translations.jsonl", "evaluations.jsonl"],
              prompts=["translator_system", "evaluator_system"], llm_roles=["translator", "evaluator"]),
-    StageDef("sprite", _lazy("sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
-    StageDef("script_review", _lazy("script_review"), ["translate", "sprite"], ["script_review"],
+    StageDef("sprite", _lazy("subagent.stages.sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
+    StageDef("script_review", _lazy("subagent.stages.script_review"), ["translate", "sprite"], ["script_review"],
              ["script_review.jsonl"], prompts=["script_review_system"], llm_roles=["utility"]),
     StageDef("review", _review_run, ["pinyin", "sprite", "script_review"], ["review"], []),
 ]
 STAGE_NAMES = [s.name for s in STAGES] + ["memory", "render", "report", "cleanup"]
+
+
+def run_stage(name: str, ctx: EpisodeContext) -> dict:
+    """One stage's `run(ctx)`, directly: no resume, state or progress (benchmarks)."""
+    return next(s for s in STAGES if s.name == name).run(ctx)
 
 
 @dataclass
@@ -420,14 +421,14 @@ class Pipeline:
             return cleanup(ctx.work, episode.id)
 
     def calibrate(self, ep_ref: str) -> list[Path]:
-        from subagent.stages.ingest import calibrate
+        from subagent.ocr.ingest import calibrate
 
         return calibrate(self.context(self.registry.resolve(ep_ref)))
 
     def calibrate_style(self, ep_ref: str):
         """Learn the series' subtitle style from one episode (5.4a); saved for every later episode."""
         from subagent.infra.media import imwrite_png, iter_gray_frames, probe
-        from subagent.subtitle_style import calibrate, save_style, style_preview
+        from subagent.ocr.subtitle_style import calibrate, save_style, style_preview
 
         ctx = self.context(self.registry.resolve(ep_ref))
         source = ctx.require_source()

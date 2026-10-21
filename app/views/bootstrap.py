@@ -213,7 +213,7 @@ class BootstrapView(QWidget):
         return page
 
     def _show_style(self) -> None:
-        from subagent.subtitle_style import load_style
+        from subagent.ocr.subtitle_style import load_style
 
         try:
             style = load_style(self.services.paths.bootstrap)
@@ -240,7 +240,7 @@ class BootstrapView(QWidget):
     def _style_preview_path(self) -> Path | None:
         """The preview made by the last calibration on the selected episode, else on the episode the style
         was learned from (deleted by that episode's cleanup)."""
-        from subagent.subtitle_style import load_style
+        from subagent.ocr.subtitle_style import load_style
 
         ids = [self.episode_box.currentData()]
         with contextlib.suppress(Exception):
@@ -257,7 +257,7 @@ class BootstrapView(QWidget):
         ep_id = self.episode_box.currentData()
         if not ep_id:
             return
-        from subagent.subtitle_style import load_style
+        from subagent.ocr.subtitle_style import load_style
 
         with contextlib.suppress(Exception):
             if load_style(self.services.paths.bootstrap) is not None and not confirm(

@@ -291,7 +291,7 @@ class Services:
         from subagent.infra.media import imread
         from subagent.kernel.models import OcrReading
         from subagent.kernel.textutil import normalize_zh
-        from subagent.stages.ocr import crop_path
+        from subagent.ocr.ocr import crop_path
 
         work = self.paths.episode_dir(ep_id)
         if event is None or not (work / "ocr_crops").is_dir():

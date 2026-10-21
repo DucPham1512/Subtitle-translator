@@ -12,8 +12,8 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
+from subagent.ocr.events import build_events
 from subagent.stages import review, translate
-from subagent.stages.events import build_events
 from tests.conftest import make_llm, register_episode, seed_memory, user_json
 from tests.test_translate_review import GOOD, _review_ctx, _translate_ctx
 
