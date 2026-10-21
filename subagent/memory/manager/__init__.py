@@ -20,7 +20,11 @@ import sqlite3
 from collections.abc import Iterator
 
 from subagent.config import Config, Paths
-from subagent.errors import MemoryLockedError
+from subagent.kernel.errors import MemoryLockedError
+from subagent.kernel.util import (
+    FileLock,
+    atomic_write_text,
+)
 from subagent.memory import briefings as bf
 from subagent.memory.manager.apply import ApplyMixin
 from subagent.memory.manager.banks import BanksMixin
@@ -69,10 +73,6 @@ from subagent.memory.store import (
     SCHEMA,
     MemoryStore,
     migrate,
-)
-from subagent.util import (
-    FileLock,
-    atomic_write_text,
 )
 
 

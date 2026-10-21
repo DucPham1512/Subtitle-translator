@@ -8,7 +8,15 @@ import re
 import sqlite3
 
 from subagent.characters import is_unnamed
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
+from subagent.kernel.models import MemoryProposal
+from subagent.kernel.util import (
+    atomic_write_json,
+    atomic_write_text,
+    now_iso,
+    read_json,
+    sha256_json,
+)
 from subagent.memory import briefings as bf
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
@@ -51,14 +59,6 @@ from subagent.memory.store import (
     STATUSES,
     dumps,
     row_key,
-)
-from subagent.models import MemoryProposal
-from subagent.util import (
-    atomic_write_json,
-    atomic_write_text,
-    now_iso,
-    read_json,
-    sha256_json,
 )
 
 log = logging.getLogger(__name__)

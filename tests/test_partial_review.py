@@ -6,8 +6,7 @@ import wave
 
 import numpy as np
 
-from subagent.memory.store import MemoryStore
-from subagent.models import (
+from subagent.kernel.models import (
     CastDetection,
     CastLine,
     EpisodeState,
@@ -16,10 +15,11 @@ from subagent.models import (
     ReviewedLine,
     SpeakerCandidates,
 )
+from subagent.kernel.util import read_jsonl, write_jsonl
+from subagent.memory.store import MemoryStore
 from subagent.partial_review import OUTPUT, partial_review, suggest
 from subagent.stages.review import gate, load_draft, save_draft
 from subagent.state import save_state
-from subagent.util import read_jsonl, write_jsonl
 from tests.conftest import register_episode, sample_events, seed_memory, write_events
 
 DIM = 8
@@ -122,7 +122,7 @@ def test_without_a_voice_update_the_pipeline_voice_still_counts(project, monkeyp
 
 
 def _sug_model():
-    from subagent.models import PartialSuggestion
+    from subagent.kernel.models import PartialSuggestion
 
     return PartialSuggestion(event_id="x")
 

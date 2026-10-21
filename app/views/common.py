@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMessageBox, QWidget
 
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 
 
 def choose_batch_on_exists(parent: QWidget, existing: list[str]) -> str | None:

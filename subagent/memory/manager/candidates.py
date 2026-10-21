@@ -9,6 +9,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from subagent.kernel.models import MemoryProposal, NewVoice, ReviewedLine
+from subagent.kernel.util import (
+    now_iso,
+)
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,
@@ -50,10 +54,6 @@ from subagent.memory.store import (
     episode_number,
     parse_aliases,
 )
-from subagent.models import MemoryProposal, NewVoice, ReviewedLine
-from subagent.util import (
-    now_iso,
-)
 
 log = logging.getLogger(__name__)
 
@@ -87,9 +87,9 @@ class CandidatesMixin:
         make this episode's new voices and new names candidates, hold the proposals about candidates, drop the
         candidates whose window has passed. Returns the proposals to apply now, counts, and evidence ids of
         held proposals released by a promotion."""
+        from subagent.kernel.models import CastLine
+        from subagent.kernel.util import read_jsonl
         from subagent.memory.evidence import load_line_voices, trusted_auto_lines
-        from subagent.models import CastLine
-        from subagent.util import read_jsonl
 
         work = self.paths.episode_dir(episode_id)
         cast_embs = np.load(work / "cast_embeddings.npy") if (work / "cast_embeddings.npy").is_file() else None

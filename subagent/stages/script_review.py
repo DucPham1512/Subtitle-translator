@@ -16,11 +16,11 @@ from pydantic import BaseModel, Field, field_validator
 
 from subagent.config import ScriptReviewConfig
 from subagent.context import EpisodeContext
+from subagent.kernel.models import LineTranslation, ScriptDecision, SubtitleEvent
+from subagent.kernel.textutil import is_han, normalize_zh, relatedness
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.store import LineDecision, MemoryStore
-from subagent.models import LineTranslation, ScriptDecision, SubtitleEvent
-from subagent.textutil import is_han, normalize_zh, relatedness
-from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 
@@ -166,7 +166,7 @@ def model_pass(ctx: EpisodeContext, events: list[SubtitleEvent], translations: d
 def plausible_fix(zh: str, zh_fix: str, config) -> str | None:
     """The model's corrected Chinese when it is a correction of this line: different, not empty, and changing
     at most `fix_max_change_share` of the characters (at least `ocr_fix.max_char_changes`)."""
-    from subagent.textutil import edit_distance, normalize_zh
+    from subagent.kernel.textutil import edit_distance, normalize_zh
 
     fix = (zh_fix or "").strip()
     if not fix or normalize_zh(fix) == normalize_zh(zh):

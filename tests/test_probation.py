@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from subagent.memory.manager import MemoryManager
-from subagent.memory.probation import check_return
-from subagent.memory.store import Candidate
-from subagent.models import (
+from subagent.kernel.models import (
     CastDetection,
     CastLine,
     LineTranslation,
@@ -16,8 +13,11 @@ from subagent.models import (
     ReviewedLine,
     SpeakerCandidates,
 )
+from subagent.kernel.util import write_jsonl
+from subagent.memory.manager import MemoryManager
+from subagent.memory.probation import check_return
+from subagent.memory.store import Candidate
 from subagent.stages.voice import find_new_voices, save_line_voices
-from subagent.util import write_jsonl
 from tests.conftest import register_episode, seed_memory
 
 
@@ -152,7 +152,7 @@ def test_npcs_created_in_review_are_ids_of_their_episode(project):
 
 
 def test_a_review_npc_goes_on_probation_at_finish(project, monkeypatch):
-    from subagent.models import EpisodeState
+    from subagent.kernel.models import EpisodeState
     from subagent.pipeline import Pipeline
     from subagent.state import save_state
 

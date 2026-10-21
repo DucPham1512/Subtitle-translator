@@ -13,10 +13,10 @@ import numpy as np
 from subagent.config import Config, Paths, VoiceConfig
 from subagent.context import EpisodeContext
 from subagent.device import torch_device
-from subagent.errors import MediaError, ModelUnavailableError
+from subagent.kernel.errors import MediaError, ModelUnavailableError
+from subagent.kernel.models import NewVoice, SpeakerCandidates, SubtitleEvent
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.models import NewVoice, SpeakerCandidates, SubtitleEvent
-from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 

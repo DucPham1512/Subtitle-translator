@@ -25,10 +25,10 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from subagent.config import Config, Paths
-from subagent.models import ReviewedLine, SubtitleEvent
+from subagent.kernel.models import ReviewedLine, SubtitleEvent
+from subagent.kernel.textutil import edit_distance, keep_cjk, normalize_zh
+from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 from subagent.state import load_state
-from subagent.textutil import edit_distance, keep_cjk, normalize_zh
-from subagent.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 
 STAGES = ("ingest", "ocr", "events")
 KEY_FILE = "answer_key.json"

@@ -12,9 +12,9 @@ import pytest
 import yaml
 
 from subagent.config import Config, Paths, load_config
+from subagent.kernel.models import Episode, SubtitleEvent
+from subagent.kernel.util import write_jsonl
 from subagent.llm import LLMClient
-from subagent.models import Episode, SubtitleEvent
-from subagent.util import write_jsonl
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -144,8 +144,8 @@ def write_events(work: Path, events: list[SubtitleEvent], name: str = "events.js
 
 def seed_memory(config: Config, paths: Paths) -> None:
     """Characters, glossary and pronoun pairs used across tests (written the proper way: bootstrap source)."""
+    from subagent.kernel.models import MemoryProposal
     from subagent.memory.manager import MemoryManager
-    from subagent.models import MemoryProposal
 
     m = MemoryManager(paths, config)
     m.ensure_repo()

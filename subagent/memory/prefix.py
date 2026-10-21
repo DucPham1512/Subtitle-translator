@@ -73,8 +73,8 @@ def style_block(memory_dir: Path) -> str:
 def reviewer_corrections(paths, limit: int) -> list[tuple[str, str, str]]:
     """(zh, machine vi, reviewer vi) from the latest finished reviews, newest episodes first, deduplicated."""
     from subagent.episodes import Registry
-    from subagent.models import EditRecord, ReviewedLine
-    from subagent.util import read_jsonl
+    from subagent.kernel.models import EditRecord, ReviewedLine
+    from subagent.kernel.util import read_jsonl
 
     out: list[tuple[str, str, str]] = []
     seen: set[tuple[str, str]] = set()

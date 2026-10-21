@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from subagent.config import Config, Paths
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 
 ON_EXISTS_CHOICES = ["overwrite", "keep-both", "fail"]
 

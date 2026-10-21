@@ -5,9 +5,16 @@ from __future__ import annotations
 import pytest
 
 from subagent import audit
-from subagent.models import AuditMark, CastDetection, CastLine, EpisodeState, ReviewedLine, SpeakerCandidates
+from subagent.kernel.models import (
+    AuditMark,
+    CastDetection,
+    CastLine,
+    EpisodeState,
+    ReviewedLine,
+    SpeakerCandidates,
+)
+from subagent.kernel.util import write_jsonl
 from subagent.state import save_state
-from subagent.util import write_jsonl
 from tests.conftest import register_episode
 
 
@@ -91,7 +98,7 @@ def test_gold_answers_and_benchmark(project):
     import json
 
     from subagent.benchmark import benchmark_episodes, run_benchmark
-    from subagent.models import LineTranslation
+    from subagent.kernel.models import LineTranslation
 
     config, paths = project
     ep, work = _episode(paths, 1, n=20)

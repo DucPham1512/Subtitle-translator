@@ -10,13 +10,13 @@ import pytest
 
 from subagent.baseline import freeze_finished
 from subagent.episodes import Registry
-from subagent.errors import OutputExistsError
-from subagent.models import EditRecord, OcrReading, VideoInfo
+from subagent.kernel.errors import OutputExistsError
+from subagent.kernel.models import EditRecord, OcrReading, VideoInfo
+from subagent.kernel.progress import Progress
+from subagent.kernel.util import atomic_write_text, read_jsonl, write_jsonl
 from subagent.pipeline import Pipeline, episode_status
-from subagent.progress import Progress
 from subagent.stages import review as review_stage
 from subagent.state import load_state
-from subagent.util import atomic_write_text, read_jsonl, write_jsonl
 from tests.conftest import make_llm, register_episode, seed_memory, user_json
 
 TEXTS = ["师尊，弟子已经筑基了。", "很好。你果然没让为师失望。", "弟子想下山历练。", "下山？外面很危险。"]
@@ -190,7 +190,7 @@ def test_missing_source_marks_episode(project, stubs, monkeypatch):
     from pathlib import Path
 
     import subagent.stages.ingest as ingest
-    from subagent.errors import SourceMissingError
+    from subagent.kernel.errors import SourceMissingError
 
     config, paths = project
     ep = register_episode(paths, 1)

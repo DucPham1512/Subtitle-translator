@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from subagent.character_card import card_info, card_media, confirmed_box, pin_card, shown_talking_box
-from subagent.models import CastBoxEdit, CastDetection, CastLine, ReviewedLine
-from subagent.util import write_jsonl
+from subagent.kernel.models import CastBoxEdit, CastDetection, CastLine, ReviewedLine
+from subagent.kernel.util import write_jsonl
 from tests.conftest import register_episode, seed_memory
 
 BOX = [100, 50, 200, 250]
@@ -66,7 +66,7 @@ def test_card_uses_reviewed_lines_only(project):
 
 def test_bootstrap_material_and_a_pinned_sample_come_first(project, monkeypatch):
     import subagent.media as media
-    from subagent.models import VideoInfo
+    from subagent.kernel.models import VideoInfo
 
     config, paths, ep1, ep2 = _setup(project)
     (paths.bootstrap / "voices" / "lin_yuan").mkdir(parents=True)
@@ -96,8 +96,8 @@ def test_bootstrap_material_and_a_pinned_sample_come_first(project, monkeypatch)
 
 def test_card_media_cuts_the_confirmed_box(project, monkeypatch):
     import subagent.media as media
+    from subagent.kernel.models import VideoInfo
     from subagent.media import imread
-    from subagent.models import VideoInfo
 
     config, paths, ep1, ep2 = _setup(project)
     cuts = []

@@ -7,9 +7,9 @@ from pathlib import Path
 
 from subagent.config import Config, Paths
 from subagent.episodes import Registry
+from subagent.kernel.models import Episode, VideoInfo
+from subagent.kernel.progress import NULL_PROGRESS, Progress
 from subagent.llm import LLMClient
-from subagent.models import Episode, VideoInfo
-from subagent.progress import NULL_PROGRESS, Progress
 
 
 @dataclass
@@ -40,7 +40,7 @@ class EpisodeContext:
         if self.registry is not None:
             self.episode = self.registry.check_source(self.episode.id)
         elif not self.source.is_file():
-            from subagent.errors import SourceMissingError
+            from subagent.kernel.errors import SourceMissingError
 
             raise SourceMissingError(f"The video for {self.episode.id} is missing: {self.source}")
         return self.source

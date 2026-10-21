@@ -9,7 +9,7 @@ import threading
 import time
 from typing import IO, Literal
 
-log = logging.getLogger("subagent.progress")
+log = logging.getLogger("subagent.kernel.progress")
 
 Status = Literal["start", "progress", "done", "skipped", "error", "info", "awaiting_review", "finished"]
 

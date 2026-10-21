@@ -11,9 +11,9 @@ from subagent.characters import (
     load_new_voices,
     save_new_voices,
 )
+from subagent.kernel.models import LineTranslation, MemoryProposal, NewVoice, ReviewedLine, SpeakerCandidates
 from subagent.memory.manager import MemoryManager
 from subagent.memory.prefix import new_voices_block
-from subagent.models import LineTranslation, MemoryProposal, NewVoice, ReviewedLine, SpeakerCandidates
 from subagent.stages.evaluate import RuleContext, rule_checks
 from subagent.stages.voice import find_new_voices, group_voices
 from tests.conftest import sample_events, seed_memory

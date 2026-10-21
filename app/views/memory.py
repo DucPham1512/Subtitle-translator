@@ -34,9 +34,9 @@ from PySide6.QtWidgets import (
 
 from app.widgets import ClipPlayer, confirm, show_error
 from app.workers import run_async
+from subagent.kernel.models import MemoryProposal
 from subagent.memory import briefings as bf
 from subagent.memory.store import parse_aliases, row_key
-from subagent.models import MemoryProposal
 
 LOCKED_COL = "locked"
 BOOL_COLS = ("generic",)        # shown as checkboxes, saved as 0 / 1

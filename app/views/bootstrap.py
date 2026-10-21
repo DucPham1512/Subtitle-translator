@@ -40,9 +40,9 @@ from PySide6.QtWidgets import (
 from app.preview import PreviewWidget
 from app.widgets import ClipPlayer, FrameSelector, confirm, fmt_ms, show_error, to_qimage
 from app.workers import run_async
+from subagent.kernel.util import atomic_write_text
 from subagent.memory import bootstrap as bs
 from subagent.stages.voice import voice_clips
-from subagent.util import atomic_write_text
 
 SEED_TABLES = {
     "characters": ["id", "name_zh", "name_vi", "description"],

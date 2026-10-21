@@ -7,7 +7,7 @@ import yaml
 
 from subagent import series as sr
 from subagent.config import load_config
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 from subagent.registers import list_registers, load_register, save_register, split_terms
 
 

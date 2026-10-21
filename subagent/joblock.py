@@ -6,8 +6,8 @@ import os
 from pathlib import Path
 
 from subagent.config import Paths
-from subagent.errors import EpisodeLockedError
-from subagent.util import FileLock, lock_holder
+from subagent.kernel.errors import EpisodeLockedError
+from subagent.kernel.util import FileLock, lock_holder
 
 GLOBAL_JOBS = "_jobs"
 

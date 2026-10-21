@@ -14,7 +14,7 @@ from pathlib import Path
 import yaml
 
 from subagent.config import SERIES_FILE, SERIES_SECTIONS, list_series, series_root
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 
 SLUG = re.compile(r"[a-z0-9][a-z0-9_-]{0,39}")
 # folders of the single-series layout that belong to the series (relative to the project root)
@@ -182,8 +182,8 @@ def rename(root: Path, old: str, new: str) -> Path:
 def _refuse_while_jobs_run(root: Path, slug: str | None = None) -> None:
     """No series change while a job of that series (or of the single-series layout) runs."""
     from subagent.config import load_config
-    from subagent.errors import JobRunningError
     from subagent.joblock import running_jobs
+    from subagent.kernel.errors import JobRunningError
 
     try:
         _, paths = load_config(root, slug)

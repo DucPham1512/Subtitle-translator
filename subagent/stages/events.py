@@ -9,9 +9,9 @@ from dataclasses import dataclass, field
 
 from subagent.config import Config, NonDialogueConfig
 from subagent.context import EpisodeContext
-from subagent.models import OcrReading, SubtitleEvent
-from subagent.textutil import edit_distance, normalize_zh, relatedness
-from subagent.util import read_jsonl, write_jsonl
+from subagent.kernel.models import OcrReading, SubtitleEvent
+from subagent.kernel.textutil import edit_distance, normalize_zh, relatedness
+from subagent.kernel.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 

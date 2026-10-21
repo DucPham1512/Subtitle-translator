@@ -4,9 +4,8 @@ import numpy as np
 import pytest
 
 from subagent.context import EpisodeContext
-from subagent.errors import ReviewIncompleteError, SubagentError
-from subagent.memory.store import MemoryStore
-from subagent.models import (
+from subagent.kernel.errors import ReviewIncompleteError, SubagentError
+from subagent.kernel.models import (
     Evaluation,
     LineTranslation,
     PinyinLine,
@@ -14,10 +13,11 @@ from subagent.models import (
     SpeakerCandidates,
     SubtitleEvent,
 )
+from subagent.kernel.util import atomic_write_json, read_jsonl, write_jsonl
+from subagent.memory.store import MemoryStore
 from subagent.stages import review, sprite, translate
 from subagent.stages.evaluate import RuleContext, rule_checks
 from subagent.stages.windows import build_windows
-from subagent.util import atomic_write_json, read_jsonl, write_jsonl
 from tests.conftest import make_episode, make_llm, sample_events, seed_memory, user_json, write_events
 
 
@@ -277,8 +277,8 @@ def test_deleted_lines_need_no_approval_and_are_recorded(project):
 def test_glossary_rule_matches_whole_words_only(project):
     config, paths = project
     seed_memory(config, paths)
+    from subagent.kernel.models import MemoryProposal
     from subagent.memory.manager import MemoryManager
-    from subagent.models import MemoryProposal
 
     MemoryManager(paths, config).apply([MemoryProposal(kind="glossary", source="bootstrap",
                                                        payload={"zh": "鱼", "vi": "cá"})])

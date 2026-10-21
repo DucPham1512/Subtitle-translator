@@ -99,7 +99,7 @@ def cmd_baseline(args, config, paths, progress) -> int:
 def cmd_bench(args, config, paths, progress) -> int:
     from subagent import suite
     from subagent.baseline import baseline_dir
-    from subagent.util import now_iso
+    from subagent.kernel.util import now_iso
 
     name = args.baseline or config.bench.baseline or config.baseline.name
     if not name or not (baseline_dir(paths, name) / "manifest.json").is_file():

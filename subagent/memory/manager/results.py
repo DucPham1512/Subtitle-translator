@@ -7,6 +7,7 @@ import logging
 
 from pydantic import BaseModel, Field
 
+from subagent.kernel.models import MemoryProposal
 from subagent.memory.manager.rows import (  # noqa: F401
     BACKUP_ITEMS,
     BRIEFING_FILES,
@@ -30,7 +31,6 @@ from subagent.memory.manager.rows import (  # noqa: F401
 from subagent.memory.store import (
     parse_aliases,
 )
-from subagent.models import MemoryProposal
 
 log = logging.getLogger(__name__)
 

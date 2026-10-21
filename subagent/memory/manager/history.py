@@ -6,8 +6,8 @@ import logging
 import tempfile
 from pathlib import Path
 
-from subagent.errors import JobRunningError
 from subagent.joblock import running_jobs
+from subagent.kernel.errors import JobRunningError
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,

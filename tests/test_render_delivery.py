@@ -5,8 +5,8 @@ import pytest
 
 from subagent.config import Band
 from subagent.delivery import cleanup, deliver, keep_both_path, output_name, resolve_conflict
-from subagent.errors import OutputExistsError, OutputFolderError
-from subagent.models import ReviewedLine, StageState
+from subagent.kernel.errors import OutputExistsError, OutputFolderError
+from subagent.kernel.models import ReviewedLine, StageState
 from subagent.stages.render import Layout, build_ass, build_mask_filter
 from subagent.state import load_state, save_state
 

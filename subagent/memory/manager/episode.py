@@ -11,6 +11,12 @@ import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
+from subagent.kernel.models import EditRecord, LineTranslation, MemoryProposal, NewVoice, ReviewedLine
+from subagent.kernel.util import (
+    append_jsonl,
+    atomic_write_text,
+    now_iso,
+)
 from subagent.memory import briefings as bf
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
@@ -51,12 +57,6 @@ from subagent.memory.manager.rows import (  # noqa: F401
 )
 from subagent.memory.store import (
     episode_number,
-)
-from subagent.models import EditRecord, LineTranslation, MemoryProposal, NewVoice, ReviewedLine
-from subagent.util import (
-    append_jsonl,
-    atomic_write_text,
-    now_iso,
 )
 
 log = logging.getLogger(__name__)
@@ -175,7 +175,7 @@ class EpisodeMixin:
         """The reviewer's remove / keep decisions, counted per normalized text (memory of the script reviewer).
         Locked rows (edited by hand in the Memory screen) are not changed. Each episode's share is kept apart
         (`line_decision_episodes`), so recording an episode again replaces its share instead of adding to it."""
-        from subagent.textutil import normalize_zh
+        from subagent.kernel.textutil import normalize_zh
 
         changes: dict[str, tuple[int, int]] = {}
         for texts, idx in ((removed, 0), (kept, 1)):
@@ -275,7 +275,7 @@ class EpisodeMixin:
     def _backfill_appearances(self, conn: sqlite3.Connection, known: set[str], skip: str) -> None:
         """First lifecycle run: count appearances in the episodes finished before it existed."""
         from subagent.episodes import Registry
-        from subagent.util import read_jsonl
+        from subagent.kernel.util import read_jsonl
 
         for ep in Registry(self.paths).load():
             if ep.id == skip:

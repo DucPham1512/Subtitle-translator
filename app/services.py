@@ -12,9 +12,7 @@ from pathlib import Path
 from subagent.config import Config, Paths, load_config
 from subagent.episodes import AddCandidate, Registry
 from subagent.joblock import job_lock_path, running_jobs
-from subagent.memory.manager import MemoryManager
-from subagent.memory.store import MemoryStore
-from subagent.models import (
+from subagent.kernel.models import (
     CastLine,
     Episode,
     Evaluation,
@@ -25,8 +23,10 @@ from subagent.models import (
     SubtitleEvent,
     VideoInfo,
 )
+from subagent.kernel.util import lock_holder, read_jsonl
+from subagent.memory.manager import MemoryManager
+from subagent.memory.store import MemoryStore
 from subagent.pipeline import STAGES, episode_status
-from subagent.util import lock_holder, read_jsonl
 
 
 @dataclass
@@ -288,10 +288,10 @@ class Services:
     def line_ocr_crop(self, ep_id: str, event: SubtitleEvent | None):
         """What OCR read for a line (band-sized grey image; ocr_crops/, temporary): the line's first reading whose
         text is the line's raw OCR text, else its first reading. None when no crop was saved."""
+        from subagent.kernel.models import OcrReading
+        from subagent.kernel.textutil import normalize_zh
         from subagent.media import imread
-        from subagent.models import OcrReading
         from subagent.stages.ocr import crop_path
-        from subagent.textutil import normalize_zh
 
         work = self.paths.episode_dir(ep_id)
         if event is None or not (work / "ocr_crops").is_dir():

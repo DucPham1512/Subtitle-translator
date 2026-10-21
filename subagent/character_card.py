@@ -24,9 +24,9 @@ from pathlib import Path
 import numpy as np
 
 from subagent.config import Config, Paths
+from subagent.kernel.models import CastLine, ReviewedLine, SubtitleEvent
+from subagent.kernel.util import atomic_write_text, now_iso, read_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.models import CastLine, ReviewedLine, SubtitleEvent
-from subagent.util import atomic_write_text, now_iso, read_jsonl
 
 log = logging.getLogger(__name__)
 CLIP_MAX_MS = 4000

@@ -7,6 +7,9 @@ import sqlite3
 
 import numpy as np
 
+from subagent.kernel.util import (
+    now_iso,
+)
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,
@@ -43,9 +46,6 @@ from subagent.memory.manager.rows import (  # noqa: F401
     _loggable,
     _update,
     _where,
-)
-from subagent.util import (
-    now_iso,
 )
 
 log = logging.getLogger(__name__)

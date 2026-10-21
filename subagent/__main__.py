@@ -9,8 +9,8 @@ import sys
 
 from subagent.cli import episodes, measure, memory, series
 from subagent.config import load_config
-from subagent.errors import SubagentError
-from subagent.progress import Progress
+from subagent.kernel.errors import SubagentError
+from subagent.kernel.progress import Progress
 
 log = logging.getLogger("subagent")
 

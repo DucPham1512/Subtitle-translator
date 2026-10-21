@@ -14,9 +14,9 @@ from PySide6.QtCore import QCoreApplication, QSettings, QThreadPool  # noqa: E40
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from subagent.episodes import Registry  # noqa: E402
-from subagent.models import LineTranslation, PinyinLine  # noqa: E402
+from subagent.kernel.models import LineTranslation, PinyinLine  # noqa: E402
+from subagent.kernel.util import write_jsonl  # noqa: E402
 from subagent.stages.review import gate, load_draft  # noqa: E402
-from subagent.util import write_jsonl  # noqa: E402
 from tests.conftest import register_episode, sample_events, seed_memory, write_events  # noqa: E402
 
 
@@ -281,7 +281,7 @@ def test_cast_panel_shows_boxes_and_records_corrections(qapp):
     from PySide6.QtTest import QTest
 
     from app.views.cast_panel import BandView, CastPanel
-    from subagent.models import CastDetection, CastLine
+    from subagent.kernel.models import CastDetection, CastLine
 
     frame = np.zeros((540, 960, 3), np.uint8)
     frame[480:520, 300:700] = 255                                   # "subtitle" pixels
@@ -342,7 +342,7 @@ def test_cast_panel_shows_boxes_and_records_corrections(qapp):
 def test_partial_review_suggestions_in_review(qapp, project, monkeypatch):
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent.models import PartialSuggestion
+    from subagent.kernel.models import PartialSuggestion
     from subagent.partial_review import OUTPUT
 
     config, paths = project
@@ -386,7 +386,7 @@ def test_audit_screen_and_audit_mode(qapp, project):
     from app.main_window import MainWindow
     from app.services import Services
     from subagent import audit
-    from subagent.models import EpisodeState
+    from subagent.kernel.models import EpisodeState
     from subagent.state import save_state
 
     config, paths = project
@@ -693,7 +693,7 @@ def test_on_screen_checked_mark(qapp):
     import numpy as np
 
     from app.views.cast_panel import CastPanel
-    from subagent.models import CastDetection, CastLine, ReviewedLine
+    from subagent.kernel.models import CastDetection, CastLine, ReviewedLine
     from subagent.stages.review import compute_edits
 
     line = CastLine(event_id="ep001:0000", talking=0, detections=[
@@ -720,8 +720,8 @@ def test_on_screen_checked_mark(qapp):
 def test_memory_character_updates_tab_accepts_a_waiting_change(qapp, project):
     from app.main_window import MainWindow
     from app.services import Services
+    from subagent.kernel.models import ReviewedLine
     from subagent.memory.manager import MemoryManager
-    from subagent.models import ReviewedLine
     from tests.conftest import make_llm
 
     config, paths = project

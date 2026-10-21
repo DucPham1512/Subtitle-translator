@@ -4,10 +4,10 @@ import pytest
 from pydantic import BaseModel
 
 from subagent.config import Band, update_config_values
-from subagent.errors import BudgetExceeded, ConfigError, LLMCallError, LLMOutputError
+from subagent.kernel.errors import BudgetExceeded, ConfigError, LLMCallError, LLMOutputError
+from subagent.kernel.models import CostRecord
+from subagent.kernel.util import read_jsonl
 from subagent.llm import build_messages
-from subagent.models import CostRecord
-from subagent.util import read_jsonl
 from tests.conftest import make_llm
 
 

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from subagent import bench_run, suite
-from subagent.models import (
+from subagent.kernel.models import (
     CastBoxEdit,
     CastDetection,
     CastLine,
@@ -19,7 +19,7 @@ from subagent.models import (
     ScriptDecision,
     SpeakerCandidates,
 )
-from subagent.util import write_jsonl
+from subagent.kernel.util import write_jsonl
 from tests.conftest import register_episode, sample_events, write_events
 
 
@@ -178,7 +178,7 @@ def test_stage_plan():
     assert bench_run.stage_plan("translate", "snapshot") == ["translate", "sprite", "script_review"]
     assert bench_run.stage_plan("translate", "chain")[0] == "audio"
     assert "audio" in bench_run.stage_plan("ocr_fix", "snapshot")
-    from subagent.errors import SubagentError
+    from subagent.kernel.errors import SubagentError
 
     with pytest.raises(SubagentError):
         bench_run.stage_plan("ocr", "snapshot")                # the bands are not frozen

@@ -30,7 +30,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from subagent.config import Config, Paths
-from subagent.models import (
+from subagent.kernel.models import (
     CastLine,
     EditRecord,
     Evaluation,
@@ -40,8 +40,8 @@ from subagent.models import (
     SpeakerCandidates,
     SubtitleEvent,
 )
+from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 from subagent.ocr_benchmark import KEY_FILE, _norm, _overlap, score_episode
-from subagent.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 
 FOLDER = "_suite"
 BOX_IOU = 0.5
@@ -385,7 +385,7 @@ def _kept_evaluation(evals: list[Evaluation]) -> Evaluation | None:
 
 
 def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict[str, bool] | None = None) -> dict:
-    from subagent.textutil import found_terms
+    from subagent.kernel.textutil import found_terms
 
     terms = config.translate.pronoun_terms
     c = Counter()

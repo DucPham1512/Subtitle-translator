@@ -33,8 +33,8 @@ import cv2
 import numpy as np
 
 from subagent.config import Config, Paths
-from subagent.models import CastDetection, CastLine, ReviewedLine
-from subagent.util import read_jsonl
+from subagent.kernel.models import CastDetection, CastLine, ReviewedLine
+from subagent.kernel.util import read_jsonl
 
 log = logging.getLogger(__name__)
 PASSES = 3
@@ -277,9 +277,9 @@ def _frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | 
     """Describe boxes cut from a line's analysed frame (saved by the cast stage; else cut from the video at the
     same time). None when the image model cannot load: geometry edits are then skipped, labels still count."""
     from subagent.episodes import Registry
-    from subagent.errors import ModelUnavailableError
+    from subagent.kernel.errors import ModelUnavailableError
+    from subagent.kernel.models import SubtitleEvent
     from subagent.media import extract_frame, probe
-    from subagent.models import SubtitleEvent
     from subagent.stages.cast import crop, frame_time_ms, get_engine, load_frame
 
     try:

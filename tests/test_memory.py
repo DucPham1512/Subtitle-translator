@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from subagent.errors import JobRunningError
+from subagent.kernel.errors import JobRunningError
+from subagent.kernel.models import EditRecord, LineTranslation, MemoryProposal, ReviewedLine
 from subagent.memory import briefings as bf
 from subagent.memory.manager import MemoryManager, merge_proposals, replaced_term
 from subagent.memory.store import MemoryStore
-from subagent.models import EditRecord, LineTranslation, MemoryProposal, ReviewedLine
 from tests.conftest import make_llm, seed_memory
 
 

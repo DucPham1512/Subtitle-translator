@@ -14,12 +14,9 @@ from subagent.config import Config, Paths
 from subagent.context import EpisodeContext
 from subagent.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.episodes import Registry
-from subagent.errors import SubagentError
 from subagent.joblock import job_lock
-from subagent.llm import LLMClient, missing_prices, record_cost
-from subagent.memory.manager import MemoryManager
-from subagent.memory.store import MemoryStore
-from subagent.models import (
+from subagent.kernel.errors import SubagentError
+from subagent.kernel.models import (
     CostRecord,
     EditRecord,
     Episode,
@@ -31,9 +28,12 @@ from subagent.models import (
     StageState,
     SubtitleEvent,
 )
-from subagent.progress import NULL_PROGRESS, Progress
+from subagent.kernel.progress import NULL_PROGRESS, Progress
+from subagent.kernel.util import atomic_write_text, hash_path, now_iso, read_json, read_jsonl, sha256_json
+from subagent.llm import LLMClient, missing_prices, record_cost
+from subagent.memory.manager import MemoryManager
+from subagent.memory.store import MemoryStore
 from subagent.state import load_state, save_state
-from subagent.util import atomic_write_text, hash_path, now_iso, read_json, read_jsonl, sha256_json
 
 log = logging.getLogger(__name__)
 
@@ -589,7 +589,7 @@ class Pipeline:
         """Reviewed speakers teach the voice bank. Never fails the episode: a missing model is only reported."""
         if not (self.config.show.character_identification and self.config.voice.learn_from_reviews):
             return
-        from subagent.errors import ModelUnavailableError
+        from subagent.kernel.errors import ModelUnavailableError
         from subagent.memory.voice_learning import learn_voices
 
         self.progress.emit("voices", "start")

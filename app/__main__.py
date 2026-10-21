@@ -60,7 +60,7 @@ def main() -> int:
     install_translator(app)
 
     from subagent.config import find_root
-    from subagent.errors import SubagentError
+    from subagent.kernel.errors import SubagentError
 
     root = find_root(APP_DIR.parent)
     install_fonts(root)

@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import logging
 
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
+from subagent.kernel.models import MemoryProposal, NewVoice, ReviewedLine
+from subagent.kernel.util import (
+    atomic_write_json,
+    now_iso,
+    read_json,
+)
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,
@@ -45,12 +51,6 @@ from subagent.memory.manager.rows import (  # noqa: F401
 from subagent.memory.store import (
     parse_aliases,
     row_key,
-)
-from subagent.models import MemoryProposal, NewVoice, ReviewedLine
-from subagent.util import (
-    atomic_write_json,
-    now_iso,
-    read_json,
 )
 
 log = logging.getLogger(__name__)

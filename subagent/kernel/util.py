@@ -15,7 +15,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 
 M = TypeVar("M", bound=BaseModel)
 

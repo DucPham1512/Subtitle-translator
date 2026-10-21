@@ -6,12 +6,12 @@ import json
 
 import numpy as np
 
+from subagent.kernel.models import MemoryProposal, NewVoice, ReviewedLine
+from subagent.kernel.util import write_jsonl
 from subagent.memory import character_updates as cu
 from subagent.memory.manager import UPDATE_REJECTIONS_FILE, UPDATES_FILE, MemoryManager
 from subagent.memory.prefix import characters_block
-from subagent.models import MemoryProposal, NewVoice, ReviewedLine
 from subagent.stages.voice import save_line_voices
-from subagent.util import write_jsonl
 from tests.conftest import make_llm, register_episode, seed_memory
 
 BRIEF = {"summary_sentence": "x", "characters_introduced": [], "episode_markdown": "# ep\nx", "story_so_far": "x"}

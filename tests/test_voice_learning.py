@@ -7,10 +7,10 @@ import wave
 import numpy as np
 import pytest
 
+from subagent.kernel.models import ReviewedLine
+from subagent.kernel.util import write_jsonl
 from subagent.memory import voice_learning as vl
 from subagent.memory.store import MemoryStore
-from subagent.models import ReviewedLine
-from subagent.util import write_jsonl
 from tests.conftest import register_episode, seed_memory
 
 SR = 16000
@@ -86,7 +86,7 @@ def test_learn_writes_bank_and_evaluate_reports_accuracy(project):
 
 
 def test_finish_review_never_fails_on_missing_voice_model(project, monkeypatch):
-    from subagent.errors import ModelUnavailableError
+    from subagent.kernel.errors import ModelUnavailableError
     from subagent.pipeline import Pipeline
 
     config, paths = project
@@ -105,7 +105,7 @@ AUTO_SCRIPT = [("lin_yuan" if i % 2 == 0 else "shi_zun", i * 2000, i * 2000 + 15
 
 def _auto_episode(paths, number: int, labels: list[str], *, score: float = 0.9, flags=None, failed=frozenset()):
     """Audio follows AUTO_SCRIPT; the machine labelled line i as labels[i] (voice and translator agreeing)."""
-    from subagent.models import EpisodeState, Evaluation, LineTranslation, SpeakerCandidates
+    from subagent.kernel.models import EpisodeState, Evaluation, LineTranslation, SpeakerCandidates
     from subagent.state import save_state
 
     ep = _episode(paths, number, AUTO_SCRIPT)

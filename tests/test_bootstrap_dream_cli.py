@@ -6,11 +6,11 @@ import wave
 import numpy as np
 
 from subagent.__main__ import main
+from subagent.kernel.models import EditRecord, ReviewedLine
+from subagent.kernel.util import write_jsonl
 from subagent.memory import bootstrap, dreaming
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
-from subagent.models import EditRecord, ReviewedLine
-from subagent.util import write_jsonl
 from tests.conftest import make_llm, register_episode, seed_memory
 
 SEED = {

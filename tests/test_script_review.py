@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from subagent.context import EpisodeContext
+from subagent.kernel.models import LineTranslation, ReviewedLine, ScriptDecision, SubtitleEvent
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import LineDecision, MemoryStore
-from subagent.models import LineTranslation, ReviewedLine, ScriptDecision, SubtitleEvent
 from subagent.stages import review, script_review
-from subagent.util import read_jsonl, write_jsonl
 from tests.conftest import make_episode, make_llm, seed_memory, user_json
 
 
@@ -110,7 +110,7 @@ def test_reviewer_decisions_become_script_memory(project):
     block = script_review.examples_block(list(rows.values()), 30)
     assert "楚 (×3)" in block and "哼 (×2)" in block
 
-    m.manual_edit([__import__("subagent.models", fromlist=["MemoryProposal"]).MemoryProposal(
+    m.manual_edit([__import__("subagent.kernel.models", fromlist=["MemoryProposal"]).MemoryProposal(
         kind="line_decision", source="human", payload={"zh": "90", "keep_count": 5})])
     m.record_line_decisions("ep003", removed=["90"], kept=[])                    # locked by the human edit
     assert {d.zh: d for d in MemoryStore(paths.memory_db).line_decisions()}["90"].remove_count == 1

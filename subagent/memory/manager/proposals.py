@@ -5,11 +5,11 @@ from __future__ import annotations
 import difflib
 import logging
 
+from subagent.kernel.models import EditRecord, MemoryProposal
+from subagent.kernel.textutil import contains_term
 from subagent.memory.store import (
     dumps,
 )
-from subagent.models import EditRecord, MemoryProposal
-from subagent.textutil import contains_term
 
 log = logging.getLogger(__name__)
 

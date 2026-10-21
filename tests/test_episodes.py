@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from subagent.episodes import Registry, detect_number, fingerprint
-from subagent.errors import SourceMissingError, SubagentError
+from subagent.kernel.errors import SourceMissingError, SubagentError
 
 
 @pytest.mark.parametrize(("name", "expected"), [

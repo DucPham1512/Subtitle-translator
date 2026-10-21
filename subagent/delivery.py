@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Literal
 
 from subagent.config import Config
-from subagent.errors import OutputExistsError, OutputFolderError
+from subagent.kernel.errors import OutputExistsError, OutputFolderError
 from subagent.state import load_state, save_state
 
 log = logging.getLogger(__name__)

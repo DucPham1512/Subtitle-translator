@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from subagent.kernel.models import ReviewedLine
+from subagent.kernel.util import write_jsonl
 from subagent.memory import dreaming
-from subagent.models import ReviewedLine
-from subagent.util import write_jsonl
 from tests.conftest import make_llm, register_episode, seed_memory
 
 
@@ -62,7 +62,7 @@ def test_auto_apply_does_not_count_as_rejection(project):
 
 
 def test_a_different_suggestion_for_the_same_term_still_comes_through(project):
-    from subagent.models import MemoryProposal
+    from subagent.kernel.models import MemoryProposal
 
     def gloss(vi: str) -> MemoryProposal:
         return MemoryProposal(kind="glossary", source="dreaming", payload={"zh": "下山", "vi": vi})
@@ -72,8 +72,8 @@ def test_a_different_suggestion_for_the_same_term_still_comes_through(project):
 
 
 def test_existing_rules_are_not_reproposed_and_terms_go_to_the_glossary(project):
+    from subagent.kernel.models import MemoryProposal
     from subagent.memory.manager import MemoryManager
-    from subagent.models import MemoryProposal
 
     config, paths = _setup(project)
     m = MemoryManager(paths, config)

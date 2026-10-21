@@ -31,7 +31,7 @@ from app.views.run import RunPanel
 from app.widgets import confirm, show_error
 from app.workers import run_async
 from subagent.episodes import AddCandidate
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 from subagent.pipeline import STAGES
 
 

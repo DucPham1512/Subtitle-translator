@@ -13,8 +13,8 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.errors import MediaError, MissingBinaryError
-from subagent.models import VideoInfo
+from subagent.kernel.errors import MediaError, MissingBinaryError
+from subagent.kernel.models import VideoInfo
 
 log = logging.getLogger(__name__)
 

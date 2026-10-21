@@ -6,8 +6,8 @@ import json
 import logging
 from pathlib import Path
 
-from subagent.errors import ReviewIncompleteError
-from subagent.models import (
+from subagent.kernel.errors import ReviewIncompleteError
+from subagent.kernel.models import (
     EditRecord,
     LineTranslation,
     PinyinLine,
@@ -15,8 +15,8 @@ from subagent.models import (
     ScriptDecision,
     SubtitleEvent,
 )
-from subagent.textutil import is_han
-from subagent.util import read_jsonl, write_jsonl
+from subagent.kernel.textutil import is_han
+from subagent.kernel.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 

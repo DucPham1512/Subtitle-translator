@@ -6,11 +6,11 @@ import sqlite3
 
 import numpy as np
 
+from subagent.kernel.models import MemoryProposal, ReviewedLine
+from subagent.kernel.util import write_jsonl
 from subagent.memory.briefing_gen import CharacterFate
 from subagent.memory.manager import MemoryManager
 from subagent.memory.prefix import characters_block, pronoun_block
-from subagent.models import MemoryProposal, ReviewedLine
-from subagent.util import write_jsonl
 from tests.conftest import register_episode, seed_memory
 
 
@@ -87,8 +87,8 @@ def test_archived_voices_are_not_matched(project):
     write_events(ctx.work, sample_events("ep004")[:1])
     _write_wav(ctx.artifact("audio.wav"), 4)
     voice.run(ctx, embed=lambda clip: voice.l2_normalize(np.array([1, 0, 0], np.float32)))   # sounds like the npc
-    from subagent.models import SpeakerCandidates
-    from subagent.util import read_jsonl
+    from subagent.kernel.models import SpeakerCandidates
+    from subagent.kernel.util import read_jsonl
     out = read_jsonl(ctx.artifact("speakers.jsonl"), SpeakerCandidates)[0]
     assert "npc_001_01" not in [c for c, _ in out.candidates]
 
@@ -132,8 +132,8 @@ def test_old_memory_gets_the_new_columns(project):
 
 
 def test_generic_characters_are_never_matched_or_learned(project):
+    from subagent.kernel.models import NewVoice
     from subagent.memory.prefix import new_voices_block
-    from subagent.models import NewVoice
     from subagent.stages.cast import build_bank
 
     m = _setup(project, "npc_005_01")

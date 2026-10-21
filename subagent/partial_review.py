@@ -26,9 +26,9 @@ import numpy as np
 from subagent.characters import episode_character_ids
 from subagent.config import Config, Paths
 from subagent.episodes import Registry
+from subagent.kernel.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
-from subagent.util import read_jsonl, write_jsonl
 
 PARTIAL_FLAG = "partial_speaker"        # the speaker was set by a partial review (6.4b)
 
@@ -175,7 +175,7 @@ def partial_review(config: Config, paths: Paths, episode_id: str, *, sprite_embe
     work = paths.episode_dir(episode_id)
     draft = load_draft(work)
     if not draft:
-        from subagent.errors import ReviewIncompleteError
+        from subagent.kernel.errors import ReviewIncompleteError
 
         raise ReviewIncompleteError("No review draft found; run the episode in human mode first")
     store = MemoryStore(paths.memory_db)

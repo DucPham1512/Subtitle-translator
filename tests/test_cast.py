@@ -9,12 +9,19 @@ from __future__ import annotations
 import numpy as np
 
 from subagent.context import EpisodeContext
+from subagent.kernel.models import (
+    CastDetection,
+    CastLine,
+    EpisodeState,
+    ReviewedLine,
+    SpeakerCandidates,
+    VideoInfo,
+)
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.sprite_learning import learn_sprites, plan
-from subagent.models import CastDetection, CastLine, EpisodeState, ReviewedLine, SpeakerCandidates, VideoInfo
 from subagent.stages import cast
 from subagent.state import save_state
-from subagent.util import read_jsonl, write_jsonl
 from tests.conftest import make_episode, register_episode, sample_events, seed_memory, write_events
 
 DIM = 8
@@ -169,7 +176,7 @@ def test_learn_sprites_end_to_end(project):
     assert cast.match(_vec(LOOK["shi_zun"], 0.05), bank, config.cast)[0] == "shi_zun"
     assert m.history(1)[0].message.startswith("sprites from ep001")
     # deleting a character deletes its sprites
-    from subagent.models import MemoryProposal
+    from subagent.kernel.models import MemoryProposal
     m.manual_edit([MemoryProposal(kind="character", source="human", payload={"id": "shi_zun", "_delete": True})])
     assert "shi_zun" not in cast.build_bank(m.store)
 
@@ -239,8 +246,8 @@ def test_reviewer_box_labels_teach_first(project):
 
 
 def test_reviewer_box_edits_and_talking_mark_teach(project):
+    from subagent.kernel.models import CastBoxEdit
     from subagent.memory.sprite_learning import apply_review_edits
-    from subagent.models import CastBoxEdit
 
     config, _ = project
     lines, embs = _lines([(["stranger", "lin_yuan"], 1)])            # detector: lin_yuan talks; shi_zun was missed
@@ -296,8 +303,8 @@ def test_picture_veto_disputes_the_voice(project):
     assert rec["c"].status == "fixed" and rec["d"].status == "confusable" and rec["e"].status == "fixed"
     assert picture_veto(speakers, cast_lines, "any")["b"].status == "disputed"
 
+    from subagent.kernel.models import LineTranslation
     from subagent.memory.store import MemoryStore
-    from subagent.models import LineTranslation
     event = sample_events()[0]
     rc = RuleContext(config, MemoryStore(paths.memory_db))
     blank = LineTranslation(event_id=event.id, speaker=None, listener=None, speaker_conf=0.3, vi="Đi thôi.", attempts=1)

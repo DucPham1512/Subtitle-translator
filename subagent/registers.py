@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yaml
 
-from subagent.errors import SubagentError
+from subagent.kernel.errors import SubagentError
 
 REGISTER_DIR = "registers"
 STYLE_ID = re.compile(r"[a-z0-9][a-z0-9_]{0,39}")
@@ -78,7 +78,7 @@ def check_id(rid: str) -> str:
 
 def save_register(root: Path, rid: str, name: str, body: str, pronoun_terms: list[str]) -> Path:
     """A new style file. An existing style is never overwritten (series may use it)."""
-    from subagent.util import atomic_write_text
+    from subagent.kernel.util import atomic_write_text
 
     check_id(rid)
     if not body.strip():

@@ -21,8 +21,8 @@ from pathlib import Path
 
 from subagent.audit import auditable_lines, gold_speakers, is_flagged, load_sample, stratified, wilson
 from subagent.config import Config, Paths
-from subagent.models import LineTranslation
-from subagent.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
+from subagent.kernel.models import LineTranslation
+from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 
 log = logging.getLogger(__name__)
 COPY = ("events.jsonl", "video.json")

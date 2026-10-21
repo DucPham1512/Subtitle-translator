@@ -20,10 +20,10 @@ import numpy as np
 
 from subagent.config import CastConfig, Config, Paths
 from subagent.context import EpisodeContext
-from subagent.errors import ModelUnavailableError
+from subagent.kernel.errors import ModelUnavailableError
+from subagent.kernel.models import CastDetection, CastLine, SubtitleEvent
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.models import CastDetection, CastLine, SubtitleEvent
-from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 

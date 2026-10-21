@@ -5,7 +5,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from subagent.models import OcrBox, ReviewedLine, SubtitleEvent
+from subagent.kernel.models import OcrBox, ReviewedLine, SubtitleEvent
 from subagent.ocr_benchmark import score_episode
 from subagent.stages.ocr import filter_boxes, prepare, subtitle_mask, to_band_coords
 
@@ -80,8 +80,8 @@ def test_benchmark_scores_by_time_overlap():
 def test_answer_key_corrects_and_excludes_lines(project):
     import json
 
+    from subagent.kernel.util import write_jsonl
     from subagent.ocr_benchmark import FOLDER, KEY_FILE, _norm, gold_lines, load_key
-    from subagent.util import write_jsonl
 
     config, paths = project
     work = paths.episode_dir("ep001")
@@ -177,8 +177,8 @@ def test_band_centres_by_widening_the_short_side():
 def test_answer_key_moves_to_renumbered_events_by_time(project):
     import json
 
+    from subagent.kernel.util import write_jsonl
     from subagent.ocr_benchmark import load_key, remap_key
-    from subagent.util import write_jsonl
 
     config, paths = project
 

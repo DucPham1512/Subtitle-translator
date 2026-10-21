@@ -8,7 +8,7 @@ import yaml
 
 from subagent import series as sr
 from subagent.config import load_config, update_config_values
-from subagent.errors import ConfigError, SubagentError
+from subagent.kernel.errors import ConfigError, SubagentError
 from subagent.llm import SERIES_NOTES, load_prompt
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import _prompt_hash

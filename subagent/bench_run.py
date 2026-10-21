@@ -23,7 +23,7 @@ import shutil
 from pathlib import Path
 
 from subagent.config import Config, Paths
-from subagent.util import atomic_write_text, now_iso
+from subagent.kernel.util import atomic_write_text, now_iso
 
 log = logging.getLogger(__name__)
 MODES = ("snapshot", "chain")
@@ -65,7 +65,7 @@ def checkout_memory(paths: Paths, sp: Paths, sha: str) -> None:
 
 def stage_plan(from_stage: str, mode: str) -> list[str]:
     """The stages that run, in pipeline order: from `from_stage` up to the script review (never the review gate)."""
-    from subagent.errors import SubagentError
+    from subagent.kernel.errors import SubagentError
     from subagent.pipeline import STAGES
 
     names = [s.name for s in STAGES if s.name != "review"]
@@ -134,7 +134,7 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     from subagent.baseline import _git_head
     from subagent.context import EpisodeContext
     from subagent.episodes import Registry
-    from subagent.errors import SubagentError
+    from subagent.kernel.errors import SubagentError
     from subagent.pipeline import _BY_NAME
 
     state, folder = _start_or_resume(paths, mode, from_stage, episodes, label, use_cache, resume)
@@ -195,7 +195,7 @@ def _start_or_resume(paths: Paths, mode: str, from_stage: str | None, episodes: 
                      use_cache: bool, resume: Path | None) -> tuple[dict, Path]:
     """(run state, run folder): a new run's settings, or a stopped run's own (run.json)."""
     from subagent import suite
-    from subagent.errors import SubagentError
+    from subagent.kernel.errors import SubagentError
     from subagent.pipeline import RERUN_FROM
 
     if resume is not None:
@@ -258,6 +258,6 @@ def _drop_heavy(work: Path) -> None:
 
 
 def _null():
-    from subagent.progress import NULL_PROGRESS
+    from subagent.kernel.progress import NULL_PROGRESS
 
     return NULL_PROGRESS

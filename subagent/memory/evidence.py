@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 
 from subagent.config import Config, Paths
-from subagent.models import Evaluation, LineTranslation, ReviewedLine, SpeakerCandidates
+from subagent.kernel.models import Evaluation, LineTranslation, ReviewedLine, SpeakerCandidates
+from subagent.kernel.util import read_jsonl
 from subagent.state import load_state
-from subagent.util import read_jsonl
 
 
 def is_auto_episode(paths: Paths, episode_id: str) -> bool:

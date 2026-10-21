@@ -11,11 +11,11 @@ from pydantic import BaseModel, Field
 
 from subagent.config import Config
 from subagent.context import EpisodeContext
+from subagent.kernel.models import PinyinLine, SubtitleEvent
+from subagent.kernel.textutil import is_han
+from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.store import Character, GlossaryEntry, MemoryStore
-from subagent.models import PinyinLine, SubtitleEvent
-from subagent.textutil import is_han
-from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
 

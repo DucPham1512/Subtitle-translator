@@ -11,9 +11,9 @@ import numpy as np
 
 from subagent.config import VideoConfig
 from subagent.context import EpisodeContext
+from subagent.kernel.models import ChangeRecord
+from subagent.kernel.util import atomic_write_text, write_jsonl
 from subagent.media import imwrite_png, iter_gray_frames, probe
-from subagent.models import ChangeRecord
-from subagent.util import atomic_write_text, write_jsonl
 
 log = logging.getLogger(__name__)
 
