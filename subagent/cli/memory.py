@@ -18,9 +18,9 @@ log = logging.getLogger("subagent")
 
 
 def cmd_bootstrap(args, config, paths, progress) -> int:
+    from subagent.bootstrap import seed as bootstrap
     from subagent.infra.joblock import job_lock
     from subagent.llm.client import LLMClient
-    from subagent.memory import bootstrap
 
     with job_lock(paths, "bootstrap"):
         if args.approve:

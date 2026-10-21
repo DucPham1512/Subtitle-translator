@@ -6,9 +6,10 @@ import wave
 import numpy as np
 
 from subagent.__main__ import main
+from subagent.bootstrap import seed as bootstrap
 from subagent.kernel.models import EditRecord, ReviewedLine
 from subagent.kernel.util import write_jsonl
-from subagent.memory import bootstrap, dreaming
+from subagent.memory import dreaming
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from tests.conftest import make_llm, register_episode, seed_memory
