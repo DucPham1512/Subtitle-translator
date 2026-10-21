@@ -33,7 +33,7 @@ Nguồn ý tưởng: paper "Detecting and Grounding Important Characters in Visu
 - Số dòng ở tập đầu tiên không đoán được ai sẽ quay lại: npc_011_04 có 30 dòng và không quay lại; npc_004_02 có 14 dòng rồi xuất hiện 7 tập, 161 dòng.
 - Độ chính xác speaker: dàn chính 95.8%, NPC quay lại (tập đầu) 72.9%, (tập sau) 81.3%, NPC một lần 65.2%.
 - Speaker sai trên dòng NPC gần như không làm reviewer viết lại tiếng Việt (0–5% số dòng sai, so với 11.5% ở dàn chính): với NPC một lần, sai danh tính chủ yếu tốn công sửa, không làm giảm chất lượng dịch. Lỗi đáng sửa là nhầm giữa dàn chính và NPC (32 dòng NPC một lần bị gán cho dàn chính, 23 dòng dàn chính bị gán cho NPC).
-- Ghép id tự động theo tập lỏng hơn `suite.group_map`, nên tổng lỗi (khoảng 291) thấp hơn số 406 trong [đo lường - nhận diện nhân vật và giọng](đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md); tỷ lệ giữa các nhóm mới là điều đáng tin.
+- Ghép id tự động theo tập lỏng hơn `suite.group_map`, nên tổng lỗi (khoảng 291) thấp hơn số 406 trong [đo lường - nhận diện nhân vật và giọng](../đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md); tỷ lệ giữa các nhóm mới là điều đáng tin.
 
 **Chất lượng đặc trưng DINOv2** (5 tập kiểm On screen: ep002, ep005, ep009, ep012, ep015; khoảng 1,000 crop, 11 nhân vật):
 
@@ -110,4 +110,4 @@ Theo quyết định của chủ dự án (2026-10-10), toàn bộ thay đổi c
 3. Chấm bằng benchmark 3 (nhận diện) và 2 (speaker) so với `reference-snapshot` / `reference-chain`. Theo dõi riêng NPC chưa từng gán nhãn.
 4. Nếu chưa đủ: thử đặc trưng màu (histogram trang phục) hoặc bỏ nền trước DINOv2; cần frame đã phân tích, baseline không lưu.
 
-Related: [đo lường - nhận diện nhân vật và giọng](đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md), [điểm yếu đã biết](điểm%20yếu%20đã%20biết.md), [đo lường - benchmark suite](đo%20lường%20-%20benchmark%20suite.md)
+Related: [đo lường - nhận diện nhân vật và giọng](../đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md), [điểm yếu đã biết](../điểm%20yếu%20đã%20biết.md), [đo lường - benchmark suite](../đo%20lường%20-%20benchmark%20suite.md)

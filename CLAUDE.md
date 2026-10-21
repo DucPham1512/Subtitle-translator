@@ -139,6 +139,7 @@ The detailed spec (old sections 3.2–6.11) lives in `.claude/rules/`, verbatim 
 
 ## 9. Rules for Claude Code
 - Every change or decision must have a note in `knowledge_vault/decisions/`; do not modify `data/memory/` through the vault.
+- Every decisions made in the same day must be store under the same directory, the directory name follow this format: "dd-mm-yyyy" of the decision date (`decisions/21-10-2026/`; `/` cannot be in a folder name). Undated reference notes (đo lường, thiết kế, lịch sử, điểm yếu đã biết) stay at the `decisions/` root.
 - Implement in stage order. Each stage must have tests and run on a real short clip before starting the next.
 - Never write to memory outside the `memory/manager/` package (the Memory Manager).
 - `subagent/` must never import `app/` or PySide6.

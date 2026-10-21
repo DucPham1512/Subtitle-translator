@@ -77,4 +77,4 @@ Chuyển từ CLAUDE.md (mục 7 "Design choices" và các đoạn "Why" của 5
 | Id tự động được chấm theo nhóm, chỉ ghép vào nhân vật mới ở thời điểm đó                                                                 | Id chỉ là số tuỳ ý; điều quan trọng là các dòng của một nhân vật dùng chung một id.                                                                             |
 | Tự động xoá chỉ file tạm                                                                                                                 | Giải phóng phần lớn dung lượng mà vẫn giữ kịch bản và các sửa mà dreaming và render lại cần.                                                                    |
 
-Related: [2026-10-07 chia hai chế độ auto và human](2026-10-07%20chia%20hai%20chế%20độ%20auto%20và%20human.md), [lịch sử - thứ tự triển khai và dữ kiện dự án](lịch%20sử%20-%20thứ%20tự%20triển%20khai%20và%20dữ%20kiện%20dự%20án.md)
+Related: [2026-10-07 chia hai chế độ auto và human](07-10-2026/2026-10-07%20chia%20hai%20chế%20độ%20auto%20và%20human.md), [lịch sử - thứ tự triển khai và dữ kiện dự án](lịch%20sử%20-%20thứ%20tự%20triển%20khai%20và%20dữ%20kiện%20dự%20án.md)

@@ -1,0 +1,61 @@
+filters:
+  and:
+    - file.ext == "md"
+properties:
+  file.name:
+    displayName: Ghi chú
+  date:
+    displayName: Ngày
+  status:
+    displayName: Trạng thái
+  type:
+    displayName: Loại
+  tags:
+    displayName: Thẻ
+views:
+  - type: table
+    name: Đang mở
+    filters:
+      and:
+        - file.inFolder("decisions")
+        - status
+        - status != "done"
+        - status != "rejected"
+    order:
+      - file.name
+      - status
+      - date
+      - tags
+  - type: table
+    name: Quyết định
+    filters:
+      and:
+        - file.inFolder("decisions")
+        - file.folder != "decisions"
+    groupBy:
+      property: date
+      direction: DESC
+    order:
+      - file.name
+      - status
+      - tags
+  - type: table
+    name: Tham khảo
+    filters:
+      and:
+        - file.folder == "decisions"
+    order:
+      - file.name
+      - type
+      - date
+      - tags
+  - type: table
+    name: Changelog
+    filters:
+      and:
+        - file.inFolder("changelog")
+    groupBy:
+      property: date
+      direction: DESC
+    order:
+      - file.name

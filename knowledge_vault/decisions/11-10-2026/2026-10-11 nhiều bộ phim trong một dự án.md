@@ -36,4 +36,4 @@ Spec: `.claude/rules/config.md` mục 5.2a; app: `.claude/rules/app.md` mục 6.
 - Prompt script review của `series-1` giờ là prompt chung + ghi chú (nội dung tương đương, câu chữ khác), nên hash đầu vào của tầng script review đổi: lần chạy tới của một tập sẽ chạy lại script review (một lệnh gọi mỗi tập) và cache LLM không dùng lại được cho tầng này.
 - Phần code kiểm tra 7 / 了 của script review vẫn để chung: nó chỉ chặn những lần sửa làm mất chữ số hoặc biến số thật thành 了, nên với phim khác nó không bao giờ bật.
 
-Related: [điểm yếu đã biết](điểm%20yếu%20đã%20biết.md), [thiết kế - lý do các lựa chọn](thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)
+Related: [điểm yếu đã biết](../điểm%20yếu%20đã%20biết.md), [thiết kế - lý do các lựa chọn](../thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)

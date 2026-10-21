@@ -40,4 +40,4 @@ Các lựa chọn cụ thể:
 - Không có luật kiểm (rule check) bằng code cho cặp mặc định: chỉ prompt và evaluator. Thêm sau nếu thấy translator hay lệch cặp.
 - Bootstrap vẫn hiện bước mẫu giọng / sprite; ở chế độ tắt có thể bỏ qua.
 
-Related: [thiết kế - lý do các lựa chọn](thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md), [2026-10-11 tạo văn phong dịch mới](2026-10-11%20t%E1%BA%A1o%20v%C4%83n%20phong%20d%E1%BB%8Bch%20m%E1%BB%9Bi.md)
+Related: [thiết kế - lý do các lựa chọn](../thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md), [2026-10-11 tạo văn phong dịch mới](../11-10-2026/2026-10-11%20t%E1%BA%A1o%20v%C4%83n%20phong%20d%E1%BB%8Bch%20m%E1%BB%9Bi.md)

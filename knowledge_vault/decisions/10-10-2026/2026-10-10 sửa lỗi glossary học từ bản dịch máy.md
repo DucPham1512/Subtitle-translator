@@ -52,4 +52,4 @@ Glossary học **thuật ngữ sai của máy**, ngay cả khi reviewer đã s�
 - Test mới: sửa một phần cụm từ; thuật ngữ mới của translator lấy dạng reviewer viết; dòng bị viết lại không tạo thuật ngữ.
 - Chưa đo bằng benchmark: lỗi chỉ lộ ra ở các tập sau khi glossary đã học sai, nên cách đo đúng là một lần chạy chain mới. Lợi ích dự kiến: khoảng 6 dòng trên 16 tập của baseline, nhưng với phim hơn 230 tập, một thuật ngữ sai của chiêu thức chính sẽ tốn một lần sửa mỗi khi nó xuất hiện.
 
-Related: [điểm yếu đã biết](điểm%20yếu%20đã%20biết.md), [đo lường - benchmark suite](đo%20lường%20-%20benchmark%20suite.md)
+Related: [điểm yếu đã biết](../điểm%20yếu%20đã%20biết.md), [đo lường - benchmark suite](../đo%20lường%20-%20benchmark%20suite.md)

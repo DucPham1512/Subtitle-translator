@@ -28,4 +28,4 @@ Memory Manager, CLI, màn Review, và các hàm dài khác.
 - Hàm dài hơn 100 dòng: 4 → 0. Hơn 50 dòng: 34 → 27.
 - Còn lại chủ yếu là hàm dựng giao diện (preview, Episodes, cửa sổ chính, biểu mẫu Settings) và hàm viết báo cáo / chấm điểm (`suite.render`, `score_translation`): code tuần tự, tách ra ít lợi.
 
-Related: [thiết kế - lý do các lựa chọn](thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)
+Related: [thiết kế - lý do các lựa chọn](../thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)

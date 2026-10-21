@@ -26,10 +26,10 @@ tags: [decision, docs, claude-md]
 
 Ghi chú nhận nội dung chuyển sang:
 
-- [đo lường - OCR](đo%20lường%20-%20OCR.md)
-- [đo lường - nhận diện nhân vật và giọng](đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md)
-- [đo lường - script review](đo%20lường%20-%20script%20review.md)
-- [đo lường - benchmark suite](đo%20lường%20-%20benchmark%20suite.md)
-- [thiết kế - lý do các lựa chọn](thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)
-- [lịch sử - thứ tự triển khai và dữ kiện dự án](lịch%20sử%20-%20thứ%20tự%20triển%20khai%20và%20dữ%20kiện%20dự%20án.md)
-- [sơ đồ pipeline](../map/sơ%20đồ%20pipeline.md)
+- [đo lường - OCR](../đo%20lường%20-%20OCR.md)
+- [đo lường - nhận diện nhân vật và giọng](../đo%20lường%20-%20nhận%20diện%20nhân%20vật%20và%20giọng.md)
+- [đo lường - script review](../đo%20lường%20-%20script%20review.md)
+- [đo lường - benchmark suite](../đo%20lường%20-%20benchmark%20suite.md)
+- [thiết kế - lý do các lựa chọn](../thiết%20kế%20-%20lý%20do%20các%20lựa%20chọn.md)
+- [lịch sử - thứ tự triển khai và dữ kiện dự án](../lịch%20sử%20-%20thứ%20tự%20triển%20khai%20và%20dữ%20kiện%20dự%20án.md)
+- [sơ đồ pipeline](../../map/sơ%20đồ%20pipeline.md)
