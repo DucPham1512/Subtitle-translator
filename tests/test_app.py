@@ -758,7 +758,7 @@ def test_series_picker_switches_the_window_to_another_series(qapp, project):
     from app import main_window as mw
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent import series as sr
+    from subagent.settings import series as sr
 
     config, paths = project
     seed_memory(config, paths)
@@ -781,7 +781,7 @@ def test_new_series_dialog_creates_a_translation_style(qapp, project):
     from PySide6.QtWidgets import QWidget
 
     from app.main_window import NewSeriesDialog, StyleDialog
-    from subagent.registers import load_register
+    from subagent.settings.registers import load_register
 
     _, paths = project
     parent = QWidget()
@@ -907,7 +907,7 @@ def test_new_series_dialog_asks_for_the_default_pronoun_pair(qapp, project, monk
 def test_review_hides_speakers_when_identification_is_off(qapp, project):
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent.config import ShowConfig
+    from subagent.settings.config import ShowConfig
 
     config, paths = project
     seed_memory(config, paths)

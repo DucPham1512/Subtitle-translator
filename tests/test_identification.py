@@ -6,12 +6,12 @@ from __future__ import annotations
 import pytest
 import yaml
 
-from subagent import series as sr
-from subagent.config import ShowConfig, load_config, parse_config
 from subagent.kernel.errors import ConfigError, SubagentError
 from subagent.kernel.models import LineTranslation
 from subagent.kernel.util import read_jsonl
 from subagent.memory.store import MemoryStore
+from subagent.settings import series as sr
+from subagent.settings.config import ShowConfig, load_config, parse_config
 from subagent.stages import review as review_stage
 from subagent.stages.translate import mode_prompt
 from subagent.state import load_state

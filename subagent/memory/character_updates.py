@@ -16,12 +16,12 @@ import re
 
 from pydantic import BaseModel, Field
 
-from subagent.config import Config, Paths
 from subagent.kernel.models import MemoryProposal, ReviewedLine
 from subagent.llm import build_messages, load_prompt
 from subagent.memory import briefings as bf
 from subagent.memory.prefix import characters_block
 from subagent.memory.store import MemoryStore, parse_aliases
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger(__name__)
 

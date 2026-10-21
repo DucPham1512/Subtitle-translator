@@ -10,7 +10,7 @@ import logging
 import sys
 from pathlib import Path
 
-from subagent.config import Config
+from subagent.settings.config import Config
 
 log = logging.getLogger(__name__)
 

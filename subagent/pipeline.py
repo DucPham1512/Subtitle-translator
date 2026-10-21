@@ -10,7 +10,6 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.context import EpisodeContext
 from subagent.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.episodes import Registry
@@ -33,6 +32,7 @@ from subagent.kernel.util import atomic_write_text, hash_path, now_iso, read_jso
 from subagent.llm import LLMClient, missing_prices, record_cost
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
+from subagent.settings.config import Config, Paths
 from subagent.state import load_state, save_state
 
 log = logging.getLogger(__name__)

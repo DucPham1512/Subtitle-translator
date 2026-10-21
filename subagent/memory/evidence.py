@@ -7,9 +7,9 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.config import Config, Paths
 from subagent.kernel.models import Evaluation, LineTranslation, ReviewedLine, SpeakerCandidates
 from subagent.kernel.util import read_jsonl
+from subagent.settings.config import Config, Paths
 from subagent.state import load_state
 
 

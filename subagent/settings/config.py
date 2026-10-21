@@ -542,7 +542,7 @@ def load_config(root: Path | None = None, series: str | None = None) -> tuple[Co
     data = _read_yaml(path)
     config = parse_config(series_data(root, data, series))
     if not config.translate.pronoun_terms:           # the translation style's pronoun words (5.11)
-        from subagent.registers import load_register
+        from subagent.settings.registers import load_register
 
         style = load_register(root, config.show.genre_register)
         if style is not None and style.pronoun_terms:
@@ -592,7 +592,7 @@ def save_settings(root: Path, changes: list[tuple[list[str], object]], series: s
     (5.2a). Values are rewritten in place (`yaml_edit`), so the comment on every line stays; a mapping value
     replaces the mapping (missing keys are removed). The merged result is validated before anything is written."""
     from subagent.kernel.util import atomic_write_text
-    from subagent.yaml_edit import set_mapping, set_value
+    from subagent.settings.yaml_edit import set_mapping, set_value
 
     shared_path = root / "config.yaml"
     shared_text = shared_path.read_text(encoding="utf-8")

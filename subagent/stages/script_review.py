@@ -14,13 +14,13 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.config import ScriptReviewConfig
 from subagent.context import EpisodeContext
 from subagent.kernel.models import LineTranslation, ScriptDecision, SubtitleEvent
 from subagent.kernel.textutil import is_han, normalize_zh, relatedness
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.store import LineDecision, MemoryStore
+from subagent.settings.config import ScriptReviewConfig
 
 log = logging.getLogger(__name__)
 

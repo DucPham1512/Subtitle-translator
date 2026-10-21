@@ -5,11 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.episodes import Registry
 from subagent.kernel.models import Episode, VideoInfo
 from subagent.kernel.progress import NULL_PROGRESS, Progress
 from subagent.llm import LLMClient
+from subagent.settings.config import Config, Paths
 
 
 @dataclass

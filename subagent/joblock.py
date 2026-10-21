@@ -5,9 +5,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from subagent.config import Paths
 from subagent.kernel.errors import EpisodeLockedError
 from subagent.kernel.util import FileLock, lock_holder
+from subagent.settings.config import Paths
 
 GLOBAL_JOBS = "_jobs"
 

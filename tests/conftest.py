@@ -11,10 +11,10 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from subagent.config import Config, Paths, load_config
 from subagent.kernel.models import Episode, SubtitleEvent
 from subagent.kernel.util import write_jsonl
 from subagent.llm import LLMClient
+from subagent.settings.config import Config, Paths, load_config
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -73,7 +73,7 @@ def project(tmp_path: Path, monkeypatch) -> tuple[Config, Paths]:
     root.mkdir()
     data = yaml.safe_load((REPO / "config.yaml").read_text(encoding="utf-8"))
     # the repo's default series' overrides are part of the tuned config; the temp project is single-series
-    from subagent.config import series_data
+    from subagent.settings.config import series_data
 
     data = series_data(REPO, data, None)
     data.pop("series", None)

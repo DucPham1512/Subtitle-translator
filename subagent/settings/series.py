@@ -13,19 +13,19 @@ from pathlib import Path
 
 import yaml
 
-from subagent.config import SERIES_FILE, SERIES_SECTIONS, list_series, series_root
 from subagent.kernel.errors import SubagentError
+from subagent.settings.config import SERIES_FILE, SERIES_SECTIONS, list_series, series_root
 
 SLUG = re.compile(r"[a-z0-9][a-z0-9_-]{0,39}")
 # folders of the single-series layout that belong to the series (relative to the project root)
 SERIES_FOLDERS = {"data/memory": "memory", "data/bootstrap": "bootstrap", "data/episodes": "episodes",
                   "data/character_cards": "character_cards", "fonts": "fonts"}
-DEFAULT_FONT = Path(__file__).resolve().parent.parent / "app" / "fonts"
+DEFAULT_FONT = Path(__file__).resolve().parents[2] / "app" / "fonts"
 
 
 def registers(root: Path) -> list[str]:
     """Translation styles a series can use: prompts/registers/<id>.md (5.11)."""
-    from subagent.registers import list_registers
+    from subagent.settings.registers import list_registers
 
     return [r.id for r in list_registers(root)]
 
@@ -121,7 +121,7 @@ def add(root: Path, slug: str, name: str, register: str = "co_trang_tien_hiep",
     <work_dir>/<slug>/), the bundled subtitle font, and the empty folders bootstrap starts from."""
     from pydantic import ValidationError
 
-    from subagent.config import ShowConfig
+    from subagent.settings.config import ShowConfig
 
     check_slug(slug)
     show: dict = {"name": name, "genre_register": register, "character_identification": identify}
@@ -155,7 +155,7 @@ def add(root: Path, slug: str, name: str, register: str = "co_trang_tien_hiep",
 def rename(root: Path, old: str, new: str) -> Path:
     """Rename a series: its folder, its card cache, its default work folder (<work_dir>/<old>/, when it has no
     work_dir of its own), and `series.default` when it pointed at it."""
-    from subagent.config import load_config
+    from subagent.settings.config import load_config
 
     check_slug(new)
     src, dst = series_root(root) / old, series_root(root) / new
@@ -181,9 +181,9 @@ def rename(root: Path, old: str, new: str) -> Path:
 
 def _refuse_while_jobs_run(root: Path, slug: str | None = None) -> None:
     """No series change while a job of that series (or of the single-series layout) runs."""
-    from subagent.config import load_config
     from subagent.joblock import running_jobs
     from subagent.kernel.errors import JobRunningError
+    from subagent.settings.config import load_config
 
     try:
         _, paths = load_config(root, slug)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import yaml
 
-from subagent.yaml_edit import delete_key, set_mapping, set_value
+from subagent.settings.yaml_edit import delete_key, set_mapping, set_value
 
 TEXT = """# shared settings
 video:

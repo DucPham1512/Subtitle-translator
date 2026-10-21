@@ -14,13 +14,13 @@ from pathlib import Path
 
 import pysubs2
 
-from subagent.config import Config, Paths
 from subagent.context import EpisodeContext
 from subagent.kernel.errors import MediaError, SubagentError
 from subagent.kernel.models import ReviewedLine
 from subagent.kernel.textutil import balanced_wrap, split_explicit_lines, wrap_words
 from subagent.kernel.util import read_jsonl
 from subagent.media import available_encoders, require_binary
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger(__name__)
 

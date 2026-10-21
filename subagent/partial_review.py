@@ -24,11 +24,11 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from subagent.characters import episode_character_ids
-from subagent.config import Config, Paths
 from subagent.episodes import Registry
 from subagent.kernel.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
+from subagent.settings.config import Config, Paths
 
 PARTIAL_FLAG = "partial_speaker"        # the speaker was set by a partial review (6.4b)
 

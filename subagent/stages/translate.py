@@ -9,7 +9,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.config import Config
 from subagent.context import EpisodeContext
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
@@ -32,6 +31,7 @@ from subagent.memory.prefix import (
     translator_prefix,
 )
 from subagent.memory.store import MemoryStore
+from subagent.settings.config import Config
 from subagent.stages.evaluate import (
     RULE_FLAGS,
     RuleContext,
@@ -223,7 +223,7 @@ class WindowTranslator:
         self.identify = ctx.config.show.character_identification
         voices = load_new_voices(ctx.work) if self.identify else []
         self.rules = RuleContext(ctx.config, store, store.character_ids() | {v.id for v in voices})
-        from subagent.registers import load_register
+        from subagent.settings.registers import load_register
 
         style = load_register(ctx.paths.root, ctx.config.show.genre_register)
         self.t_static = translator_static(load_prompt(ctx.paths, "translator_system"), ctx.config.show.genre_register,

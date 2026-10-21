@@ -32,9 +32,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from subagent.config import Config, Paths
 from subagent.kernel.models import CastDetection, CastLine, ReviewedLine
 from subagent.kernel.util import read_jsonl
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger(__name__)
 PASSES = 3

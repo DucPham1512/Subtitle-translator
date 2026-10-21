@@ -46,7 +46,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.widgets import show_error
-from subagent import settings_schema as ss
+from subagent.settings import schema as ss
 
 ROLES = ("translator", "evaluator", "utility")
 PROVIDER_FIELDS = ("base_url", "api_key_env", "model")
@@ -531,7 +531,7 @@ class SettingsForm(QWidget):
         return [(f.spec.path, value) for f in self.fields if (value := f.get()) != f.initial]
 
     def save(self) -> bool:
-        from subagent.config import save_settings
+        from subagent.settings.config import save_settings
 
         try:
             changes = self.changes()
@@ -609,7 +609,7 @@ class RawYamlDialog(QDialog):
         self.yaml.setPlainText(path.read_text(encoding="utf-8") if path and path.is_file() else "")
 
     def _save(self) -> None:
-        from subagent.config import save_config_text
+        from subagent.settings.config import save_config_text
 
         try:
             save_config_text(self.services.root, self.yaml.toPlainText(),

@@ -19,7 +19,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from subagent.config import SERIES_FILE, SERIES_SECTIONS, Config, list_series, series_root
+from subagent.settings.config import SERIES_FILE, SERIES_SECTIONS, Config, list_series, series_root
 
 HIDDEN_SECTIONS = ("series",)              # series.default is chosen with the series picker
 PATH_FIELDS = {("output", "folder"), ("paths", "work_dir"), ("render", "font_dir")}
@@ -113,7 +113,7 @@ def fields(config: Config | None = None) -> list[FieldSpec]:
 
 def known_sets(root: Path, work: Path) -> dict[str, tuple[list[str], bool]]:
     """Dropdowns for text fields with a known set of values: key -> (choices, accepts a new value)."""
-    from subagent.registers import list_registers
+    from subagent.settings.registers import list_registers
 
     baselines = sorted(p.name for p in (work / "_baseline").iterdir() if (p / "manifest.json").is_file()) \
         if (work / "_baseline").is_dir() else []
@@ -157,7 +157,7 @@ def value_at(config: Config, path: list[str]) -> Any:
 
 def file_comment(text: str, path: list[str]) -> str:
     """The comment on the key's own line in a YAML text (the measurement behind a tuned value), or ""."""
-    from subagent.yaml_edit import _KEY, _find, _split_comment
+    from subagent.settings.yaml_edit import _KEY, _find, _split_comment
 
     lines = text.splitlines(keepends=True)
     hit = _find(lines, path)

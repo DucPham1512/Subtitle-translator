@@ -15,9 +15,9 @@ from subagent.cli.common import (  # noqa: F401
     _resolve_on_exists,
     build_pipeline,
 )
-from subagent.config import Config, Paths
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.progress import Progress
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger("subagent")
 

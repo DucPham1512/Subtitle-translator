@@ -9,12 +9,12 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.config import Config, Paths
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import MemoryProposal, SubtitleEvent
 from subagent.kernel.util import atomic_write_text, now_iso, read_jsonl
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.manager import ApplyResult, MemoryManager
+from subagent.settings.config import Config, Paths
 from subagent.stages.voice import compute_centroids, pair_similarities, voice_clips
 
 log = logging.getLogger(__name__)

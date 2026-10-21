@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from subagent.config import WindowsConfig
 from subagent.context import EpisodeContext
 from subagent.kernel.models import SubtitleEvent, Window
 from subagent.kernel.util import atomic_write_json, read_jsonl
+from subagent.settings.config import WindowsConfig
 
 
 def build_windows(events: list[SubtitleEvent], cfg: WindowsConfig) -> list[Window]:

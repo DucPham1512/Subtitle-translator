@@ -9,7 +9,6 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.config import Config, Paths, load_config
 from subagent.episodes import AddCandidate, Registry
 from subagent.joblock import job_lock_path, running_jobs
 from subagent.kernel.models import (
@@ -27,6 +26,7 @@ from subagent.kernel.util import lock_holder, read_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import STAGES, episode_status
+from subagent.settings.config import Config, Paths, load_config
 
 
 @dataclass

@@ -22,8 +22,8 @@ import logging
 import shutil
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.kernel.util import atomic_write_text, now_iso
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger(__name__)
 MODES = ("snapshot", "chain")

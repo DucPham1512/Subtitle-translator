@@ -150,7 +150,7 @@ def test_translate_retry_cap_keeps_best_and_flags(project):
 
 def test_register_block_selection(project):
     config, paths = project
-    from subagent.registers import load_register
+    from subagent.settings.registers import load_register
 
     prompt = (paths.prompts / "translator_system.md").read_text(encoding="utf-8")
     style = load_register(paths.root, "co_trang_tien_hiep")

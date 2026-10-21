@@ -3,11 +3,11 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel
 
-from subagent.config import Band, update_config_values
 from subagent.kernel.errors import BudgetExceeded, ConfigError, LLMCallError, LLMOutputError
 from subagent.kernel.models import CostRecord
 from subagent.kernel.util import read_jsonl
 from subagent.llm import build_messages
+from subagent.settings.config import Band, update_config_values
 from tests.conftest import make_llm
 
 
@@ -120,9 +120,9 @@ def test_missing_api_key_is_reported_without_the_key(project, monkeypatch):
 def test_unpriced_calls_are_marked_and_repriced_later(project):
     from types import SimpleNamespace
 
-    from subagent.config import PriceConfig
     from subagent.llm import LLMClient, missing_prices, record_cost
     from subagent.pipeline import collect_metrics
+    from subagent.settings.config import PriceConfig
 
     config, paths = project
     config.llm.prices = {}

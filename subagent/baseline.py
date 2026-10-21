@@ -16,9 +16,9 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.context import EpisodeContext
 from subagent.kernel.util import atomic_write_text, hash_path, now_iso, sha256_json
+from subagent.settings.config import Config, Paths
 from subagent.state import load_state
 
 log = logging.getLogger(__name__)

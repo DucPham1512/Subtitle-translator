@@ -8,7 +8,6 @@ from functools import lru_cache
 
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.config import Config
 from subagent.kernel.models import Evaluation, LineTranslation, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.textutil import (
     balanced_wrap,
@@ -19,6 +18,7 @@ from subagent.kernel.textutil import (
 )
 from subagent.llm import LLMClient, build_messages
 from subagent.memory.store import GlossaryEntry, MemoryStore, PronounPair
+from subagent.settings.config import Config
 
 # rule failure code -> flag kept on the line when the retry cap is reached (NFR-Q1, NFR-Q2)
 RULE_FLAGS = {

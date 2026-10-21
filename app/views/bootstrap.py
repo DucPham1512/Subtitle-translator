@@ -291,7 +291,7 @@ class BootstrapView(QWidget):
     def _center_band(self, sel: QRectF) -> None:
         """The drawn band snaps to be symmetric around the frame's centre line (the side closer to the centre
         grows); top and bottom stay as drawn."""
-        from subagent.config import Band
+        from subagent.settings.config import Band
 
         b = Band(top=sel.top(), bottom=sel.bottom(), left=sel.left(), right=sel.right()).centered()
         self.selector.set_selection(QRectF(b.left, b.top, b.right - b.left, b.bottom - b.top))
@@ -320,7 +320,7 @@ class BootstrapView(QWidget):
         sel = self.selector.sel
         if sel is None:
             return
-        from subagent.config import update_config_values
+        from subagent.settings.config import update_config_values
 
         band = {"top": round(sel.top(), 4), "bottom": round(sel.bottom(), 4), "left": round(sel.left(), 4),
                 "right": round(sel.right(), 4)}

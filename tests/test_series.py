@@ -6,12 +6,12 @@ from __future__ import annotations
 import pytest
 import yaml
 
-from subagent import series as sr
-from subagent.config import load_config, update_config_values
 from subagent.kernel.errors import ConfigError, SubagentError
 from subagent.llm import SERIES_NOTES, load_prompt
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import _prompt_hash
+from subagent.settings import series as sr
+from subagent.settings.config import load_config, update_config_values
 from tests.conftest import seed_memory
 
 

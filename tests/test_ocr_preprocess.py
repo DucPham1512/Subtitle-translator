@@ -112,7 +112,7 @@ def test_stroke_and_brightness_tests_drop_outlined_surfaces(project):
 
 
 def test_frames_showing_the_same_subtitle_are_fused():
-    from subagent.config import VideoConfig
+    from subagent.settings.config import VideoConfig
     from subagent.stages.ingest import detect_changes, fuse
 
     text = np.full((20, 60), 30, np.uint8)
@@ -166,7 +166,7 @@ def test_symmetric_crop_cuts_a_stray_beside_the_line(project):
 
 
 def test_band_centres_by_widening_the_short_side():
-    from subagent.config import Band
+    from subagent.settings.config import Band
 
     b = Band(top=0.8, bottom=0.9, left=0.2, right=0.7).centered()
     assert (b.left, b.right, b.top, b.bottom) == (0.2, 0.8, 0.8, 0.9)

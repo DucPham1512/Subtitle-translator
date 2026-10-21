@@ -21,7 +21,6 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.kernel.models import (
     AUDIT_ASPECTS,
     AuditMark,
@@ -31,6 +30,7 @@ from subagent.kernel.models import (
     SpeakerCandidates,
 )
 from subagent.kernel.util import atomic_write_text, read_jsonl, write_jsonl
+from subagent.settings.config import Config, Paths
 
 NO_ID_YET = "_new"      # correct speaker: a character appearing for the first time, with no id (blank is right)
 SAMPLE_FILE = "audit_sample.jsonl"

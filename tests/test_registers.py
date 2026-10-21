@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import yaml
 
-from subagent import series as sr
-from subagent.config import load_config
 from subagent.kernel.errors import SubagentError
-from subagent.registers import list_registers, load_register, save_register, split_terms
+from subagent.settings import series as sr
+from subagent.settings.config import load_config
+from subagent.settings.registers import list_registers, load_register, save_register, split_terms
 
 
 def test_a_new_style_is_saved_listed_and_never_overwritten(project):

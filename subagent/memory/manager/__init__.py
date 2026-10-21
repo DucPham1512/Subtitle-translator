@@ -19,7 +19,6 @@ import contextlib
 import sqlite3
 from collections.abc import Iterator
 
-from subagent.config import Config, Paths
 from subagent.kernel.errors import MemoryLockedError
 from subagent.kernel.util import (
     FileLock,
@@ -74,6 +73,7 @@ from subagent.memory.store import (
     MemoryStore,
     migrate,
 )
+from subagent.settings.config import Config, Paths
 
 
 class MemoryManager(ApplyMixin, EpisodeMixin, CandidatesMixin, UpdatesMixin, BanksMixin, HistoryMixin):

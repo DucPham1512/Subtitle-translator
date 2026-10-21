@@ -29,7 +29,6 @@ from collections import Counter
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from subagent.config import Config, Paths
 from subagent.kernel.models import (
     CastLine,
     EditRecord,
@@ -42,6 +41,7 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
 from subagent.ocr_benchmark import KEY_FILE, _norm, _overlap, score_episode
+from subagent.settings.config import Config, Paths
 
 FOLDER = "_suite"
 BOX_IOU = 0.5

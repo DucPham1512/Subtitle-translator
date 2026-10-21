@@ -10,10 +10,10 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from subagent.config import Config, Paths
 from subagent.kernel.errors import EpisodeNotFoundError, SourceMissingError, SubagentError
 from subagent.kernel.models import Episode, EpisodeStatus
 from subagent.kernel.util import FileLock, atomic_write_json, now_iso, read_json
+from subagent.settings.config import Config, Paths
 
 log = logging.getLogger(__name__)
 
