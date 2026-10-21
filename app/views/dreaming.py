@@ -17,9 +17,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app.services.memory import dreaming
 from app.widgets import confirm, show_error
 from app.workers import run_async
-from subagent.memory import dreaming
 
 EVIDENCE = Qt.ItemDataRole.UserRole + 1
 

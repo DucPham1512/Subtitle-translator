@@ -27,10 +27,9 @@ from PySide6.QtWidgets import (
 )
 
 from app import shortcuts
+from app.services.settings import detect_number, update_config_values
 from app.widgets import show_error
 from app.workers import run_async
-from subagent.settings import update_config_values
-from subagent.workspace import detect_number
 
 
 class SettingsView(QWidget):
@@ -236,7 +235,7 @@ class SettingsView(QWidget):
         self.keys_status.setText(self.tr("Keys saved to .env."))
 
     def _test(self, role: str) -> None:
-        from subagent.llm import LLMClient
+        from app.services.settings import LLMClient
 
         self._save_keys()
         client = LLMClient(self.services.config, self.services.paths, use_cache=False)

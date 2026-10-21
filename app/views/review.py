@@ -36,13 +36,13 @@ from app import shortcuts
 from app.messages import error_message, flag_label, status_label
 from app.preview import PreviewWidget
 from app.services import ReviewData
+from app.services.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
 from app.views.audit import AuditBar
 from app.views.cast_panel import BandView, CastPanel
 from app.views.common import choose_on_exists, job_busy
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
 from subagent.kernel import LineTranslation, ReviewedLine
-from subagent.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
 
 LINE_TYPES = ["dialogue", "sign", "title", "sfx"]
 
@@ -511,7 +511,7 @@ class ReviewView(QWidget):
 
     def _new_npc(self) -> None:
         """A new automatic id for this line's speaker; no memory write (probation decides at finish, 5.15b)."""
-        from subagent.memory import is_auto_id, new_voice_id
+        from app.services.review import is_auto_id, new_voice_id
 
         if self.data is None or self.data.read_only or self.current is None:
             return
@@ -767,7 +767,7 @@ class ReviewView(QWidget):
     def _regenerate_async(self, eid: str) -> None:
         if self.engine is None:
             return
-        from subagent.review import regenerate_pinyin
+        from app.services.review import regenerate_pinyin
 
         snapshot = self.lines[eid]
         engine = self.engine
@@ -1018,7 +1018,7 @@ class ReviewView(QWidget):
             return
         if self.data is None:
             return
-        from subagent.review import PARTIAL_FLAG
+        from app.services.review import PARTIAL_FLAG
 
         ep_id = self.data.episode.id
         self.data.partial = self.services.partial_suggestions(ep_id)
@@ -1228,7 +1228,7 @@ class ReviewView(QWidget):
         if not self.data or self.current is None or self.rules is None:
             self.warnings.clear()
             return
-        from subagent.translation import rule_checks
+        from app.services.review import rule_checks
 
         line = self.lines[self.current]
         event = self.data.events.get(line.event_id)

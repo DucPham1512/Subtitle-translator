@@ -38,11 +38,11 @@ from PySide6.QtWidgets import (
 )
 
 from app.preview import PreviewWidget
+from app.services.bootstrap import seed as bs
+from app.services.bootstrap import voice_clips
 from app.widgets import ClipPlayer, FrameSelector, confirm, fmt_ms, show_error, to_qimage
 from app.workers import run_async
-from subagent.bootstrap import seed as bs
 from subagent.kernel import atomic_write_text
-from subagent.voice import voice_clips
 
 SEED_TABLES = {
     "characters": ["id", "name_zh", "name_vi", "description"],
@@ -213,7 +213,7 @@ class BootstrapView(QWidget):
         return page
 
     def _show_style(self) -> None:
-        from subagent.ocr import load_style
+        from app.services.bootstrap import load_style
 
         try:
             style = load_style(self.services.paths.bootstrap)
@@ -240,7 +240,7 @@ class BootstrapView(QWidget):
     def _style_preview_path(self) -> Path | None:
         """The preview made by the last calibration on the selected episode, else on the episode the style
         was learned from (deleted by that episode's cleanup)."""
-        from subagent.ocr import load_style
+        from app.services.bootstrap import load_style
 
         ids = [self.episode_box.currentData()]
         with contextlib.suppress(Exception):
@@ -257,7 +257,7 @@ class BootstrapView(QWidget):
         ep_id = self.episode_box.currentData()
         if not ep_id:
             return
-        from subagent.ocr import load_style
+        from app.services.bootstrap import load_style
 
         with contextlib.suppress(Exception):
             if load_style(self.services.paths.bootstrap) is not None and not confirm(
@@ -291,7 +291,7 @@ class BootstrapView(QWidget):
     def _center_band(self, sel: QRectF) -> None:
         """The drawn band snaps to be symmetric around the frame's centre line (the side closer to the centre
         grows); top and bottom stay as drawn."""
-        from subagent.settings import Band
+        from app.services.bootstrap import Band
 
         b = Band(top=sel.top(), bottom=sel.bottom(), left=sel.left(), right=sel.right()).centered()
         self.selector.set_selection(QRectF(b.left, b.top, b.right - b.left, b.bottom - b.top))
@@ -304,7 +304,7 @@ class BootstrapView(QWidget):
         source = self._source()
         if source is None or not hasattr(self, "_video"):
             return
-        from subagent.infra import extract_frame
+        from app.services.bootstrap import extract_frame
 
         t, info = self.cal_slider.value(), self._video
         self.cal_time.setText(fmt_ms(t))
@@ -320,7 +320,7 @@ class BootstrapView(QWidget):
         sel = self.selector.sel
         if sel is None:
             return
-        from subagent.settings import update_config_values
+        from app.services.bootstrap import update_config_values
 
         band = {"top": round(sel.top(), 4), "bottom": round(sel.bottom(), 4), "left": round(sel.left(), 4),
                 "right": round(sel.right(), 4)}
@@ -500,7 +500,7 @@ class BootstrapView(QWidget):
         source = self._source()
         if source is None:
             return
-        from subagent.infra import extract_frame
+        from app.services.bootstrap import extract_frame
 
         self.preview.pause()
         t = self.preview.current_ms()
@@ -508,7 +508,7 @@ class BootstrapView(QWidget):
                   lambda exc: show_error(self, self.tr("Sprites"), exc))
 
     def _save_sprite(self) -> None:
-        from subagent.cast import save_template
+        from app.services.bootstrap import save_template
 
         char = self._char_id(self.sprite_char)
         crop = self.sprite_selector.crop()
@@ -526,7 +526,7 @@ class BootstrapView(QWidget):
         folder = self.services.paths.bootstrap / "sprites" / (char or "")
         if not char or not folder.is_dir():
             return
-        from subagent.infra import imread
+        from app.services.bootstrap import imread
 
         for f in sorted(folder.glob("*.png")):
             item = QListWidgetItem(QIcon(QPixmap.fromImage(to_qimage(imread(f)))), f.stem)

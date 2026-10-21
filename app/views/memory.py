@@ -32,11 +32,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app.services.memory import briefings as bf
+from app.services.memory import parse_aliases, row_key
 from app.widgets import ClipPlayer, confirm, show_error
 from app.workers import run_async
 from subagent.kernel import MemoryProposal
-from subagent.memory import briefings as bf
-from subagent.memory import parse_aliases, row_key
 
 LOCKED_COL = "locked"
 BOOL_COLS = ("generic",)        # shown as checkboxes, saved as 0 / 1
@@ -558,7 +558,7 @@ class MemoryView(QWidget):
         return self.voice_tab
 
     def _load_voices(self) -> None:
-        from subagent.voice import all_similarities, voice_clips
+        from app.services.memory import all_similarities, voice_clips
 
         store, paths = self.services.store, self.services.paths
 

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from subagent.bootstrap import name_pinyin, slugify
+from app.services.review import name_pinyin, slugify
 from subagent.kernel import MemoryProposal, is_han
 
 _ID = re.compile(r"^[a-z0-9_]+$")

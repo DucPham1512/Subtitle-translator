@@ -42,7 +42,7 @@ class StyleDialog(QDialog):
 
     def __init__(self, parent: QWidget, root):
         super().__init__(parent)
-        from subagent.settings import TEMPLATE
+        from app.services.settings import TEMPLATE
 
         self.root = root
         self.saved: str | None = None
@@ -71,14 +71,14 @@ class StyleDialog(QDialog):
         form.addRow(buttons)
 
     def _name_changed(self, name: str) -> None:
-        from subagent.settings import TEMPLATE
+        from app.services.settings import TEMPLATE
 
         if self.body.toPlainText() == self._template:          # untouched template: follow the name
             self.body.setPlainText(TEMPLATE.format(name=name.strip() or "…"))
             self._template = self.body.toPlainText()
 
     def _save(self) -> None:
-        from subagent.settings import save_register, split_terms
+        from app.services.settings import save_register, split_terms
 
         rid = self.style_id.text().strip()
         try:
@@ -170,7 +170,7 @@ class NewSeriesDialog(QDialog):
         return work if work.is_absolute() else Path(self.root) / work
 
     def _fill_styles(self, select: str | None = None) -> None:
-        from subagent.settings import list_registers
+        from app.services.settings import list_registers
 
         self.register.clear()
         for style in list_registers(self.root):
@@ -184,7 +184,7 @@ class NewSeriesDialog(QDialog):
             self._fill_styles(select=dialog.saved)
 
     def _check(self) -> None:
-        from subagent.workspace import series as sr
+        from app.services.settings import series as sr
 
         try:
             sr.check_slug(self.slug.text().strip())
@@ -292,7 +292,7 @@ class MainWindow(QMainWindow):
 
     def _series_picker(self) -> QComboBox:
         """The series this window shows; hidden in the single-series layout (no data/series/ yet)."""
-        from subagent.settings import list_series
+        from app.services.settings import list_series
 
         box = QComboBox()
         box.setToolTip(self.tr("The series (show) you are working on"))
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
         if slug == self.NEW_SERIES:
             dialog = NewSeriesDialog(self, self.services.root)
             if dialog.exec():
-                from subagent.workspace import series as sr
+                from app.services.settings import series as sr
 
                 try:
                     sr.add(self.services.root, *dialog.values(), **dialog.pronouns())
@@ -336,7 +336,7 @@ class MainWindow(QMainWindow):
 
     def switch_series(self, slug: str, then: str | None = None) -> None:
         """Make `slug` the default series and rebuild the window around it (every screen reloads)."""
-        from subagent.workspace import series as sr
+        from app.services.settings import series as sr
 
         if self.jobs.is_running() or self.services.jobs_running():
             QMessageBox.information(self, self.tr("Series"),
@@ -369,7 +369,7 @@ class MainWindow(QMainWindow):
         view.open_episode(episode_id, event_id=event_id, read_only=read_only, audit=audit)
 
     def _detect_device(self) -> None:
-        from subagent.infra import describe
+        from app.services.settings import describe
 
         config = self.services.config
         run_async(lambda: describe(config),

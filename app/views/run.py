@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.messages import error_message, stage_label
-from subagent.pipeline import STAGE_NAMES
+from app.services.episodes import STAGE_NAMES
 
 
 class RunPanel(QWidget):
