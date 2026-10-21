@@ -6,6 +6,7 @@ If libmpv cannot load, the widget shows how to fix it and every other feature ke
 from __future__ import annotations
 
 import contextlib
+import locale
 import logging
 import os
 import sys
@@ -184,15 +185,29 @@ class PreviewWidget(QWidget):
             return
         mpv = load_mpv()
         if mpv is None:
-            self._unavailable(self.tr(
-                "Preview unavailable: libmpv could not be loaded ({error}).\n"
-                "Download libmpv for Windows (mpv-dev-x86_64 from the mpv website), put libmpv-2.dll next to "
-                "the app (project folder), and restart. Review works without the preview.").format(error=_MPV_ERROR))
+            if sys.platform == "win32":
+                hint = self.tr(
+                    "Preview unavailable: libmpv could not be loaded ({error}).\n"
+                    "Download libmpv for Windows (mpv-dev-x86_64 from the mpv website), put libmpv-2.dll next to "
+                    "the app (project folder), and restart. Review works without the preview.")
+            else:
+                hint = self.tr(
+                    "Preview unavailable: libmpv could not be loaded ({error}).\n"
+                    "Install libmpv (Ubuntu / Debian: sudo apt install libmpv2) and restart. "
+                    "Review works without the preview.")
+            self._unavailable(hint.format(error=_MPV_ERROR))
             return
+        # Qt applies the system locale on Linux; libmpv refuses to start unless numbers use the C locale
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        extra: dict[str, str] = {}
+        if sys.platform.startswith("linux") and QGuiApplication.platformName() == "xcb":
+            # with WAYLAND_DISPLAY set mpv picks its Wayland backend, which ignores wid and draws in its own surface
+            extra["gpu_context"] = "x11egl"
         try:
             self.player = mpv.MPV(wid=str(int(self.video.winId())), keep_open="yes", idle="yes", osc="no",
                                   input_default_bindings=False, input_vo_keyboard=False, sub_auto="no",
-                                  hr_seek="yes", log_handler=lambda level, prefix, text: log.debug("mpv %s: %s", prefix, text))
+                                  hr_seek="yes", log_handler=lambda level, prefix, text: log.debug("mpv %s: %s", prefix, text),
+                                  **extra)
             self.player.observe_property("time-pos", lambda _name, value: self._pos_from_mpv.emit(value or 0.0))
             self.player.observe_property("duration", lambda _name, value: self._duration_from_mpv.emit(value or 0.0))
         except Exception as exc:  # noqa: BLE001 - any libmpv failure disables the preview only

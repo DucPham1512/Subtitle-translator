@@ -95,12 +95,12 @@
 <context>
     <name>App</name>
     <message>
-        <location filename="../__main__.py" line="62"/>
+        <location filename="../__main__.py" line="72"/>
         <source>Subtitle Agent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../__main__.py" line="63"/>
+        <location filename="../__main__.py" line="73"/>
         <source>The settings could not be loaded:
 {error}</source>
         <translation type="unfinished"></translation>
@@ -2418,58 +2418,64 @@ A new version is created; nothing is lost, and this rollback can itself be undon
 <context>
     <name>PreviewWidget</name>
     <message>
-        <location filename="../preview.py" line="125"/>
+        <location filename="../preview.py" line="126"/>
         <source>Click or drag to move through the video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="132"/>
+        <location filename="../preview.py" line="133"/>
         <source>Previous frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="134"/>
+        <location filename="../preview.py" line="135"/>
         <source>Back 5 seconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="135"/>
+        <location filename="../preview.py" line="136"/>
         <source>Play / pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="137"/>
+        <location filename="../preview.py" line="138"/>
         <source>Forward 5 seconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="139"/>
+        <location filename="../preview.py" line="140"/>
         <source>Next frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="140"/>
+        <location filename="../preview.py" line="141"/>
         <source>Replay line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="141"/>
+        <location filename="../preview.py" line="142"/>
         <source>Loop line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="183"/>
+        <location filename="../preview.py" line="184"/>
         <source>Preview unavailable on this display platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="188"/>
+        <location filename="../preview.py" line="190"/>
         <source>Preview unavailable: libmpv could not be loaded ({error}).
 Download libmpv for Windows (mpv-dev-x86_64 from the mpv website), put libmpv-2.dll next to the app (project folder), and restart. Review works without the preview.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preview.py" line="200"/>
+        <location filename="../preview.py" line="195"/>
+        <source>Preview unavailable: libmpv could not be loaded ({error}).
+Install libmpv (Ubuntu / Debian: sudo apt install libmpv2) and restart. Review works without the preview.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../preview.py" line="210"/>
         <source>Preview unavailable: {error}</source>
         <translation type="unfinished"></translation>
     </message>

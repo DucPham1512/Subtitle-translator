@@ -307,6 +307,8 @@ VI = {
     "Loop line": "Lặp dòng",
     "Preview unavailable: libmpv could not be loaded ({error}).\nDownload libmpv for Windows (mpv-dev-x86_64 from the mpv website), put libmpv-2.dll next to the app (project folder), and restart. Review works without the preview.":
         "Không xem trước được: không tải được libmpv ({error}).\nTải libmpv cho Windows (mpv-dev-x86_64 từ trang mpv), đặt libmpv-2.dll cạnh ứng dụng (thư mục dự án) rồi mở lại. Vẫn duyệt được khi không có xem trước.",
+    "Preview unavailable: libmpv could not be loaded ({error}).\nInstall libmpv (Ubuntu / Debian: sudo apt install libmpv2) and restart. Review works without the preview.":
+        "Không xem trước được: không tải được libmpv ({error}).\nCài libmpv (Ubuntu / Debian: sudo apt install libmpv2) rồi mở lại. Vẫn duyệt được khi không có xem trước.",
     "Preview unavailable: {error}": "Không xem trước được: {error}",
     "Unapproved only": "Chỉ dòng chưa duyệt",
     "Search Chinese and Vietnamese…": "Tìm trong tiếng Trung và tiếng Việt…",

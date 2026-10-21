@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -41,8 +42,17 @@ def install_translator(app: QApplication) -> None:
         app.installTranslator(qt_translator)
 
 
+def choose_platform() -> None:
+    """The preview embeds mpv by window id, which only works on X11: under Wayland, run through XWayland.
+    An explicit QT_QPA_PLATFORM wins."""
+    if (sys.platform.startswith("linux") and os.environ.get("WAYLAND_DISPLAY") and os.environ.get("DISPLAY")
+            and "QT_QPA_PLATFORM" not in os.environ):
+        os.environ["QT_QPA_PLATFORM"] = "xcb"
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    choose_platform()
     app = QApplication(sys.argv)
     app.setOrganizationName("SubtitleAgent")
     app.setApplicationName("Subtitle Agent")

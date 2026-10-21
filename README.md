@@ -23,8 +23,10 @@ video → frames + change detection → OCR → events → OCR fix ─┐
   - **git**: `winget install Git.Git`
 - API keys for the LLMs: DeepSeek (translator and utility calls) and Google Gemini (evaluator, free tier).
 - Optional, for the live video preview in the review screen: `libmpv-2.dll` in the project folder. Download
-  *mpv-dev-x86_64* from the mpv website and copy `libmpv-2.dll` from it. Without it, review still works, just
-  without the preview.
+  *mpv-dev-x86_64* from the mpv website and copy `libmpv-2.dll` from it. On Linux, install the system package
+  instead (Ubuntu / Debian: `sudo apt install libmpv2`); under Wayland the app runs through XWayland so mpv can
+  draw into it (set `QT_QPA_PLATFORM` yourself to override). Without it, review still works, just without the
+  preview.
 
 ### 2. Turn on UTF-8 mode
 
