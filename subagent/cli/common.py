@@ -33,7 +33,7 @@ def _ask(prompt: str, choices: dict[str, str]) -> str:
 
 def _resolve_on_exists(config: Config, paths: Paths, ep_ref: str, arg: str | None) -> str:
     """CLI: --on-exists wins; otherwise config; `ask` prompts on a terminal and fails when non-interactive."""
-    from subagent.delivery import target_path
+    from subagent.output.delivery import target_path
     from subagent.workspace.episodes import Registry
 
     choice = (arg or config.output.on_exists).replace("-", "_")
@@ -51,7 +51,7 @@ def _resolve_on_exists(config: Config, paths: Paths, ep_ref: str, arg: str | Non
                 {"o": "overwrite", "k": "keep_both", "c": "fail"})
 
 def _output_exists(config, paths, ep_ref: str) -> bool:
-    from subagent.delivery import target_path
+    from subagent.output.delivery import target_path
     from subagent.workspace.episodes import Registry
 
     try:

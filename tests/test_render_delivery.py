@@ -3,11 +3,11 @@ from __future__ import annotations
 import pysubs2
 import pytest
 
-from subagent.delivery import cleanup, deliver, keep_both_path, output_name, resolve_conflict
 from subagent.kernel.errors import OutputExistsError, OutputFolderError
 from subagent.kernel.models import ReviewedLine, StageState
+from subagent.output.delivery import cleanup, deliver, keep_both_path, output_name, resolve_conflict
+from subagent.output.render import Layout, build_ass, build_mask_filter
 from subagent.settings.config import Band
-from subagent.stages.render import Layout, build_ass, build_mask_filter
 from subagent.workspace.state import load_state, save_state
 
 
@@ -93,7 +93,7 @@ def test_deliver_moves_and_never_overwrites_silently(tmp_path):
 
 
 def test_output_folder_required(project):
-    from subagent.delivery import output_folder
+    from subagent.output.delivery import output_folder
 
     config, _ = project
     config.output.folder = None

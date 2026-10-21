@@ -115,7 +115,7 @@ class Services:
         return [e.id for e in reg.earlier_not_done(reg.get(ep_id))]
 
     def output_target(self, ep_id: str) -> Path:
-        from subagent.delivery import target_path
+        from subagent.output.delivery import target_path
 
         return target_path(self.config, Path(self.registry.get(ep_id).source_path))
 
@@ -361,12 +361,12 @@ class Services:
         return out
 
     def write_preview(self, ep_id: str, lines: list[ReviewedLine], video: VideoInfo) -> Path:
-        from subagent.stages.render import preview_ass
+        from subagent.output.render import preview_ass
 
         return preview_ass(self.paths.episode_dir(ep_id), lines, self.config, video.width, video.height)
 
     def mask_filter(self, video: VideoInfo) -> str:
-        from subagent.stages.render import build_mask_filter
+        from subagent.output.render import build_mask_filter
 
         return build_mask_filter(self.config, video.width, video.height)
 

@@ -204,10 +204,10 @@ def cmd_status(args, config, paths, progress) -> int:
 
 def cmd_check(args, config, paths, progress) -> int:
     """Startup checks: external binaries, fonts, output folder, API keys (NFR-PT2)."""
-    from subagent.delivery import output_folder
     from subagent.infra.device import describe
     from subagent.infra.media import INSTALL_HINTS, missing_binaries
-    from subagent.stages.render import font_files
+    from subagent.output.delivery import output_folder
+    from subagent.output.render import font_files
 
     ok = True
     for name in missing_binaries():

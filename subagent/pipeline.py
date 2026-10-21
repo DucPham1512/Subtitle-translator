@@ -10,7 +10,6 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.infra.joblock import job_lock
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
@@ -30,6 +29,7 @@ from subagent.kernel.util import atomic_write_text, hash_path, now_iso, read_jso
 from subagent.llm.client import LLMClient, missing_prices, record_cost
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
+from subagent.output.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.settings.config import Config, Paths
 from subagent.workspace.context import EpisodeContext
 from subagent.workspace.episodes import Registry
@@ -611,7 +611,7 @@ class Pipeline:
         self.progress.emit("voices", "done", message=message)
 
     def _render_and_deliver(self, ctx: EpisodeContext, on_exists: OnExists) -> Path:
-        from subagent.stages.render import render
+        from subagent.output.render import render
 
         self._check_output(ctx, on_exists)
         self.progress.emit("render", "start")

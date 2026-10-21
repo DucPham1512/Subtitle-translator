@@ -464,7 +464,7 @@ class EpisodesView(QWidget):
         self.refresh()
 
     def _open_output(self) -> None:
-        from subagent.delivery import reveal_in_explorer
+        from subagent.output.delivery import reveal_in_explorer
 
         row = self.current_row()
         if row and row.episode.output_path:
