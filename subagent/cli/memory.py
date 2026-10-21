@@ -77,7 +77,7 @@ def cmd_dream(args, config, paths, progress) -> int:
 
 def cmd_voices(args, config, paths, progress) -> int:
     from subagent.infra.joblock import job_lock
-    from subagent.memory import voice_learning as vl
+    from subagent.voice import learning as vl
 
     with job_lock(paths, "voices"):
         if args.action == "evaluate":

@@ -9,8 +9,8 @@ import pytest
 
 from subagent.kernel.models import ReviewedLine
 from subagent.kernel.util import write_jsonl
-from subagent.memory import voice_learning as vl
 from subagent.memory.store import MemoryStore
+from subagent.voice import learning as vl
 from tests.conftest import register_episode, seed_memory
 
 SR = 16000
@@ -94,7 +94,7 @@ def test_finish_review_never_fails_on_missing_voice_model(project, monkeypatch):
     def boom(*a, **k):
         raise ModelUnavailableError("speechbrain is not installed")
 
-    monkeypatch.setattr("subagent.memory.voice_learning.learn_voices", boom)
+    monkeypatch.setattr("subagent.voice.learning.learn_voices", boom)
     Pipeline(config, paths)._learn_voices()                       # reports, does not raise
 
 

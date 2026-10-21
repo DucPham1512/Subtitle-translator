@@ -558,7 +558,7 @@ class MemoryView(QWidget):
         return self.voice_tab
 
     def _load_voices(self) -> None:
-        from subagent.stages.voice import all_similarities, voice_clips
+        from subagent.voice.voice import all_similarities, voice_clips
 
         store, paths = self.services.store, self.services.paths
 

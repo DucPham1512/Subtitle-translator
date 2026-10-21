@@ -17,7 +17,7 @@ from subagent.kernel.util import write_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.probation import check_return
 from subagent.memory.store import Candidate
-from subagent.stages.voice import find_new_voices, save_line_voices
+from subagent.voice.voice import find_new_voices, save_line_voices
 from tests.conftest import register_episode, seed_memory
 
 

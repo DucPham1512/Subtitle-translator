@@ -97,7 +97,7 @@ def _samples(manual: dict[str, list[np.ndarray]], clips: list[Clip],
 def _leave_one_out(human: list[Clip], extra: list[Clip], embs: dict[tuple[str, str], np.ndarray],
                    manual: dict[str, list[np.ndarray]], config: Config) -> tuple[int, int]:
     """Top-1 hits on human-reviewed lines, each episode tested with a bank learned without it (+ extra)."""
-    from subagent.stages.voice import score_embedding
+    from subagent.voice.voice import score_embedding
 
     right = total = 0
     for ep in sorted({c.episode_id for c in human}):
@@ -134,7 +134,7 @@ def auto_gate(human: list[Clip], auto: list[Clip], embs: dict[tuple[str, str], n
 
 def episode_samples(paths: Paths, config: Config, episode: Episode) -> np.ndarray:
     """The episode's audio as 16 kHz mono: the stage's audio.wav when it still exists, else cut from the video."""
-    from subagent.stages.voice import load_audio_any, load_wav
+    from subagent.voice.voice import load_audio_any, load_wav
 
     wav = paths.episode_dir(episode.id) / "audio.wav"
     if wav.is_file():
@@ -168,7 +168,7 @@ def embed_clips(paths: Paths, config: Config, clips: list[Clip], embed) -> dict[
 
 
 def manual_clip_embeddings(paths: Paths, config: Config, known: set[str], embed) -> dict[str, list[np.ndarray]]:
-    from subagent.stages.voice import load_audio_any, voice_clips
+    from subagent.voice.voice import load_audio_any, voice_clips
 
     out: dict[str, list[np.ndarray]] = defaultdict(list)
     for char, files in voice_clips(paths).items():
@@ -202,7 +202,7 @@ def build_centroids(samples: dict[str, list[np.ndarray]], config: Config) -> dic
 def learn_voices(config: Config, paths: Paths, embed=None, *, commit: bool = True) -> LearnResult:
     """Rebuild the voice bank from every reviewed episode plus the manual clips, then commit it to memory."""
     from subagent.memory.manager import MemoryManager
-    from subagent.stages.voice import get_embedder, pair_similarities
+    from subagent.voice.voice import get_embedder, pair_similarities
 
     manager = MemoryManager(paths, config)
     manager.ensure_repo()
@@ -255,7 +255,7 @@ class EvalReport:
 
 def evaluate(config: Config, paths: Paths, embed=None) -> EvalReport:
     """Leave one episode out: learn from the other reviewed episodes (+ manual clips), test on this one."""
-    from subagent.stages.voice import classify, get_embedder, score_embedding
+    from subagent.voice.voice import classify, get_embedder, score_embedding
 
     known = MemoryStore(paths.memory_db).character_ids()
     embed = embed or get_embedder(config, paths).embed

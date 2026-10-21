@@ -93,8 +93,8 @@ STAGES: list[StageDef] = [
     StageDef("events", _lazy("subagent.ocr.events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
     StageDef("ocr_fix", _lazy("subagent.ocr.ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
              prompts=["ocr_fix_system"], llm_roles=["utility"]),
-    StageDef("audio", _lazy("subagent.stages.audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
-    StageDef("voice", _lazy("subagent.stages.voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
+    StageDef("audio", _lazy("subagent.voice.audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
+    StageDef("voice", _lazy("subagent.voice.voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
              identification=True),
     StageDef("cast", _lazy("subagent.stages.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
              extra=_source_key, identification=True),
@@ -591,7 +591,7 @@ class Pipeline:
         if not (self.config.show.character_identification and self.config.voice.learn_from_reviews):
             return
         from subagent.kernel.errors import ModelUnavailableError
-        from subagent.memory.voice_learning import learn_voices
+        from subagent.voice.learning import learn_voices
 
         self.progress.emit("voices", "start")
         try:

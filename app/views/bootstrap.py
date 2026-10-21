@@ -42,7 +42,7 @@ from app.widgets import ClipPlayer, FrameSelector, confirm, fmt_ms, show_error, 
 from app.workers import run_async
 from subagent.kernel.util import atomic_write_text
 from subagent.memory import bootstrap as bs
-from subagent.stages.voice import voice_clips
+from subagent.voice.voice import voice_clips
 
 SEED_TABLES = {
     "characters": ["id", "name_zh", "name_vi", "description"],

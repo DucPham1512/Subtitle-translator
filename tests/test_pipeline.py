@@ -67,7 +67,7 @@ def stubs(monkeypatch, calls):
 
     monkeypatch.setattr("subagent.ocr.ingest.run", ingest)
     monkeypatch.setattr("subagent.ocr.ocr.run", ocr)
-    monkeypatch.setattr("subagent.stages.audio.run", audio)
+    monkeypatch.setattr("subagent.voice.audio.run", audio)
     monkeypatch.setattr("subagent.stages.render.render", render)
 
 

@@ -15,7 +15,7 @@ from subagent.kernel.util import atomic_write_text, now_iso, read_jsonl
 from subagent.llm.client import build_messages, load_prompt
 from subagent.memory.manager import ApplyResult, MemoryManager
 from subagent.settings.config import Config, Paths
-from subagent.stages.voice import compute_centroids, pair_similarities, voice_clips
+from subagent.voice.voice import compute_centroids, pair_similarities, voice_clips
 
 log = logging.getLogger(__name__)
 
