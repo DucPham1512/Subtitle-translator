@@ -7,7 +7,7 @@ import json
 import pytest
 
 from subagent.baseline import baseline_dir, freeze, freeze_episode
-from subagent.episodes import Registry
+from subagent.workspace.episodes import Registry
 from tests.conftest import register_episode
 
 

@@ -24,11 +24,11 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from subagent.characters import episode_character_ids
-from subagent.episodes import Registry
 from subagent.kernel.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config, Paths
+from subagent.workspace.episodes import Registry
 
 PARTIAL_FLAG = "partial_speaker"        # the speaker was set by a partial review (6.4b)
 
@@ -102,9 +102,9 @@ def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[Reviewed
 def _voices(config: Config, paths: Paths, episode_id: str, draft: list[ReviewedLine], known: set[str],
             embed) -> tuple[dict[str, SpeakerCandidates], list[str]]:
     """Remaining lines re-matched against the voice bank plus this episode's approved lines."""
-    from subagent.episodes import Registry
     from subagent.memory.voice_learning import Clip, embed_clips, episode_samples
     from subagent.stages.voice import get_embedder, l2_normalize, match_events
+    from subagent.workspace.episodes import Registry
 
     work = paths.episode_dir(episode_id)
     if not (work / "speakers.jsonl").is_file():

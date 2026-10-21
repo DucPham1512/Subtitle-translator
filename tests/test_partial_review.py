@@ -19,7 +19,7 @@ from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
 from subagent.partial_review import OUTPUT, partial_review, suggest
 from subagent.stages.review import gate, load_draft, save_draft
-from subagent.state import save_state
+from subagent.workspace.state import save_state
 from tests.conftest import register_episode, sample_events, seed_memory, write_events
 
 DIM = 8

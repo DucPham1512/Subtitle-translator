@@ -10,7 +10,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from subagent.episodes import Registry
 from subagent.kernel.models import EditRecord, MemoryProposal, ReviewedLine
 from subagent.kernel.textutil import contains_term
 from subagent.kernel.util import hash_path, now_iso, read_json, read_jsonl, sha256_json
@@ -21,6 +20,7 @@ from subagent.memory.manager import ApplyResult, MemoryManager
 from subagent.memory.prefix import characters_block, glossary_block, pronoun_block, style_block
 from subagent.memory.store import MemoryStore, row_key
 from subagent.settings.config import Config, Paths
+from subagent.workspace.episodes import Registry
 
 log = logging.getLogger(__name__)
 

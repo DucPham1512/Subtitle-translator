@@ -276,11 +276,11 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
 def _frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | None:
     """Describe boxes cut from a line's analysed frame (saved by the cast stage; else cut from the video at the
     same time). None when the image model cannot load: geometry edits are then skipped, labels still count."""
-    from subagent.episodes import Registry
     from subagent.infra.media import extract_frame, probe
     from subagent.kernel.errors import ModelUnavailableError
     from subagent.kernel.models import SubtitleEvent
     from subagent.stages.cast import crop, frame_time_ms, get_engine, load_frame
+    from subagent.workspace.episodes import Registry
 
     try:
         engine = get_engine(config, paths)

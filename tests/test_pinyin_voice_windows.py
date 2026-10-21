@@ -4,12 +4,12 @@ import wave
 
 import numpy as np
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import PinyinLine, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.util import read_jsonl
 from subagent.memory.store import Character, GlossaryEntry
 from subagent.stages import pinyin_gen, voice
 from subagent.stages.windows import build_windows
+from subagent.workspace.context import EpisodeContext
 from tests.conftest import make_episode, make_llm, sample_events, seed_memory, user_json, write_events
 
 # -- pinyin ----------------------------------------------------------------------------------------

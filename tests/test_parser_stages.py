@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import ChangeRecord, OcrReading, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.stages import events as events_stage
 from subagent.stages import ocr as ocr_stage
 from subagent.stages import ocr_fix
 from subagent.stages.ingest import detect_changes
+from subagent.workspace.context import EpisodeContext
 from tests.conftest import make_episode, make_llm, user_json, write_events
 
 # -- ingest ----------------------------------------------------------------------------------------

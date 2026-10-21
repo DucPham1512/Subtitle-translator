@@ -8,7 +8,7 @@ from subagent.kernel.errors import OutputExistsError, OutputFolderError
 from subagent.kernel.models import ReviewedLine, StageState
 from subagent.settings.config import Band
 from subagent.stages.render import Layout, build_ass, build_mask_filter
-from subagent.state import load_state, save_state
+from subagent.workspace.state import load_state, save_state
 
 
 def _line(i, vi, pinyin="nǐ hǎo", line_type="dialogue"):

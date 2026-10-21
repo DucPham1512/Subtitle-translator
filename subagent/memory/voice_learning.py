@@ -19,12 +19,12 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.episodes import Registry
 from subagent.kernel.models import Episode, ReviewedLine
 from subagent.kernel.util import read_jsonl
 from subagent.memory.evidence import is_auto_episode, trusted_auto_lines, usable_line
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config, Paths
+from subagent.workspace.episodes import Registry
 
 log = logging.getLogger(__name__)
 

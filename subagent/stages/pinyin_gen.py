@@ -9,13 +9,13 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import PinyinLine, SubtitleEvent
 from subagent.kernel.textutil import is_han
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.llm.client import build_messages, load_prompt
 from subagent.memory.store import Character, GlossaryEntry, MemoryStore
 from subagent.settings.config import Config
+from subagent.workspace.context import EpisodeContext
 
 log = logging.getLogger(__name__)
 

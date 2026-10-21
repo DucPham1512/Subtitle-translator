@@ -13,10 +13,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import QCoreApplication, QSettings, QThreadPool  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from subagent.episodes import Registry  # noqa: E402
 from subagent.kernel.models import LineTranslation, PinyinLine  # noqa: E402
 from subagent.kernel.util import write_jsonl  # noqa: E402
 from subagent.stages.review import gate, load_draft  # noqa: E402
+from subagent.workspace.episodes import Registry  # noqa: E402
 from tests.conftest import register_episode, sample_events, seed_memory, write_events  # noqa: E402
 
 
@@ -387,7 +387,7 @@ def test_audit_screen_and_audit_mode(qapp, project):
     from app.services import Services
     from subagent import audit
     from subagent.kernel.models import EpisodeState
-    from subagent.state import save_state
+    from subagent.workspace.state import save_state
 
     config, paths = project
     seed_memory(config, paths)

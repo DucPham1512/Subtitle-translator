@@ -102,7 +102,7 @@ def save_seed(paths: Paths, draft: SeedDraft) -> None:
 # -- seed ------------------------------------------------------------------------------------------
 
 def _episode1_lines(paths: Paths, limit: int = 150) -> list[str]:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     episodes = Registry(paths).load()   # sorted by number
     if not episodes:

@@ -23,7 +23,7 @@ log = logging.getLogger("subagent")
 
 
 def cmd_add(args, config: Config, paths: Paths, progress: Progress) -> int:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     registry = Registry(paths)
     candidates = registry.prepare_add([Path(p) for p in args.paths], config, recursive=args.recursive)
@@ -63,8 +63,8 @@ def cmd_add(args, config: Config, paths: Paths, progress: Progress) -> int:
 
 
 def cmd_relink(args, config: Config, paths: Paths, progress: Progress) -> int:
-    from subagent.episodes import Registry
-    from subagent.state import state_path
+    from subagent.workspace.episodes import Registry
+    from subagent.workspace.state import state_path
 
     registry = Registry(paths)
     ep, matches = registry.relink(registry.resolve(args.episode).id, Path(args.path))
@@ -109,7 +109,7 @@ def cmd_run(args, config, paths, progress) -> int:
 
 
 def cmd_batch(args, config, paths, progress) -> int:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
     registry = Registry(paths)
     refs = list(args.episodes)
     if args.pending:
@@ -136,9 +136,9 @@ def cmd_batch(args, config, paths, progress) -> int:
 
 
 def cmd_partial_review(args, config, paths, progress) -> int:
-    from subagent.episodes import Registry
     from subagent.infra.joblock import job_lock
     from subagent.partial_review import partial_review
+    from subagent.workspace.episodes import Registry
 
     ep = Registry(paths).resolve(args.episode)
     with job_lock(paths, ep.id):
@@ -176,8 +176,8 @@ def cmd_clean(args, config, paths, progress) -> int:
 
 
 def cmd_status(args, config, paths, progress) -> int:
-    from subagent.episodes import Registry
     from subagent.pipeline import episode_status
+    from subagent.workspace.episodes import Registry
 
     registry = Registry(paths)
     episodes = [registry.resolve(args.episode)] if args.episode else registry.load()

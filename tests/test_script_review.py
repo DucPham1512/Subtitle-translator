@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import LineTranslation, ReviewedLine, ScriptDecision, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import LineDecision, MemoryStore
 from subagent.stages import review, script_review
+from subagent.workspace.context import EpisodeContext
 from tests.conftest import make_episode, make_llm, seed_memory, user_json
 
 

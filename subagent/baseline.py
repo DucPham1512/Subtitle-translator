@@ -16,10 +16,10 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from subagent.context import EpisodeContext
 from subagent.kernel.util import atomic_write_text, hash_path, now_iso, sha256_json
 from subagent.settings.config import Config, Paths
-from subagent.state import load_state
+from subagent.workspace.context import EpisodeContext
+from subagent.workspace.state import load_state
 
 log = logging.getLogger(__name__)
 FOLDER = "_baseline"
@@ -113,7 +113,7 @@ def freeze_episode(config: Config, paths: Paths, episode_id: str, name: str) -> 
 
 def freeze(config: Config, paths: Paths, name: str, episode_ids: list[str] | None = None) -> list[str]:
     """Freeze the given episodes, or every finished one (status done, with a finished review)."""
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     if episode_ids is None:
         episode_ids = [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)

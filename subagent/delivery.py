@@ -12,7 +12,7 @@ from typing import Literal
 
 from subagent.kernel.errors import OutputExistsError, OutputFolderError
 from subagent.settings.config import Config
-from subagent.state import load_state, save_state
+from subagent.workspace.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 

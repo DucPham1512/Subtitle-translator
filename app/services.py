@@ -9,7 +9,6 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.episodes import AddCandidate, Registry
 from subagent.infra.joblock import job_lock_path, running_jobs
 from subagent.kernel.models import (
     CastLine,
@@ -27,6 +26,7 @@ from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import STAGES, episode_status
 from subagent.settings.config import Config, Paths, load_config
+from subagent.workspace.episodes import AddCandidate, Registry
 
 
 @dataclass
@@ -181,7 +181,7 @@ class Services:
 
     def audit_overview(self) -> list[dict]:
         from subagent import audit
-        from subagent.state import load_state
+        from subagent.workspace.state import load_state
 
         rows = []
         for ep in sorted(self.registry.load(), key=lambda e: e.number):

@@ -9,11 +9,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from subagent.context import EpisodeContext
 from subagent.infra.media import imwrite_png, iter_gray_frames, probe
 from subagent.kernel.models import ChangeRecord
 from subagent.kernel.util import atomic_write_text, write_jsonl
 from subagent.settings.config import VideoConfig
+from subagent.workspace.context import EpisodeContext
 
 log = logging.getLogger(__name__)
 

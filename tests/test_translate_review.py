@@ -3,7 +3,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from subagent.context import EpisodeContext
 from subagent.kernel.errors import ReviewIncompleteError, SubagentError
 from subagent.kernel.models import (
     Evaluation,
@@ -18,6 +17,7 @@ from subagent.memory.store import MemoryStore
 from subagent.stages import review, sprite, translate
 from subagent.stages.evaluate import RuleContext, rule_checks
 from subagent.stages.windows import build_windows
+from subagent.workspace.context import EpisodeContext
 from tests.conftest import make_episode, make_llm, sample_events, seed_memory, user_json, write_events
 
 

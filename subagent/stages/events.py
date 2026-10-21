@@ -7,11 +7,11 @@ import statistics
 from collections import Counter
 from dataclasses import dataclass, field
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import OcrReading, SubtitleEvent
 from subagent.kernel.textutil import edit_distance, normalize_zh, relatedness
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.settings.config import Config, NonDialogueConfig
+from subagent.workspace.context import EpisodeContext
 
 log = logging.getLogger(__name__)
 

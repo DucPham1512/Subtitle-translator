@@ -154,7 +154,7 @@ def test_npcs_created_in_review_are_ids_of_their_episode(project):
 def test_a_review_npc_goes_on_probation_at_finish(project, monkeypatch):
     from subagent.kernel.models import EpisodeState
     from subagent.pipeline import Pipeline
-    from subagent.state import save_state
+    from subagent.workspace.state import save_state
 
     config, paths = project
     seed_memory(config, paths)

@@ -8,7 +8,6 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from subagent.context import EpisodeContext
 from subagent.infra.device import onnx_use_cuda
 from subagent.infra.media import imread
 from subagent.kernel.errors import ModelUnavailableError
@@ -16,6 +15,7 @@ from subagent.kernel.models import ChangeRecord, OcrBox, OcrReading, VideoInfo
 from subagent.kernel.textutil import keep_cjk
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.settings.config import Band, Config, OcrConfig
+from subagent.workspace.context import EpisodeContext
 
 log = logging.getLogger(__name__)
 

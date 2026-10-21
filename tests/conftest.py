@@ -113,14 +113,14 @@ def make_episode(paths: Paths, number: int = 1, source: Path | None = None) -> E
     src = source or (paths.root / f"ep{number:02d}.mp4")
     if not src.exists():
         src.write_bytes(b"\x00" * 2048 + str(number).encode())
-    from subagent.episodes import fingerprint
+    from subagent.workspace.episodes import fingerprint
 
     return Episode(id=f"ep{number:03d}", number=number, source_path=str(src), source_size=src.stat().st_size,
                    source_mtime=src.stat().st_mtime, source_fingerprint=fingerprint(src), added_at="2026-01-01")
 
 
 def register_episode(paths: Paths, number: int = 1) -> Episode:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     ep = make_episode(paths, number)
     reg = Registry(paths)

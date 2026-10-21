@@ -10,9 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.context import EpisodeContext
 from subagent.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
-from subagent.episodes import Registry
 from subagent.infra.joblock import job_lock
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
@@ -33,7 +31,9 @@ from subagent.llm.client import LLMClient, missing_prices, record_cost
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config, Paths
-from subagent.state import load_state, save_state
+from subagent.workspace.context import EpisodeContext
+from subagent.workspace.episodes import Registry
+from subagent.workspace.state import load_state, save_state
 
 log = logging.getLogger(__name__)
 

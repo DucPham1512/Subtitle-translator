@@ -14,7 +14,7 @@ from subagent.kernel.models import (
     SpeakerCandidates,
 )
 from subagent.kernel.util import write_jsonl
-from subagent.state import save_state
+from subagent.workspace.state import save_state
 from tests.conftest import register_episode
 
 

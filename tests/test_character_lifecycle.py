@@ -70,8 +70,8 @@ def test_stated_fates(project):
 
 
 def test_archived_voices_are_not_matched(project):
-    from subagent.context import EpisodeContext
     from subagent.stages import voice
+    from subagent.workspace.context import EpisodeContext
     from tests.conftest import make_episode, sample_events, write_events
     from tests.test_pinyin_voice_windows import _write_wav
 

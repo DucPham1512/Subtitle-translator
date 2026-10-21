@@ -98,7 +98,7 @@ def _install_review(src: Path, dst: Path) -> None:
     """Replace the episode's machine files by the frozen review and the files it was made from (the gold), so
     learning and the next episodes' reviewer-corrections block see what the replay saw."""
     from subagent.baseline import FILES
-    from subagent.state import load_state, save_state
+    from subagent.workspace.state import load_state, save_state
 
     for name in FILES:
         if (src / name).is_file():
@@ -132,10 +132,10 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     to the commit after the last finished episode."""
     from subagent import suite
     from subagent.baseline import _git_head
-    from subagent.context import EpisodeContext
-    from subagent.episodes import Registry
     from subagent.kernel.errors import SubagentError
     from subagent.pipeline import _BY_NAME
+    from subagent.workspace.context import EpisodeContext
+    from subagent.workspace.episodes import Registry
 
     state, folder = _start_or_resume(paths, mode, from_stage, episodes, label, use_cache, resume)
     mode, from_stage, episodes, label = state["mode"], state["from_stage"], state["episodes"], state["label"]

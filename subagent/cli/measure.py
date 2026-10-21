@@ -18,7 +18,7 @@ log = logging.getLogger("subagent")
 
 def cmd_audit(args, config, paths, progress) -> int:
     from subagent import audit
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     registry = Registry(paths)
     done = [e for e in sorted(registry.load(), key=lambda e: e.number) if e.status == "done"]
@@ -82,7 +82,7 @@ def cmd_audit(args, config, paths, progress) -> int:
 
 def cmd_baseline(args, config, paths, progress) -> int:
     from subagent.baseline import baseline_dir, complete, freeze
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     if args.action == "complete":
         added = complete(paths, args.name)

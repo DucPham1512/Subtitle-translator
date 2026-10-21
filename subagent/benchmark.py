@@ -51,7 +51,7 @@ class BenchmarkResult:
 
 
 def benchmark_episodes(paths: Paths) -> list[str]:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     return [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)
             if gold_speakers(paths.episode_dir(e.id))]
@@ -69,7 +69,7 @@ def _sandbox_paths(config: Config, paths: Paths, folder: Path) -> tuple[Config, 
 def _copy_reviewer_context(paths: Paths, sandbox: Paths, skip: set[str]) -> None:
     """The translator's prompt includes recent reviewer corrections read from other episodes' edits: copy those
     small files so the sandboxed prompt matches a real run."""
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     for ep in Registry(paths).load():
         if ep.id in skip:
@@ -84,9 +84,9 @@ def _copy_reviewer_context(paths: Paths, sandbox: Paths, skip: set[str]) -> None
 def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = None, *, label: str = "",
                   use_cache: bool = True, progress=None, stage_runner=None) -> BenchmarkResult:
     """stage_runner(name, ctx) runs one stage (tests inject fakes); default: the real stage modules."""
-    from subagent.context import EpisodeContext
-    from subagent.episodes import Registry
     from subagent.pipeline import collect_metrics, run_stage
+    from subagent.workspace.context import EpisodeContext
+    from subagent.workspace.episodes import Registry
 
     episode_ids = episode_ids or benchmark_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]

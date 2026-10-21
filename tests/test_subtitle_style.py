@@ -76,8 +76,8 @@ def test_unstable_components_are_dropped():
 
 
 def test_a_new_style_reruns_ocr_only_with_segmentation(project):
-    from subagent.context import EpisodeContext
     from subagent.pipeline import _BY_NAME, Runner
+    from subagent.workspace.context import EpisodeContext
     from tests.conftest import register_episode
 
     config, paths = project

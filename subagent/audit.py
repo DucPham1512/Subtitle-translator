@@ -77,7 +77,7 @@ def _rng(episode_id: str) -> random.Random:
 def auditable(config: Config, paths: Paths, episode_id: str) -> bool:
     """Auto-mode episodes; human-reviewed ones only with `audit.include_human` (their output is the reviewer's
     corrected script, and their edits.jsonl already records every machine error exactly)."""
-    from subagent.state import load_state
+    from subagent.workspace.state import load_state
 
     mode = load_state(paths.episode_dir(episode_id), episode_id).mode
     return mode == "auto" or config.audit.include_human
@@ -207,7 +207,7 @@ class AuditReport:
 
 
 def build_report(config: Config, paths: Paths, episode_ids: list[str]) -> AuditReport:
-    from subagent.state import load_state
+    from subagent.workspace.state import load_state
 
     report = AuditReport()
     cells: dict[str, list[tuple[int, int, int]]] = {a: [] for a in AUDIT_ASPECTS}

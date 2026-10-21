@@ -56,7 +56,7 @@ def pin_dir(paths: Paths, char_id: str) -> Path:
 
 
 def _episode_ids(paths: Paths) -> list[str]:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     return [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)]
 
@@ -177,7 +177,7 @@ def _frame(paths: Paths, config: Config, episode_id: str, event_id: str, start_m
 
 
 def _source(paths: Paths, episode_id: str) -> Path:
-    from subagent.episodes import Registry
+    from subagent.workspace.episodes import Registry
 
     return Path(Registry(paths).get(episode_id).source_path)
 

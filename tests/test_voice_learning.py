@@ -106,7 +106,7 @@ AUTO_SCRIPT = [("lin_yuan" if i % 2 == 0 else "shi_zun", i * 2000, i * 2000 + 15
 def _auto_episode(paths, number: int, labels: list[str], *, score: float = 0.9, flags=None, failed=frozenset()):
     """Audio follows AUTO_SCRIPT; the machine labelled line i as labels[i] (voice and translator agreeing)."""
     from subagent.kernel.models import EpisodeState, Evaluation, LineTranslation, SpeakerCandidates
-    from subagent.state import save_state
+    from subagent.workspace.state import save_state
 
     ep = _episode(paths, number, AUTO_SCRIPT)
     work = paths.episode_dir(ep.id)

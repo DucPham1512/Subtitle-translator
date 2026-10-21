@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from subagent.context import EpisodeContext
 from subagent.kernel.models import (
     CastDetection,
     CastLine,
@@ -21,7 +20,8 @@ from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.manager import MemoryManager
 from subagent.memory.sprite_learning import learn_sprites, plan
 from subagent.stages import cast
-from subagent.state import save_state
+from subagent.workspace.context import EpisodeContext
+from subagent.workspace.state import save_state
 from tests.conftest import make_episode, register_episode, sample_events, seed_memory, write_events
 
 DIM = 8
@@ -197,9 +197,9 @@ def test_auto_mode_learns_only_from_trusted_lines(project):
 
 
 def test_backfill_runs_cast_where_missing_then_learns(project, monkeypatch):
-    from subagent.episodes import Registry
     from subagent.pipeline import Pipeline
-    from subagent.state import load_state
+    from subagent.workspace.episodes import Registry
+    from subagent.workspace.state import load_state
 
     config, paths = project
     config.cast.enabled = True

@@ -274,8 +274,8 @@ class EpisodeMixin:
 
     def _backfill_appearances(self, conn: sqlite3.Connection, known: set[str], skip: str) -> None:
         """First lifecycle run: count appearances in the episodes finished before it existed."""
-        from subagent.episodes import Registry
         from subagent.kernel.util import read_jsonl
+        from subagent.workspace.episodes import Registry
 
         for ep in Registry(self.paths).load():
             if ep.id == skip:

@@ -9,7 +9,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.context import EpisodeContext
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
     CastLine,
@@ -40,6 +39,7 @@ from subagent.stages.evaluate import (
     max_chars_for,
     rule_checks,
 )
+from subagent.workspace.context import EpisodeContext
 
 log = logging.getLogger(__name__)
 
