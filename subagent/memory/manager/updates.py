@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.models import MemoryProposal, NewVoice, ReviewedLine
-from subagent.kernel.util import (
+from subagent.kernel import (
+    MemoryProposal,
+    NewVoice,
+    ReviewedLine,
+    SubagentError,
     atomic_write_json,
     now_iso,
     read_json,

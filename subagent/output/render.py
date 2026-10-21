@@ -14,13 +14,18 @@ from pathlib import Path
 
 import pysubs2
 
-from subagent.infra.media import available_encoders, require_binary
-from subagent.kernel.errors import MediaError, SubagentError
-from subagent.kernel.models import ReviewedLine
-from subagent.kernel.textutil import balanced_wrap, split_explicit_lines, wrap_words
-from subagent.kernel.util import read_jsonl
-from subagent.settings.config import Config, Paths
-from subagent.workspace.context import EpisodeContext
+from subagent.infra import available_encoders, require_binary
+from subagent.kernel import (
+    MediaError,
+    ReviewedLine,
+    SubagentError,
+    balanced_wrap,
+    read_jsonl,
+    split_explicit_lines,
+    wrap_words,
+)
+from subagent.settings import Config, Paths
+from subagent.workspace import EpisodeContext
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +144,7 @@ def build_ass(lines: list[ReviewedLine], config: Config, width: int, height: int
 
 
 def write_ass(path: Path, lines: list[ReviewedLine], config: Config, width: int, height: int) -> None:
-    from subagent.kernel.util import atomic_write_text
+    from subagent.kernel import atomic_write_text
 
     atomic_write_text(path, build_ass(lines, config, width, height).to_string("ass"))
 

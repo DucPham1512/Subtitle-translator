@@ -10,13 +10,19 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.infra.device import torch_device
-from subagent.kernel.errors import MediaError, ModelUnavailableError
-from subagent.kernel.models import NewVoice, SpeakerCandidates, SubtitleEvent
-from subagent.kernel.util import read_jsonl, write_jsonl
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import Config, Paths, VoiceConfig
-from subagent.workspace.context import EpisodeContext
+from subagent.infra import torch_device
+from subagent.kernel import (
+    MediaError,
+    ModelUnavailableError,
+    NewVoice,
+    SpeakerCandidates,
+    SubtitleEvent,
+    read_jsonl,
+    write_jsonl,
+)
+from subagent.memory import MemoryStore
+from subagent.settings import Config, Paths, VoiceConfig
+from subagent.workspace import EpisodeContext
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +53,7 @@ def load_audio_any(path: Path, sample_rate: int) -> np.ndarray:
                 return samples
         except (MediaError, wave.Error, EOFError):
             pass
-    from subagent.infra.media import require_binary, run
+    from subagent.infra import require_binary, run
 
     proc = run([require_binary("ffmpeg"), "-hide_banner", "-loglevel", "error", "-nostdin", "-i", str(path),
                 "-ac", "1", "-ar", str(sample_rate), "-f", "s16le", "-"])
@@ -165,7 +171,7 @@ def find_new_voices(results: list[SpeakerCandidates], embs: dict[str, np.ndarray
     one (≥ `accept_score` and `min_margin` above its best known character), or a group whose average voice does
     (≥ `new_voice_similarity`), keeps the candidate's id instead of getting a new one.
     """
-    from subagent.memory.characters import new_voice_id
+    from subagent.memory import new_voice_id
 
     back_bank = {c.id: c.embedding for c in returning or [] if c.embedding is not None}
     cand = [r for r in results if r.event_id in embs and r.status in ("unknown", "confusable")
@@ -256,7 +262,7 @@ def run(ctx: EpisodeContext, embed=None) -> dict[str, int]:
         embed = get_embedder(ctx.config, ctx.paths).embed
     elif not bank:
         log.info("voice: voice bank is empty; every event is 'unknown'")
-    from subagent.memory.characters import save_new_voices
+    from subagent.memory import save_new_voices
 
     results: list[SpeakerCandidates] = []
     embs: dict[str, np.ndarray] = {}

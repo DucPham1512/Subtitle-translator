@@ -10,10 +10,18 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from subagent.kernel.errors import EpisodeNotFoundError, SourceMissingError, SubagentError
-from subagent.kernel.models import Episode, EpisodeStatus
-from subagent.kernel.util import FileLock, atomic_write_json, now_iso, read_json
-from subagent.settings.config import Config, Paths
+from subagent.kernel import (
+    Episode,
+    EpisodeNotFoundError,
+    EpisodeStatus,
+    FileLock,
+    SourceMissingError,
+    SubagentError,
+    atomic_write_json,
+    now_iso,
+    read_json,
+)
+from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
 
@@ -133,7 +141,7 @@ class Registry:
                     check_video: Callable[[Path], tuple[bool, str]] | None = None) -> list[AddCandidate]:
         """Scan inputs and detect numbers. Registers nothing; the user confirms first."""
         if check_video is None:
-            from subagent.infra.media import has_video_stream
+            from subagent.infra import has_video_stream
 
             check_video = has_video_stream
         existing = {e.source_fingerprint: e.id for e in self.load()}

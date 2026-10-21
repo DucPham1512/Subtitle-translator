@@ -9,7 +9,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from subagent.kernel.errors import ConfigError
+from subagent.kernel import ConfigError
 
 
 class _Section(BaseModel):
@@ -561,7 +561,7 @@ def _load_env(env_file: Path) -> None:
 def save_config_text(root: Path, text: str, *, series_file: bool = False, series: str | None = None) -> Config:
     """Validate raw YAML, then write it atomically: config.yaml, or with `series_file` the active series'
     series.yaml. Validation uses the merged result (config.yaml + the active series' overrides)."""
-    from subagent.kernel.util import atomic_write_text
+    from subagent.kernel import atomic_write_text
 
     try:
         data = yaml.safe_load(text) or {}
@@ -591,7 +591,7 @@ def save_settings(root: Path, changes: list[tuple[list[str], object]], series: s
     section (`SERIES_SECTIONS`) or already in its series.yaml goes to series.yaml, any other to config.yaml
     (5.2a). Values are rewritten in place (`yaml_edit`), so the comment on every line stays; a mapping value
     replaces the mapping (missing keys are removed). The merged result is validated before anything is written."""
-    from subagent.kernel.util import atomic_write_text
+    from subagent.kernel import atomic_write_text
     from subagent.settings.yaml_edit import set_mapping, set_value
 
     shared_path = root / "config.yaml"

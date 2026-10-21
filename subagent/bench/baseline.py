@@ -16,10 +16,9 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from subagent.kernel.util import atomic_write_text, hash_path, now_iso, sha256_json
-from subagent.settings.config import Config, Paths
-from subagent.workspace.context import EpisodeContext
-from subagent.workspace.state import load_state
+from subagent.kernel import atomic_write_text, hash_path, now_iso, sha256_json
+from subagent.settings import Config, Paths
+from subagent.workspace import EpisodeContext, load_state
 
 log = logging.getLogger(__name__)
 FOLDER = "_baseline"
@@ -37,7 +36,7 @@ def baseline_dir(paths: Paths, name: str) -> Path:
 
 
 def _git_head(folder: Path) -> str | None:
-    from subagent.infra.media import git
+    from subagent.infra import git
 
     if not (folder / ".git").exists():
         return None
@@ -47,7 +46,7 @@ def _git_head(folder: Path) -> str | None:
 def memory_at_run(paths: Paths, work: Path, episode_id: str) -> str | None:
     """The memory commit the episode's machine output was made with: the newest memory commit made before its
     first memory-reading stage started (an earlier episode finished again later does not count)."""
-    from subagent.infra.media import git
+    from subagent.infra import git
     from subagent.pipeline import RERUN_FROM
 
     st = load_state(work, episode_id).stages.get(RERUN_FROM)
@@ -113,7 +112,7 @@ def freeze_episode(config: Config, paths: Paths, episode_id: str, name: str) -> 
 
 def freeze(config: Config, paths: Paths, name: str, episode_ids: list[str] | None = None) -> list[str]:
     """Freeze the given episodes, or every finished one (status done, with a finished review)."""
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     if episode_ids is None:
         episode_ids = [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)

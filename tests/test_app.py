@@ -649,7 +649,7 @@ def test_character_browser_lists_cards_and_assigns(qapp):
 
 
 def test_use_this_line_pins_the_card_sample(qapp, project, monkeypatch):
-    import subagent.infra.media as media
+    import subagent.infra as media
     from app.main_window import MainWindow
     from app.services import Services
 

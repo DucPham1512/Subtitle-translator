@@ -20,9 +20,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from subagent.bench.audit import auditable_lines, gold_speakers, is_flagged, load_sample, stratified, wilson
-from subagent.kernel.models import LineTranslation
-from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
-from subagent.settings.config import Config, Paths
+from subagent.kernel import LineTranslation, append_jsonl, atomic_write_text, now_iso, read_jsonl
+from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
 COPY = ("events.jsonl", "video.json")
@@ -51,7 +50,7 @@ class BenchmarkResult:
 
 
 def benchmark_episodes(paths: Paths) -> list[str]:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     return [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)
             if gold_speakers(paths.episode_dir(e.id))]
@@ -69,7 +68,7 @@ def _sandbox_paths(config: Config, paths: Paths, folder: Path) -> tuple[Config, 
 def _copy_reviewer_context(paths: Paths, sandbox: Paths, skip: set[str]) -> None:
     """The translator's prompt includes recent reviewer corrections read from other episodes' edits: copy those
     small files so the sandboxed prompt matches a real run."""
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     for ep in Registry(paths).load():
         if ep.id in skip:
@@ -85,8 +84,7 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
                   use_cache: bool = True, progress=None, stage_runner=None) -> BenchmarkResult:
     """stage_runner(name, ctx) runs one stage (tests inject fakes); default: the real stage modules."""
     from subagent.pipeline import collect_metrics, run_stage
-    from subagent.workspace.context import EpisodeContext
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import EpisodeContext, Registry
 
     episode_ids = episode_ids or benchmark_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]

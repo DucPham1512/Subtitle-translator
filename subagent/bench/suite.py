@@ -30,7 +30,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from subagent.bench.ocr_benchmark import KEY_FILE, _norm, _overlap, score_episode
-from subagent.kernel.models import (
+from subagent.kernel import (
     CastLine,
     EditRecord,
     Evaluation,
@@ -39,9 +39,12 @@ from subagent.kernel.models import (
     ScriptDecision,
     SpeakerCandidates,
     SubtitleEvent,
+    append_jsonl,
+    atomic_write_text,
+    now_iso,
+    read_jsonl,
 )
-from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
-from subagent.settings.config import Config, Paths
+from subagent.settings import Config, Paths
 
 FOLDER = "_suite"
 BOX_IOU = 0.5
@@ -100,7 +103,7 @@ def align(gold: list[ReviewedLine], events: list[SubtitleEvent]) -> dict[str, st
 
 def characters_at(memory: Path, sha: str | None, cache: dict[str, set[str]] | None = None) -> set[str]:
     """Character ids in memory.db at a memory commit (read with git show; nothing is checked out)."""
-    from subagent.infra.media import require_binary, run
+    from subagent.infra import require_binary, run
 
     if not sha or not (memory / ".git").exists():
         return set()
@@ -291,7 +294,7 @@ def score_speakers(config: Config, paths: Paths, gold: Gold, system: Path) -> di
 def gold_boxes(line: ReviewedLine, cast: CastLine) -> tuple[list[tuple[list[float], str]], list[float] | None]:
     """The checked line's boxes as the reviewer left them: (box, character | UNKNOWN | NOT_A_CHARACTER), and the
     talking box (None: nobody on screen talks). Mirrors sprite_learning.apply_review_edits."""
-    from subagent.cast.card import shown_talking_box
+    from subagent.cast import shown_talking_box
 
     boxes = []
     for k, d in enumerate(cast.detections):
@@ -379,13 +382,13 @@ def score_cast(gold: Gold, system: Path) -> dict:
 # -- 4. translation + evaluator ------------------------------------------------------------------
 
 def _kept_evaluation(evals: list[Evaluation]) -> Evaluation | None:
-    from subagent.translation.translate import rank_attempt
+    from subagent.translation import rank_attempt
 
     return max(evals, key=rank_attempt) if evals else None
 
 
 def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict[str, bool] | None = None) -> dict:
-    from subagent.kernel.textutil import found_terms
+    from subagent.kernel import found_terms
 
     terms = config.translate.pronoun_terms
     c = Counter()
@@ -457,7 +460,7 @@ def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict
 
 def score_script_review(config: Config, gold: Gold, system: Path) -> dict:
     from subagent.bench.ocr_benchmark import gold_lines
-    from subagent.review.review import original_draft
+    from subagent.review import original_draft
 
     rc = config.review
     c = Counter()

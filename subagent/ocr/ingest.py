@@ -9,11 +9,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from subagent.infra.media import imwrite_png, iter_gray_frames, probe
-from subagent.kernel.models import ChangeRecord
-from subagent.kernel.util import atomic_write_text, write_jsonl
-from subagent.settings.config import VideoConfig
-from subagent.workspace.context import EpisodeContext
+from subagent.infra import imwrite_png, iter_gray_frames, probe
+from subagent.kernel import ChangeRecord, atomic_write_text, write_jsonl
+from subagent.settings import VideoConfig
+from subagent.workspace import EpisodeContext
 
 log = logging.getLogger(__name__)
 
@@ -152,7 +151,7 @@ def draw_band(frame: np.ndarray, crop: tuple[int, int, int, int]) -> np.ndarray:
 
 def calibrate(ctx: EpisodeContext, count: int = 6) -> list:
     """Save sample frames with the configured subtitle band drawn, to tune video.subtitle_band once."""
-    from subagent.infra.media import extract_frame
+    from subagent.infra import extract_frame
 
     source = ctx.require_source()
     info = probe(source)

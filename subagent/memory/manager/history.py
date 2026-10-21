@@ -6,8 +6,8 @@ import logging
 import tempfile
 from pathlib import Path
 
-from subagent.infra.joblock import running_jobs
-from subagent.kernel.errors import JobRunningError
+from subagent.infra import running_jobs
+from subagent.kernel import JobRunningError
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,
@@ -58,7 +58,7 @@ class HistoryMixin:
     """The memory folder's git history: commit, history, diff, rollback. Part of MemoryManager."""
 
     def commit(self, message: str) -> str | None:
-        from subagent.infra.media import git
+        from subagent.infra import git
 
         with self.locked():
             git(["add", "-A"], self.dir)
@@ -73,7 +73,7 @@ class HistoryMixin:
 
 
     def history(self, limit: int = 100) -> list[CommitInfo]:
-        from subagent.infra.media import git
+        from subagent.infra import git
 
         if not (self.dir / ".git").exists():
             return []
@@ -89,7 +89,7 @@ class HistoryMixin:
 
 
     def _snapshot_rows(self, sha: str | None) -> dict[str, dict[str, dict]]:
-        from subagent.infra.media import require_binary, run
+        from subagent.infra import require_binary, run
 
         if sha is None:
             return {t: {} for t in TABLES}
@@ -104,7 +104,7 @@ class HistoryMixin:
 
 
     def diff(self, sha: str) -> MemoryDiff:
-        from subagent.infra.media import git
+        from subagent.infra import git
 
         parent = git(["rev-parse", "--verify", "-q", f"{sha}^"], self.dir, check=False).strip() or None
         after, before = self._snapshot_rows(sha), self._snapshot_rows(parent)
@@ -134,7 +134,7 @@ class HistoryMixin:
 
     def rollback(self, sha: str) -> str | None:
         """Restore the memory folder to `sha` as a new commit; history is never rewritten."""
-        from subagent.infra.media import git
+        from subagent.infra import git
 
         self._refuse_while_jobs_run()
         with self.locked():

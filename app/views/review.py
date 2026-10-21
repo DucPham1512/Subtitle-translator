@@ -41,8 +41,8 @@ from app.views.cast_panel import BandView, CastPanel
 from app.views.common import choose_on_exists, job_busy
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
-from subagent.kernel.models import LineTranslation, ReviewedLine
-from subagent.review.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
+from subagent.kernel import LineTranslation, ReviewedLine
+from subagent.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
 
 LINE_TYPES = ["dialogue", "sign", "title", "sfx"]
 
@@ -511,7 +511,7 @@ class ReviewView(QWidget):
 
     def _new_npc(self) -> None:
         """A new automatic id for this line's speaker; no memory write (probation decides at finish, 5.15b)."""
-        from subagent.memory.characters import is_auto_id, new_voice_id
+        from subagent.memory import is_auto_id, new_voice_id
 
         if self.data is None or self.data.read_only or self.current is None:
             return
@@ -767,7 +767,7 @@ class ReviewView(QWidget):
     def _regenerate_async(self, eid: str) -> None:
         if self.engine is None:
             return
-        from subagent.review.review import regenerate_pinyin
+        from subagent.review import regenerate_pinyin
 
         snapshot = self.lines[eid]
         engine = self.engine
@@ -940,7 +940,7 @@ class ReviewView(QWidget):
     def _audit_changed(self, _: object = None) -> None:
         if not self.audit_mode or self.current is None or self.current not in self.audit_sample:
             return
-        from subagent.kernel.util import now_iso
+        from subagent.kernel import now_iso
 
         mark = self.audit_bar.current(self.current)
         if mark.marked():
@@ -956,8 +956,7 @@ class ReviewView(QWidget):
     def _audit_all_correct(self) -> None:
         if not self.audit_mode or self.current is None or self.current not in self.audit_sample:
             return
-        from subagent.kernel.models import AUDIT_ASPECTS, AuditMark
-        from subagent.kernel.util import now_iso
+        from subagent.kernel import AUDIT_ASPECTS, AuditMark, now_iso
 
         old = self.audit_marks.get(self.current)
         na = old.na if old else []
@@ -1019,7 +1018,7 @@ class ReviewView(QWidget):
             return
         if self.data is None:
             return
-        from subagent.review.partial import PARTIAL_FLAG
+        from subagent.review import PARTIAL_FLAG
 
         ep_id = self.data.episode.id
         self.data.partial = self.services.partial_suggestions(ep_id)
@@ -1119,7 +1118,7 @@ class ReviewView(QWidget):
         if self.rules is not None:
             gl = self.rules.glossary_in(line.zh)
             if gl:
-                from subagent.kernel.textutil import contains_term
+                from subagent.kernel import contains_term
 
                 section(self.tr("Glossary terms"), bullets([
                     f"{html.escape(g.zh)} → <b>{html.escape(g.vi)}</b> {'✓' if contains_term(line.vi, g.vi) else '✗'}"
@@ -1211,7 +1210,7 @@ class ReviewView(QWidget):
 
     def _cast_review_changed(self, review: dict) -> None:
         """Box corrections, moved/drawn boxes and the talking mark: one undo step."""
-        from subagent.kernel.models import CastBoxEdit
+        from subagent.kernel import CastBoxEdit
 
         if self._loading or self.current is None or (self.data and self.data.read_only):
             return
@@ -1229,7 +1228,7 @@ class ReviewView(QWidget):
         if not self.data or self.current is None or self.rules is None:
             self.warnings.clear()
             return
-        from subagent.translation.evaluate import rule_checks
+        from subagent.translation import rule_checks
 
         line = self.lines[self.current]
         event = self.data.events.get(line.event_id)

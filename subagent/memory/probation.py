@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from subagent.kernel.models import CastLine, ReviewedLine
+from subagent.kernel import CastLine, ReviewedLine
 
 
 @dataclass

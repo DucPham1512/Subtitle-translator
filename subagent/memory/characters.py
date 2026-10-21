@@ -10,8 +10,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from subagent.kernel.models import NewVoice, ReviewedLine
-from subagent.kernel.util import atomic_write_json, read_json, read_jsonl
+from subagent.kernel import NewVoice, ReviewedLine, atomic_write_json, read_json, read_jsonl
 
 NEW_VOICES_FILE = "new_voices.json"
 

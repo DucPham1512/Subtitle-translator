@@ -7,9 +7,9 @@ import logging
 import re
 import sqlite3
 
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.models import MemoryProposal
-from subagent.kernel.util import (
+from subagent.kernel import (
+    MemoryProposal,
+    SubagentError,
     atomic_write_json,
     atomic_write_text,
     now_iso,

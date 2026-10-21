@@ -18,7 +18,7 @@ log = logging.getLogger("subagent")
 def cmd_series(args, config, paths, progress) -> int:
     import yaml
 
-    from subagent.settings.config import find_root, list_series
+    from subagent.settings import find_root, list_series
     from subagent.workspace import series as sr
 
     root = find_root()

@@ -9,8 +9,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.infra.joblock import job_lock_path, running_jobs
-from subagent.kernel.models import (
+from subagent.infra import job_lock_path, running_jobs
+from subagent.kernel import (
     CastLine,
     Episode,
     Evaluation,
@@ -20,13 +20,13 @@ from subagent.kernel.models import (
     ScriptDecision,
     SubtitleEvent,
     VideoInfo,
+    lock_holder,
+    read_jsonl,
 )
-from subagent.kernel.util import lock_holder, read_jsonl
-from subagent.memory.manager import MemoryManager
-from subagent.memory.store import MemoryStore
+from subagent.memory import MemoryManager, MemoryStore
 from subagent.pipeline import STAGES, episode_status
-from subagent.settings.config import Config, Paths, load_config
-from subagent.workspace.episodes import AddCandidate, Registry
+from subagent.settings import Config, Paths, load_config
+from subagent.workspace import AddCandidate, Registry
 
 
 @dataclass
@@ -115,7 +115,7 @@ class Services:
         return [e.id for e in reg.earlier_not_done(reg.get(ep_id))]
 
     def output_target(self, ep_id: str) -> Path:
-        from subagent.output.delivery import target_path
+        from subagent.output import target_path
 
         return target_path(self.config, Path(self.registry.get(ep_id).source_path))
 
@@ -146,7 +146,7 @@ class Services:
         return out
 
     def load_review(self, ep_id: str, *, read_only: bool | None = None) -> ReviewData:
-        from subagent.review.review import load_draft
+        from subagent.review import load_draft
 
         ep = self.registry.get(ep_id)
         work = self.paths.episode_dir(ep_id)
@@ -181,7 +181,7 @@ class Services:
 
     def audit_overview(self) -> list[dict]:
         from subagent.bench import audit
-        from subagent.workspace.state import load_state
+        from subagent.workspace import load_state
 
         rows = []
         for ep in sorted(self.registry.load(), key=lambda e: e.number):
@@ -247,7 +247,7 @@ class Services:
         return "# Benchmark runs\n\n" + "\n".join(lines) + "\n\n" + report, latest
 
     def partial_suggestions(self, ep_id: str) -> dict[str, PartialSuggestion]:
-        from subagent.review.partial import OUTPUT
+        from subagent.review import OUTPUT
 
         return {s.event_id: s for s in read_jsonl(self.paths.episode_dir(ep_id) / OUTPUT, PartialSuggestion)}
 
@@ -255,8 +255,8 @@ class Services:
                    video: VideoInfo | None):
         """The frame the cast stage used for a line (BGR, full video size) and the subtitle band crop
         (x, y, w, h). Raises when the video is missing."""
-        from subagent.cast.cast import frame_time_ms
-        from subagent.infra.media import extract_frame, probe
+        from subagent.cast import frame_time_ms
+        from subagent.infra import extract_frame, probe
 
         ep = self.registry.get(ep_id)
         source = Path(ep.source_path)
@@ -265,7 +265,7 @@ class Services:
         info = video or probe(source)
         t_ms = frame_time_ms(event, self.config.cast.sample_fps) if event else (start_ms + end_ms) // 2
         frame = extract_frame(source, t_ms, size=(info.width, info.height))
-        from subagent.cast.cast import load_frame
+        from subagent.cast import load_frame
 
         analysed = load_frame(self.paths.episode_dir(ep_id), event.id) if event else None
         return frame, self.config.video.subtitle_band.pixels(info.width, info.height), analysed
@@ -273,7 +273,7 @@ class Services:
     def character_card(self, ep_id: str, char_id: str, draft: list[ReviewedLine], media: bool = True):
         """Who an id is (6.4): name, description, first episode, and a voice clip and picture from its example
         line (cut once, cached). `draft`: the lines of the episode under review."""
-        from subagent.cast.card import card_info, card_media
+        from subagent.cast import card_info, card_media
 
         card = card_info(self.paths, self.config, char_id, current=ep_id, draft=draft)
         return card_media(self.paths, self.config, card) if media else card
@@ -281,17 +281,16 @@ class Services:
     def pin_character_card(self, ep_id: str, line: ReviewedLine, cast: CastLine | None):
         """"Use this line": the line's voice and the box shown as talking in On screen (none: no picture) become
         its speaker's card sample. The card only; memory learns nothing from it."""
-        from subagent.cast.card import pin_card, shown_talking_box
+        from subagent.cast import pin_card, shown_talking_box
 
         return pin_card(self.paths, self.config, line.speaker, ep_id, line, shown_talking_box(line, cast))
 
     def line_ocr_crop(self, ep_id: str, event: SubtitleEvent | None):
         """What OCR read for a line (band-sized grey image; ocr_crops/, temporary): the line's first reading whose
         text is the line's raw OCR text, else its first reading. None when no crop was saved."""
-        from subagent.infra.media import imread
-        from subagent.kernel.models import OcrReading
-        from subagent.kernel.textutil import normalize_zh
-        from subagent.ocr.ocr import crop_path
+        from subagent.infra import imread
+        from subagent.kernel import OcrReading, normalize_zh
+        from subagent.ocr import crop_path
 
         work = self.paths.episode_dir(ep_id)
         if event is None or not (work / "ocr_crops").is_dir():
@@ -305,19 +304,19 @@ class Services:
 
     def original_lines(self, ep_id: str) -> dict[str, ReviewedLine]:
         """The pipeline's version of every line, before any review edit (Reset line / Discard review)."""
-        from subagent.review.review import original_draft
+        from subagent.review import original_draft
 
         work = self.paths.episode_dir(ep_id)
         review = self.config.review
         return {line.event_id: line for line in original_draft(work, review.predelete_fragments, review.noise_max_han)}
 
     def save_draft(self, ep_id: str, lines: list[ReviewedLine]) -> None:
-        from subagent.review.review import save_draft
+        from subagent.review import save_draft
 
         save_draft(self.paths.episode_dir(ep_id), lines)
 
     def video_info(self, ep_id: str) -> VideoInfo:
-        from subagent.infra.media import probe
+        from subagent.infra import probe
 
         work = self.paths.episode_dir(ep_id)
         if (work / "video.json").is_file():
@@ -326,7 +325,7 @@ class Services:
 
     def pinyin_engine(self):
         """Glossary-aware pinyin engine, rebuilt when memory changes (loads jieba: call off the UI thread)."""
-        from subagent.translation.pinyin_gen import PinyinEngine
+        from subagent.translation import PinyinEngine
 
         db = self.paths.memory_db
         key = db.stat().st_mtime if db.is_file() else None
@@ -336,7 +335,7 @@ class Services:
         return self._engine
 
     def rule_context(self, ep_id: str | None = None):
-        from subagent.translation.evaluate import RuleContext
+        from subagent.translation import RuleContext
 
         return RuleContext(self.config, self.store, self.store.character_ids() | set(self.new_voice_ids(ep_id)))
 
@@ -347,7 +346,7 @@ class Services:
 
     def episode_voices(self, ep_id: str | None) -> dict[str, str]:
         """id -> kind: "voice" (found this episode), "review" (created in review), "candidate:<first episode>"."""
-        from subagent.memory.characters import draft_voice_ids, load_new_voices
+        from subagent.memory import draft_voice_ids, load_new_voices
 
         if not ep_id:
             return {}
@@ -361,12 +360,12 @@ class Services:
         return out
 
     def write_preview(self, ep_id: str, lines: list[ReviewedLine], video: VideoInfo) -> Path:
-        from subagent.output.render import preview_ass
+        from subagent.output import preview_ass
 
         return preview_ass(self.paths.episode_dir(ep_id), lines, self.config, video.width, video.height)
 
     def mask_filter(self, video: VideoInfo) -> str:
-        from subagent.output.render import build_mask_filter
+        from subagent.output import build_mask_filter
 
         return build_mask_filter(self.config, video.width, video.height)
 

@@ -15,15 +15,14 @@ from subagent.cli.common import (  # noqa: F401
     _resolve_on_exists,
     build_pipeline,
 )
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.progress import Progress
-from subagent.settings.config import Config, Paths
+from subagent.kernel import Progress, SubagentError
+from subagent.settings import Config, Paths
 
 log = logging.getLogger("subagent")
 
 
 def cmd_add(args, config: Config, paths: Paths, progress: Progress) -> int:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     registry = Registry(paths)
     candidates = registry.prepare_add([Path(p) for p in args.paths], config, recursive=args.recursive)
@@ -63,8 +62,7 @@ def cmd_add(args, config: Config, paths: Paths, progress: Progress) -> int:
 
 
 def cmd_relink(args, config: Config, paths: Paths, progress: Progress) -> int:
-    from subagent.workspace.episodes import Registry
-    from subagent.workspace.state import state_path
+    from subagent.workspace import Registry, state_path
 
     registry = Registry(paths)
     ep, matches = registry.relink(registry.resolve(args.episode).id, Path(args.path))
@@ -109,7 +107,7 @@ def cmd_run(args, config, paths, progress) -> int:
 
 
 def cmd_batch(args, config, paths, progress) -> int:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
     registry = Registry(paths)
     refs = list(args.episodes)
     if args.pending:
@@ -136,9 +134,9 @@ def cmd_batch(args, config, paths, progress) -> int:
 
 
 def cmd_partial_review(args, config, paths, progress) -> int:
-    from subagent.infra.joblock import job_lock
-    from subagent.review.partial import partial_review
-    from subagent.workspace.episodes import Registry
+    from subagent.infra import job_lock
+    from subagent.review import partial_review
+    from subagent.workspace import Registry
 
     ep = Registry(paths).resolve(args.episode)
     with job_lock(paths, ep.id):
@@ -177,7 +175,7 @@ def cmd_clean(args, config, paths, progress) -> int:
 
 def cmd_status(args, config, paths, progress) -> int:
     from subagent.pipeline import episode_status
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     registry = Registry(paths)
     episodes = [registry.resolve(args.episode)] if args.episode else registry.load()
@@ -204,10 +202,8 @@ def cmd_status(args, config, paths, progress) -> int:
 
 def cmd_check(args, config, paths, progress) -> int:
     """Startup checks: external binaries, fonts, output folder, API keys (NFR-PT2)."""
-    from subagent.infra.device import describe
-    from subagent.infra.media import INSTALL_HINTS, missing_binaries
-    from subagent.output.delivery import output_folder
-    from subagent.output.render import font_files
+    from subagent.infra import INSTALL_HINTS, describe, missing_binaries
+    from subagent.output import font_files, output_folder
 
     ok = True
     for name in missing_binaries():
@@ -223,12 +219,12 @@ def cmd_check(args, config, paths, progress) -> int:
     for role, provider in config.llm.providers.items():
         if not os.environ.get(provider.api_key_env):
             print(f"api key: {provider.api_key_env} is not set ({role})")
-    from subagent.llm.client import missing_prices
+    from subagent.llm import missing_prices
 
     for model in missing_prices(config):
         print(f"price: no entry for {model} under llm.prices (cost shows as unknown, budget not enforced)")
     if config.ocr.preprocess == "segment":
-        from subagent.ocr.subtitle_style import load_style
+        from subagent.ocr import load_style
 
         if load_style(paths.bootstrap) is None:
             ok = False

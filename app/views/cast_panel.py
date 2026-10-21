@@ -27,8 +27,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from subagent.cast.cast import NOT_A_CHARACTER
-from subagent.kernel.models import CastLine
+from subagent.cast import NOT_A_CHARACTER
+from subagent.kernel import CastLine
 
 GREEN, ORANGE, BLUE, RED = QColor(40, 200, 90), QColor(255, 150, 30), QColor(60, 150, 255), QColor(235, 40, 40)
 REMOVE = "__remove__"

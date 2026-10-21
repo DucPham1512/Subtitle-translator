@@ -22,8 +22,8 @@ import logging
 import shutil
 from pathlib import Path
 
-from subagent.kernel.util import atomic_write_text, now_iso
-from subagent.settings.config import Config, Paths
+from subagent.kernel import atomic_write_text, now_iso
+from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
 MODES = ("snapshot", "chain")
@@ -54,7 +54,7 @@ def sandbox(config: Config, paths: Paths, folder: Path) -> tuple[Config, Paths]:
 
 def checkout_memory(paths: Paths, sp: Paths, sha: str) -> None:
     """The sandbox memory at a commit of the real memory folder (cloned once; the real folder is only read)."""
-    from subagent.infra.media import git
+    from subagent.infra import git
 
     if not (sp.memory / ".git").exists():
         sp.memory.parent.mkdir(parents=True, exist_ok=True)
@@ -65,7 +65,7 @@ def checkout_memory(paths: Paths, sp: Paths, sha: str) -> None:
 
 def stage_plan(from_stage: str, mode: str) -> list[str]:
     """The stages that run, in pipeline order: from `from_stage` up to the script review (never the review gate)."""
-    from subagent.kernel.errors import SubagentError
+    from subagent.kernel import SubagentError
     from subagent.pipeline import STAGES
 
     names = [s.name for s in STAGES if s.name != "review"]
@@ -98,7 +98,7 @@ def _install_review(src: Path, dst: Path) -> None:
     """Replace the episode's machine files by the frozen review and the files it was made from (the gold), so
     learning and the next episodes' reviewer-corrections block see what the replay saw."""
     from subagent.bench.baseline import FILES
-    from subagent.workspace.state import load_state, save_state
+    from subagent.workspace import load_state, save_state
 
     for name in FILES:
         if (src / name).is_file():
@@ -132,10 +132,9 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     to the commit after the last finished episode."""
     from subagent.bench import suite
     from subagent.bench.baseline import _git_head
-    from subagent.kernel.errors import SubagentError
+    from subagent.kernel import SubagentError
     from subagent.pipeline import STAGE_BY_NAME
-    from subagent.workspace.context import EpisodeContext
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import EpisodeContext, Registry
 
     state, folder = _start_or_resume(paths, mode, from_stage, episodes, label, use_cache, resume)
     mode, from_stage, episodes, label = state["mode"], state["from_stage"], state["episodes"], state["label"]
@@ -195,7 +194,7 @@ def _start_or_resume(paths: Paths, mode: str, from_stage: str | None, episodes: 
                      use_cache: bool, resume: Path | None) -> tuple[dict, Path]:
     """(run state, run folder): a new run's settings, or a stopped run's own (run.json)."""
     from subagent.bench import suite
-    from subagent.kernel.errors import SubagentError
+    from subagent.kernel import SubagentError
     from subagent.pipeline import RERUN_FROM
 
     if resume is not None:
@@ -258,6 +257,6 @@ def _drop_heavy(work: Path) -> None:
 
 
 def _null():
-    from subagent.kernel.progress import NULL_PROGRESS
+    from subagent.kernel import NULL_PROGRESS
 
     return NULL_PROGRESS

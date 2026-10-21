@@ -23,12 +23,18 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from subagent.kernel.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
-from subagent.kernel.util import read_jsonl, write_jsonl
-from subagent.memory.characters import episode_character_ids
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import Config, Paths
-from subagent.workspace.episodes import Registry
+from subagent.kernel import (
+    CastLine,
+    PartialSuggestion,
+    ReviewedLine,
+    SpeakerCandidates,
+    SubtitleEvent,
+    read_jsonl,
+    write_jsonl,
+)
+from subagent.memory import MemoryStore, episode_character_ids
+from subagent.settings import Config, Paths
+from subagent.workspace import Registry
 
 PARTIAL_FLAG = "partial_speaker"        # the speaker was set by a partial review (6.4b)
 
@@ -62,8 +68,7 @@ def _session_bank(bank, additions, removals):
 def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[ReviewedLine], known: set[str],
              embed) -> tuple[dict[str, dict[str, tuple[str | None, float]]], dict[str, str | None], PartialResult]:
     """(event -> {position: (character, similarity)}, event -> talking character) for remaining lines."""
-    from subagent.cast.cast import build_bank, match
-    from subagent.cast.learning import apply_review_edits, frame_embedder, plan
+    from subagent.cast import apply_review_edits, build_bank, frame_embedder, match, plan
 
     result = PartialResult()
     work = paths.episode_dir(episode_id)
@@ -102,9 +107,8 @@ def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[Reviewed
 def _voices(config: Config, paths: Paths, episode_id: str, draft: list[ReviewedLine], known: set[str],
             embed) -> tuple[dict[str, SpeakerCandidates], list[str]]:
     """Remaining lines re-matched against the voice bank plus this episode's approved lines."""
-    from subagent.voice.learning import Clip, embed_clips, episode_samples
-    from subagent.voice.voice import get_embedder, l2_normalize, match_events
-    from subagent.workspace.episodes import Registry
+    from subagent.voice import Clip, embed_clips, episode_samples, get_embedder, l2_normalize, match_events
+    from subagent.workspace import Registry
 
     work = paths.episode_dir(episode_id)
     if not (work / "speakers.jsonl").is_file():
@@ -175,7 +179,7 @@ def partial_review(config: Config, paths: Paths, episode_id: str, *, sprite_embe
     work = paths.episode_dir(episode_id)
     draft = load_draft(work)
     if not draft:
-        from subagent.kernel.errors import ReviewIncompleteError
+        from subagent.kernel import ReviewIncompleteError
 
         raise ReviewIncompleteError("No review draft found; run the episode in human mode first")
     store = MemoryStore(paths.memory_db)

@@ -19,11 +19,7 @@ import contextlib
 import sqlite3
 from collections.abc import Iterator
 
-from subagent.kernel.errors import MemoryLockedError
-from subagent.kernel.util import (
-    FileLock,
-    atomic_write_text,
-)
+from subagent.kernel import FileLock, MemoryLockedError, atomic_write_text
 from subagent.memory import briefings as bf
 from subagent.memory.manager.apply import ApplyMixin
 from subagent.memory.manager.banks import BanksMixin
@@ -73,7 +69,7 @@ from subagent.memory.store import (
     MemoryStore,
     migrate,
 )
-from subagent.settings.config import Config, Paths
+from subagent.settings import Config, Paths
 
 
 class MemoryManager(ApplyMixin, EpisodeMixin, CandidatesMixin, UpdatesMixin, BanksMixin, HistoryMixin):
@@ -90,7 +86,7 @@ class MemoryManager(ApplyMixin, EpisodeMixin, CandidatesMixin, UpdatesMixin, Ban
                               message="Memory is being written by another process")
 
     def ensure_repo(self) -> None:
-        from subagent.infra.media import git
+        from subagent.infra import git
 
         self.dir.mkdir(parents=True, exist_ok=True)
         (self.dir / "briefings").mkdir(exist_ok=True)

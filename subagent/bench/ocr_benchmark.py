@@ -24,11 +24,19 @@ import shutil
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from subagent.kernel.models import ReviewedLine, SubtitleEvent
-from subagent.kernel.textutil import edit_distance, keep_cjk, normalize_zh
-from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
-from subagent.settings.config import Config, Paths
-from subagent.workspace.state import load_state
+from subagent.kernel import (
+    ReviewedLine,
+    SubtitleEvent,
+    append_jsonl,
+    atomic_write_text,
+    edit_distance,
+    keep_cjk,
+    normalize_zh,
+    now_iso,
+    read_jsonl,
+)
+from subagent.settings import Config, Paths
+from subagent.workspace import load_state
 
 STAGES = ("ingest", "ocr", "events")
 KEY_FILE = "answer_key.json"
@@ -180,7 +188,7 @@ def gold_lines(work: Path, key: dict | None = None) -> list[ReviewedLine]:
 
 def ocr_episodes(paths: Paths) -> list[str]:
     """Human-reviewed, finished episodes: their approved Chinese was checked by a person."""
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     out = []
     for ep in sorted(Registry(paths).load(), key=lambda e: e.number):
@@ -236,8 +244,7 @@ def run_ocr_benchmark(config: Config, paths: Paths, episode_ids: list[str] | Non
     """stage_runner(name, ctx) runs one stage (tests inject fakes); default: the real stage modules."""
     from subagent.bench.benchmark import _sandbox_paths
     from subagent.pipeline import run_stage
-    from subagent.workspace.context import EpisodeContext
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import EpisodeContext, Registry
 
     episode_ids = episode_ids or ocr_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]

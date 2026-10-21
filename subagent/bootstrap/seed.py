@@ -9,13 +9,18 @@ from pathlib import Path
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.models import MemoryProposal, SubtitleEvent
-from subagent.kernel.util import atomic_write_text, now_iso, read_jsonl
-from subagent.llm.client import build_messages, load_prompt
-from subagent.memory.manager import ApplyResult, MemoryManager
-from subagent.settings.config import Config, Paths
-from subagent.voice.voice import compute_centroids, pair_similarities, voice_clips
+from subagent.kernel import (
+    MemoryProposal,
+    SubagentError,
+    SubtitleEvent,
+    atomic_write_text,
+    now_iso,
+    read_jsonl,
+)
+from subagent.llm import build_messages, load_prompt
+from subagent.memory import ApplyResult, MemoryManager
+from subagent.settings import Config, Paths
+from subagent.voice import compute_centroids, pair_similarities, voice_clips
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +107,7 @@ def save_seed(paths: Paths, draft: SeedDraft) -> None:
 # -- seed ------------------------------------------------------------------------------------------
 
 def _episode1_lines(paths: Paths, limit: int = 150) -> list[str]:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     episodes = Registry(paths).load()   # sorted by number
     if not episodes:
@@ -206,7 +211,7 @@ def update_voices(config: Config, paths: Paths, char_ids: set[str], *, embed=Non
 
 def save_clip(config: Config, paths: Paths, char_id: str, source: Path, start_ms: int, end_ms: int) -> Path:
     """Cut a voice clip from an episode video into data/bootstrap/voices/<char_id>/ (16 kHz mono WAV)."""
-    from subagent.infra.media import require_binary, run
+    from subagent.infra import require_binary, run
 
     if end_ms <= start_ms:
         raise SubagentError("The clip end must be after its start", code="clip_invalid")

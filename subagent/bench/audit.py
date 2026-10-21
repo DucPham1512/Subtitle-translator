@@ -21,16 +21,18 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.kernel.models import (
+from subagent.kernel import (
     AUDIT_ASPECTS,
     AuditMark,
     AuditSample,
     CastLine,
     ReviewedLine,
     SpeakerCandidates,
+    atomic_write_text,
+    read_jsonl,
+    write_jsonl,
 )
-from subagent.kernel.util import atomic_write_text, read_jsonl, write_jsonl
-from subagent.settings.config import Config, Paths
+from subagent.settings import Config, Paths
 
 NO_ID_YET = "_new"      # correct speaker: a character appearing for the first time, with no id (blank is right)
 SAMPLE_FILE = "audit_sample.jsonl"
@@ -77,7 +79,7 @@ def _rng(episode_id: str) -> random.Random:
 def auditable(config: Config, paths: Paths, episode_id: str) -> bool:
     """Auto-mode episodes; human-reviewed ones only with `audit.include_human` (their output is the reviewer's
     corrected script, and their edits.jsonl already records every machine error exactly)."""
-    from subagent.workspace.state import load_state
+    from subagent.workspace import load_state
 
     mode = load_state(paths.episode_dir(episode_id), episode_id).mode
     return mode == "auto" or config.audit.include_human
@@ -207,7 +209,7 @@ class AuditReport:
 
 
 def build_report(config: Config, paths: Paths, episode_ids: list[str]) -> AuditReport:
-    from subagent.workspace.state import load_state
+    from subagent.workspace import load_state
 
     report = AuditReport()
     cells: dict[str, list[tuple[int, int, int]]] = {a: [] for a in AUDIT_ASPECTS}

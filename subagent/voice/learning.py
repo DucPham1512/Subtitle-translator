@@ -19,12 +19,10 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.kernel.models import Episode, ReviewedLine
-from subagent.kernel.util import read_jsonl
-from subagent.memory.evidence import is_auto_episode, trusted_auto_lines, usable_line
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import Config, Paths
-from subagent.workspace.episodes import Registry
+from subagent.kernel import Episode, ReviewedLine, read_jsonl
+from subagent.memory import MemoryStore, is_auto_episode, trusted_auto_lines, usable_line
+from subagent.settings import Config, Paths
+from subagent.workspace import Registry
 
 log = logging.getLogger(__name__)
 
@@ -201,7 +199,7 @@ def build_centroids(samples: dict[str, list[np.ndarray]], config: Config) -> dic
 
 def learn_voices(config: Config, paths: Paths, embed=None, *, commit: bool = True) -> LearnResult:
     """Rebuild the voice bank from every reviewed episode plus the manual clips, then commit it to memory."""
-    from subagent.memory.manager import MemoryManager
+    from subagent.memory import MemoryManager
     from subagent.voice.voice import get_embedder, pair_similarities
 
     manager = MemoryManager(paths, config)

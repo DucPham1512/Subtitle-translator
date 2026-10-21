@@ -42,7 +42,7 @@ class StyleDialog(QDialog):
 
     def __init__(self, parent: QWidget, root):
         super().__init__(parent)
-        from subagent.settings.registers import TEMPLATE
+        from subagent.settings import TEMPLATE
 
         self.root = root
         self.saved: str | None = None
@@ -71,14 +71,14 @@ class StyleDialog(QDialog):
         form.addRow(buttons)
 
     def _name_changed(self, name: str) -> None:
-        from subagent.settings.registers import TEMPLATE
+        from subagent.settings import TEMPLATE
 
         if self.body.toPlainText() == self._template:          # untouched template: follow the name
             self.body.setPlainText(TEMPLATE.format(name=name.strip() or "…"))
             self._template = self.body.toPlainText()
 
     def _save(self) -> None:
-        from subagent.settings.registers import save_register, split_terms
+        from subagent.settings import save_register, split_terms
 
         rid = self.style_id.text().strip()
         try:
@@ -170,7 +170,7 @@ class NewSeriesDialog(QDialog):
         return work if work.is_absolute() else Path(self.root) / work
 
     def _fill_styles(self, select: str | None = None) -> None:
-        from subagent.settings.registers import list_registers
+        from subagent.settings import list_registers
 
         self.register.clear()
         for style in list_registers(self.root):
@@ -292,7 +292,7 @@ class MainWindow(QMainWindow):
 
     def _series_picker(self) -> QComboBox:
         """The series this window shows; hidden in the single-series layout (no data/series/ yet)."""
-        from subagent.settings.config import list_series
+        from subagent.settings import list_series
 
         box = QComboBox()
         box.setToolTip(self.tr("The series (show) you are working on"))
@@ -369,7 +369,7 @@ class MainWindow(QMainWindow):
         view.open_episode(episode_id, event_id=event_id, read_only=read_only, audit=audit)
 
     def _detect_device(self) -> None:
-        from subagent.infra.device import describe
+        from subagent.infra import describe
 
         config = self.services.config
         run_async(lambda: describe(config),

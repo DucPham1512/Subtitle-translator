@@ -6,8 +6,8 @@ import logging
 import sys
 from pathlib import Path
 
-from subagent.kernel.errors import SubagentError
-from subagent.settings.config import Config, Paths
+from subagent.kernel import SubagentError
+from subagent.settings import Config, Paths
 
 ON_EXISTS_CHOICES = ["overwrite", "keep-both", "fail"]
 
@@ -16,7 +16,7 @@ log = logging.getLogger("subagent")
 
 def build_pipeline(config: Config, paths: Paths, **kwargs):
     """The CLI's Pipeline: a finished episode is also copied into `baseline.name` when that is set (6.11d)."""
-    from subagent.bench.baseline import freeze_finished
+    from subagent.bench import freeze_finished
     from subagent.pipeline import Pipeline
 
     return Pipeline(config, paths, after_finish=[freeze_finished], **kwargs)
@@ -33,8 +33,8 @@ def _ask(prompt: str, choices: dict[str, str]) -> str:
 
 def _resolve_on_exists(config: Config, paths: Paths, ep_ref: str, arg: str | None) -> str:
     """CLI: --on-exists wins; otherwise config; `ask` prompts on a terminal and fails when non-interactive."""
-    from subagent.output.delivery import target_path
-    from subagent.workspace.episodes import Registry
+    from subagent.output import target_path
+    from subagent.workspace import Registry
 
     choice = (arg or config.output.on_exists).replace("-", "_")
     if choice != "ask":
@@ -51,8 +51,8 @@ def _resolve_on_exists(config: Config, paths: Paths, ep_ref: str, arg: str | Non
                 {"o": "overwrite", "k": "keep_both", "c": "fail"})
 
 def _output_exists(config, paths, ep_ref: str) -> bool:
-    from subagent.output.delivery import target_path
-    from subagent.workspace.episodes import Registry
+    from subagent.output import target_path
+    from subagent.workspace import Registry
 
     try:
         return target_path(config, Path(Registry(paths).resolve(ep_ref).source_path)).exists()

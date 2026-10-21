@@ -5,10 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from subagent.kernel.models import Episode, VideoInfo
-from subagent.kernel.progress import NULL_PROGRESS, Progress
-from subagent.llm.client import LLMClient
-from subagent.settings.config import Config, Paths
+from subagent.kernel import NULL_PROGRESS, Episode, Progress, VideoInfo
+from subagent.llm import LLMClient
+from subagent.settings import Config, Paths
 from subagent.workspace.episodes import Registry
 
 
@@ -40,7 +39,7 @@ class EpisodeContext:
         if self.registry is not None:
             self.episode = self.registry.check_source(self.episode.id)
         elif not self.source.is_file():
-            from subagent.kernel.errors import SourceMissingError
+            from subagent.kernel import SourceMissingError
 
             raise SourceMissingError(f"The video for {self.episode.id} is missing: {self.source}")
         return self.source
@@ -63,7 +62,7 @@ class EpisodeContext:
             if path.is_file():
                 self._video = VideoInfo.model_validate_json(path.read_text(encoding="utf-8"))
             else:
-                from subagent.infra.media import probe
+                from subagent.infra import probe
 
                 self._video = probe(self.require_source())
         return self._video

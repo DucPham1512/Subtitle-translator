@@ -23,10 +23,9 @@ from pathlib import Path
 
 import numpy as np
 
-from subagent.kernel.models import CastLine, ReviewedLine, SubtitleEvent
-from subagent.kernel.util import atomic_write_text, now_iso, read_jsonl
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import Config, Paths
+from subagent.kernel import CastLine, ReviewedLine, SubtitleEvent, atomic_write_text, now_iso, read_jsonl
+from subagent.memory import MemoryStore
+from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
 CLIP_MAX_MS = 4000
@@ -56,7 +55,7 @@ def pin_dir(paths: Paths, char_id: str) -> Path:
 
 
 def _episode_ids(paths: Paths) -> list[str]:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     return [e.id for e in sorted(Registry(paths).load(), key=lambda e: e.number)]
 
@@ -162,7 +161,7 @@ def _frame(paths: Paths, config: Config, episode_id: str, event_id: str, start_m
            source: Path) -> np.ndarray | None:
     """The frame the cast stage analysed for a line (BGR), else the video frame at the same time."""
     from subagent.cast.cast import frame_time_ms, load_frame
-    from subagent.infra.media import extract_frame, probe
+    from subagent.infra import extract_frame, probe
 
     work = paths.episode_dir(episode_id)
     frame = load_frame(work, event_id)                      # RGB, until cleanup
@@ -177,13 +176,13 @@ def _frame(paths: Paths, config: Config, episode_id: str, event_id: str, start_m
 
 
 def _source(paths: Paths, episode_id: str) -> Path:
-    from subagent.workspace.episodes import Registry
+    from subagent.workspace import Registry
 
     return Path(Registry(paths).get(episode_id).source_path)
 
 
 def _cut_clip(paths: Paths, config: Config, episode_id: str, start_ms: int, end_ms: int, out: Path) -> None:
-    from subagent.infra.media import extract_clip
+    from subagent.infra import extract_clip
 
     source = _source(paths, episode_id)
     if source.is_file():
@@ -193,7 +192,7 @@ def _cut_clip(paths: Paths, config: Config, episode_id: str, start_ms: int, end_
 def _cut_picture(paths: Paths, config: Config, episode_id: str, event_id: str, start_ms: int, end_ms: int,
                  box: list[float], out: Path) -> None:
     """The picture of `box` (cast frame coordinates) on the line's frame."""
-    from subagent.infra.media import imwrite_png
+    from subagent.infra import imwrite_png
 
     frame = _frame(paths, config, episode_id, event_id, start_ms, end_ms, _source(paths, episode_id))
     if frame is None:

@@ -9,28 +9,31 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.models import (
+from subagent.kernel import (
     CastLine,
     Evaluation,
     LineTranslation,
     LineType,
     MemoryProposal,
     SpeakerCandidates,
+    SubagentError,
     SubtitleEvent,
     Window,
+    atomic_write_text,
+    read_json,
+    read_jsonl,
+    write_jsonl,
 )
-from subagent.kernel.util import atomic_write_text, read_json, read_jsonl, write_jsonl
-from subagent.llm.client import build_messages, load_prompt
-from subagent.memory.prefix import (
+from subagent.llm import build_messages, load_prompt
+from subagent.memory import (
+    MemoryStore,
     corrections_block,
     evaluator_prefix,
     new_voices_block,
     reviewer_corrections,
     translator_prefix,
 )
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import Config
+from subagent.settings import Config
 from subagent.translation.evaluate import (
     RULE_FLAGS,
     RuleContext,
@@ -39,7 +42,7 @@ from subagent.translation.evaluate import (
     max_chars_for,
     rule_checks,
 )
-from subagent.workspace.context import EpisodeContext
+from subagent.workspace import EpisodeContext
 
 log = logging.getLogger(__name__)
 
@@ -217,13 +220,13 @@ class WindowTranslator:
         self.ctx = ctx
         self.events = events
         self.speakers = speakers
-        from subagent.memory.characters import load_new_voices
+        from subagent.memory import load_new_voices
 
         store = MemoryStore(ctx.paths.memory_db)
         self.identify = ctx.config.show.character_identification
         voices = load_new_voices(ctx.work) if self.identify else []
         self.rules = RuleContext(ctx.config, store, store.character_ids() | {v.id for v in voices})
-        from subagent.settings.registers import load_register
+        from subagent.settings import load_register
 
         style = load_register(ctx.paths.root, ctx.config.show.genre_register)
         self.t_static = translator_static(load_prompt(ctx.paths, "translator_system"), ctx.config.show.genre_register,

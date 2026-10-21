@@ -59,8 +59,8 @@ def main() -> int:
     app.setStyle("Fusion")   # Fusion follows the Windows light / dark setting in Qt 6
     install_translator(app)
 
-    from subagent.kernel.errors import SubagentError
-    from subagent.settings.config import find_root
+    from subagent.kernel import SubagentError
+    from subagent.settings import find_root
 
     root = find_root(APP_DIR.parent)
     install_fonts(root)

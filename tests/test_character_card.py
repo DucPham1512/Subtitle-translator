@@ -65,7 +65,7 @@ def test_card_uses_reviewed_lines_only(project):
 
 
 def test_bootstrap_material_and_a_pinned_sample_come_first(project, monkeypatch):
-    import subagent.infra.media as media
+    import subagent.infra as media
     from subagent.kernel.models import VideoInfo
 
     config, paths, ep1, ep2 = _setup(project)
@@ -95,7 +95,7 @@ def test_bootstrap_material_and_a_pinned_sample_come_first(project, monkeypatch)
 
 
 def test_card_media_cuts_the_confirmed_box(project, monkeypatch):
-    import subagent.infra.media as media
+    import subagent.infra as media
     from subagent.infra.media import imread
     from subagent.kernel.models import VideoInfo
 
@@ -124,7 +124,7 @@ def test_card_media_cuts_the_confirmed_box(project, monkeypatch):
 @pytest.fixture(autouse=True)
 def _no_real_ffmpeg(monkeypatch):
     """Cards never shell out in these tests unless a test fakes the media helpers."""
-    import subagent.infra.media as media
+    import subagent.infra as media
 
     def boom(*a, **k):
         raise AssertionError("ffmpeg called")

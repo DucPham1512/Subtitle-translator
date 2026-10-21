@@ -56,7 +56,7 @@ def load_style(bootstrap_dir: Path) -> SubtitleStyle | None:
 
 
 def save_style(bootstrap_dir: Path, style: SubtitleStyle) -> Path:
-    from subagent.kernel.util import atomic_write_text
+    from subagent.kernel import atomic_write_text
 
     p = style_path(bootstrap_dir)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -154,7 +154,7 @@ def calibrate(bands: list[np.ndarray], *, stable_range: int = 12, source: str = 
     """Learn the subtitle style from bands sampled in time order (consecutive samples decide stability)."""
     import cv2
 
-    from subagent.kernel.util import now_iso
+    from subagent.kernel import now_iso
 
     if len(bands) < 2:
         raise ValueError("calibration needs at least two sampled bands")

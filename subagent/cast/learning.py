@@ -32,9 +32,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from subagent.kernel.models import CastDetection, CastLine, ReviewedLine
-from subagent.kernel.util import read_jsonl
-from subagent.settings.config import Config, Paths
+from subagent.kernel import CastDetection, CastLine, ReviewedLine, read_jsonl
+from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
 PASSES = 3
@@ -53,7 +52,7 @@ class SpriteLearnResult:
 
 def trusted_speakers(paths: Paths, config: Config, episode_id: str, known: set[str]) -> dict[str, str]:
     """event id -> speaker for the lines whose speaker can teach (see module docstring)."""
-    from subagent.memory.evidence import is_auto_episode, trusted_auto_lines
+    from subagent.memory import is_auto_episode, trusted_auto_lines
 
     if is_auto_episode(paths, episode_id):
         lines = trusted_auto_lines(paths, config, episode_id, known, min_ms=0)
@@ -232,7 +231,7 @@ def apply_review_edits(lines: list[CastLine], embs: np.ndarray, reviewed: dict[s
 def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn | None = None) -> SpriteLearnResult:
     """Teach the sprite bank from one finished episode and commit the change to memory."""
     from subagent.cast.cast import build_bank
-    from subagent.memory.manager import MemoryManager
+    from subagent.memory import MemoryManager
 
     work = paths.episode_dir(episode_id)
     lines = read_jsonl(work / "cast.jsonl", CastLine)
@@ -277,10 +276,9 @@ def frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | N
     """Describe boxes cut from a line's analysed frame (saved by the cast stage; else cut from the video at the
     same time). None when the image model cannot load: geometry edits are then skipped, labels still count."""
     from subagent.cast.cast import crop, frame_time_ms, get_engine, load_frame
-    from subagent.infra.media import extract_frame, probe
-    from subagent.kernel.errors import ModelUnavailableError
-    from subagent.kernel.models import SubtitleEvent
-    from subagent.workspace.episodes import Registry
+    from subagent.infra import extract_frame, probe
+    from subagent.kernel import ModelUnavailableError, SubtitleEvent
+    from subagent.workspace import Registry
 
     try:
         engine = get_engine(config, paths)

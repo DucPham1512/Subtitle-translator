@@ -19,8 +19,8 @@ log = logging.getLogger("subagent")
 
 def cmd_bootstrap(args, config, paths, progress) -> int:
     from subagent.bootstrap import seed as bootstrap
-    from subagent.infra.joblock import job_lock
-    from subagent.llm.client import LLMClient
+    from subagent.infra import job_lock
+    from subagent.llm import LLMClient
 
     with job_lock(paths, "bootstrap"):
         if args.approve:
@@ -52,8 +52,8 @@ def cmd_bootstrap(args, config, paths, progress) -> int:
 
 
 def cmd_dream(args, config, paths, progress) -> int:
-    from subagent.infra.joblock import job_lock
-    from subagent.llm.client import LLMClient
+    from subagent.infra import job_lock
+    from subagent.llm import LLMClient
     from subagent.memory import dreaming
 
     with job_lock(paths, "dream"):
@@ -76,7 +76,7 @@ def cmd_dream(args, config, paths, progress) -> int:
 
 
 def cmd_voices(args, config, paths, progress) -> int:
-    from subagent.infra.joblock import job_lock
+    from subagent.infra import job_lock
     from subagent.voice import learning as vl
 
     with job_lock(paths, "voices"):

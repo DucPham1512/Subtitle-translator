@@ -18,12 +18,17 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from subagent.kernel.errors import ModelUnavailableError
-from subagent.kernel.models import CastDetection, CastLine, SubtitleEvent
-from subagent.kernel.util import read_jsonl, write_jsonl
-from subagent.memory.store import MemoryStore
-from subagent.settings.config import CastConfig, Config, Paths
-from subagent.workspace.context import EpisodeContext
+from subagent.kernel import (
+    CastDetection,
+    CastLine,
+    ModelUnavailableError,
+    SubtitleEvent,
+    read_jsonl,
+    write_jsonl,
+)
+from subagent.memory import MemoryStore
+from subagent.settings import CastConfig, Config, Paths
+from subagent.workspace import EpisodeContext
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +50,7 @@ class CastEngine:
                 "Cast recognition needs transformers + torch: pip install -e \".[cast]\" (see README)") from exc
         from transformers.utils import logging as hf_logging
 
-        from subagent.infra.device import torch_device
+        from subagent.infra import torch_device
 
         hf_logging.disable_progress_bar()       # progress output is ours (--progress json)
         self.cfg = config.cast
@@ -230,7 +235,7 @@ def talking_index(motions: list[float | None], dominance: float) -> int | None:
 # -- video -----------------------------------------------------------------------------------------
 
 def _ffmpeg() -> str:
-    from subagent.infra.media import require_binary
+    from subagent.infra import require_binary
 
     return require_binary("ffmpeg")
 

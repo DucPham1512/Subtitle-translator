@@ -6,8 +6,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from subagent.workspace.context import EpisodeContext
-from subagent.workspace.state import load_state
+from subagent.workspace import EpisodeContext, load_state
 
 log = logging.getLogger(__name__)
 
@@ -36,14 +35,14 @@ def _style_key(ctx: EpisodeContext) -> object:
     values segmentation uses count; recalibrating to the same values changes nothing."""
     if ctx.config.ocr.preprocess != "segment":
         return None
-    from subagent.ocr.subtitle_style import load_style
+    from subagent.ocr import load_style
 
     style = load_style(ctx.paths.bootstrap)
     return style.model_dump(exclude={"regions", "calibrated_from", "calibrated_at"}) if style else None
 
 
 def _review_run(ctx: EpisodeContext) -> dict:
-    from subagent.review.review import gate
+    from subagent.review import gate
 
     mode = load_state(ctx.work, ctx.episode.id).mode or ctx.config.review.mode
     result = gate(ctx.work, mode, ctx.config.review.predelete_fragments, ctx.config.review.noise_max_han)

@@ -10,17 +10,25 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from subagent.kernel.models import EditRecord, MemoryProposal, ReviewedLine
-from subagent.kernel.textutil import contains_term
-from subagent.kernel.util import hash_path, now_iso, read_json, read_jsonl, sha256_json
-from subagent.llm.client import build_messages, load_prompt
+from subagent.kernel import (
+    EditRecord,
+    MemoryProposal,
+    ReviewedLine,
+    contains_term,
+    hash_path,
+    now_iso,
+    read_json,
+    read_jsonl,
+    sha256_json,
+)
+from subagent.llm import build_messages, load_prompt
 from subagent.memory import briefings as bf
 from subagent.memory.briefing_gen import compress_story
 from subagent.memory.manager import ApplyResult, MemoryManager
 from subagent.memory.prefix import characters_block, glossary_block, pronoun_block, style_block
 from subagent.memory.store import MemoryStore, row_key
-from subagent.settings.config import Config, Paths
-from subagent.workspace.episodes import Registry
+from subagent.settings import Config, Paths
+from subagent.workspace import Registry
 
 log = logging.getLogger(__name__)
 

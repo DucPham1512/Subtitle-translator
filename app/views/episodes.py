@@ -30,9 +30,9 @@ from app.views.common import choose_batch_on_exists, choose_on_exists, job_busy
 from app.views.run import RunPanel
 from app.widgets import confirm, show_error
 from app.workers import run_async
-from subagent.kernel.errors import SubagentError
+from subagent.kernel import SubagentError
 from subagent.pipeline import STAGES
-from subagent.workspace.episodes import AddCandidate
+from subagent.workspace import AddCandidate
 
 
 class DropTable(QTableWidget):
@@ -387,7 +387,7 @@ class EpisodesView(QWidget):
         self._start(self.tr("{n} episodes ({mode})").format(n=len(todo), mode=mode), args)
 
     def _mode_for(self, ep_id: str) -> str:
-        from subagent.workspace.state import load_state
+        from subagent.workspace import load_state
 
         return load_state(self.services.paths.episode_dir(ep_id), ep_id).mode or self.services.config.review.mode
 
@@ -464,7 +464,7 @@ class EpisodesView(QWidget):
         self.refresh()
 
     def _open_output(self) -> None:
-        from subagent.output.delivery import reveal_in_explorer
+        from subagent.output import reveal_in_explorer
 
         row = self.current_row()
         if row and row.episode.output_path:

@@ -531,7 +531,7 @@ class SettingsForm(QWidget):
         return [(f.spec.path, value) for f in self.fields if (value := f.get()) != f.initial]
 
     def save(self) -> bool:
-        from subagent.settings.config import save_settings
+        from subagent.settings import save_settings
 
         try:
             changes = self.changes()
@@ -609,7 +609,7 @@ class RawYamlDialog(QDialog):
         self.yaml.setPlainText(path.read_text(encoding="utf-8") if path and path.is_file() else "")
 
     def _save(self) -> None:
-        from subagent.settings.config import save_config_text
+        from subagent.settings import save_config_text
 
         try:
             save_config_text(self.services.root, self.yaml.toPlainText(),

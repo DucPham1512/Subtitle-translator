@@ -9,28 +9,29 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from subagent.infra.joblock import job_lock
-from subagent.kernel.errors import SubagentError
-from subagent.kernel.models import (
+from subagent.infra import job_lock
+from subagent.kernel import (
+    NULL_PROGRESS,
     EditRecord,
     Episode,
     LineTranslation,
     NewVoice,
+    Progress,
     ReviewedLine,
     StageState,
+    SubagentError,
+    hash_path,
+    now_iso,
+    read_jsonl,
+    sha256_json,
 )
-from subagent.kernel.progress import NULL_PROGRESS, Progress
-from subagent.kernel.util import hash_path, now_iso, read_jsonl, sha256_json
-from subagent.llm.client import LLMClient, missing_prices
-from subagent.memory.manager import MemoryManager
-from subagent.memory.store import MemoryStore
-from subagent.output.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
+from subagent.llm import LLMClient, missing_prices
+from subagent.memory import MemoryManager, MemoryStore
+from subagent.output import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.pipeline.report import counts_text, episode_status, write_report
 from subagent.pipeline.stages import RERUN_FROM, STAGE_BY_NAME, STAGES, StageDef, review_outputs
-from subagent.settings.config import Config, Paths
-from subagent.workspace.context import EpisodeContext
-from subagent.workspace.episodes import Registry
-from subagent.workspace.state import load_state, save_state
+from subagent.settings import Config, Paths
+from subagent.workspace import EpisodeContext, Registry, load_state, save_state
 
 log = logging.getLogger(__name__)
 
@@ -284,7 +285,7 @@ class Pipeline:
         return items
 
     def finish_review(self, ep_ref: str, *, on_exists: OnExists = "fail") -> str:
-        from subagent.review.review import finish_review
+        from subagent.review import finish_review
 
         episode = self.registry.resolve(ep_ref)
         ctx = self.context(episode)
@@ -292,7 +293,7 @@ class Pipeline:
         with job_lock(self.paths, episode.id), _episode_log(ctx.work):
             self.registry.set_status(episode.id, "running")
             try:
-                from subagent.memory.characters import episode_character_ids
+                from subagent.memory import episode_character_ids
 
                 store = MemoryStore(self.paths.memory_db)
                 waiting = {c.id for c in store.returning_candidates(episode.number, self.config.memory.probation_window)}
@@ -329,14 +330,15 @@ class Pipeline:
             return cleanup(ctx.work, episode.id)
 
     def calibrate(self, ep_ref: str) -> list[Path]:
-        from subagent.ocr.ingest import calibrate
+        from subagent.ocr import calibrate_band as calibrate
 
         return calibrate(self.context(self.registry.resolve(ep_ref)))
 
     def calibrate_style(self, ep_ref: str):
         """Learn the series' subtitle style from one episode (5.4a); saved for every later episode."""
-        from subagent.infra.media import imwrite_png, iter_gray_frames, probe
-        from subagent.ocr.subtitle_style import calibrate, save_style, style_preview
+        from subagent.infra import imwrite_png, iter_gray_frames, probe
+        from subagent.ocr import calibrate_style as calibrate
+        from subagent.ocr import save_style, style_preview
 
         ctx = self.context(self.registry.resolve(ep_ref))
         source = ctx.require_source()
@@ -408,7 +410,7 @@ class Pipeline:
         approved = read_jsonl(ctx.artifact("approved.jsonl"), ReviewedLine)
         translations = read_jsonl(ctx.artifact("translations.jsonl"), LineTranslation)
         edits = read_jsonl(ctx.artifact("edits.jsonl"), EditRecord)
-        from subagent.memory.characters import load_new_voices, review_voice_ids
+        from subagent.memory import load_new_voices, review_voice_ids
 
         voices = load_new_voices(ctx.work)
         known = MemoryStore(self.paths.memory_db).character_ids() | {v.id for v in voices}
@@ -433,8 +435,8 @@ class Pipeline:
     def _line_decisions(self, ctx: EpisodeContext, approved: list[ReviewedLine]) -> tuple[list[str], list[str]]:
         """What the reviewer removed and kept, for the script reviewer's memory. Lossless repeat merges are not
         the reviewer's decision; short lines kept and pre-deleted lines restored count as kept."""
-        from subagent.review.review import original_draft
-        from subagent.translation.script_review import han_count
+        from subagent.review import original_draft
+        from subagent.translation import han_count
 
         rc = self.config.review
         original = {x.event_id: x for x in original_draft(ctx.work, rc.predelete_fragments, rc.noise_max_han)}
@@ -469,7 +471,7 @@ class Pipeline:
         """The episode's trusted speakers teach the sprite bank (5.8b). Never fails the episode."""
         if not (self.config.show.character_identification and self.config.cast.enabled and self.config.cast.learn)                 or not ctx.artifact("cast.jsonl").is_file():
             return
-        from subagent.cast.learning import learn_sprites
+        from subagent.cast import learn_sprites
 
         state = load_state(ctx.work, ctx.episode.id)
         key = sha256_json({"cast": hash_path(ctx.artifact("cast.jsonl")),
@@ -498,8 +500,8 @@ class Pipeline:
         """Reviewed speakers teach the voice bank. Never fails the episode: a missing model is only reported."""
         if not (self.config.show.character_identification and self.config.voice.learn_from_reviews):
             return
-        from subagent.kernel.errors import ModelUnavailableError
-        from subagent.voice.learning import learn_voices
+        from subagent.kernel import ModelUnavailableError
+        from subagent.voice import learn_voices
 
         self.progress.emit("voices", "start")
         try:
@@ -519,12 +521,12 @@ class Pipeline:
         self.progress.emit("voices", "done", message=message)
 
     def _render_and_deliver(self, ctx: EpisodeContext, on_exists: OnExists) -> Path:
-        from subagent.output.render import render
+        from subagent.output import render_video
 
         self._check_output(ctx, on_exists)
         self.progress.emit("render", "start")
         t0 = time.monotonic()
-        tmp = render(ctx)
+        tmp = render_video(ctx)
         final = deliver(tmp, target_path(self.config, ctx.source), on_exists)
         self.registry.update(ctx.episode.id, output_path=str(final))
         state = load_state(ctx.work, ctx.episode.id)

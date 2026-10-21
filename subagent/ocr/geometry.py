@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 
-from subagent.settings.config import OcrConfig
+from subagent.settings import OcrConfig
 
 
 def line_span(clean: np.ndarray, cfg: OcrConfig) -> tuple[int, int, int, int] | None:
