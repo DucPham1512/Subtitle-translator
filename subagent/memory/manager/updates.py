@@ -64,7 +64,7 @@ class UpdatesMixin:
         """The updater's checked proposals for this episode, and (auto mode) the ones held because their evidence
         is not on trusted lines. Updates of a candidate or new voice without trusted evidence are dropped."""
         from subagent.memory import character_updates as cu
-        from subagent.memory.voice_learning import trusted_auto_lines
+        from subagent.memory.evidence import trusted_auto_lines
 
         lines = [x for x in approved if x.approved and not x.deleted]
         proposals = cu.propose(self.paths, self.config, self.store, episode_id, lines, llm)

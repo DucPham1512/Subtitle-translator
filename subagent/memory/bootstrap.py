@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import itertools
 import logging
 import re
 from pathlib import Path
@@ -15,11 +14,11 @@ from subagent.errors import SubagentError
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.manager import ApplyResult, MemoryManager
 from subagent.models import MemoryProposal, SubtitleEvent
+from subagent.stages.voice import compute_centroids, pair_similarities, voice_clips
 from subagent.util import atomic_write_text, now_iso, read_jsonl
 
 log = logging.getLogger(__name__)
 
-AUDIO_EXTS = {".wav", ".mp3", ".flac", ".m4a", ".ogg", ".opus", ".aac"}
 _SLUG = re.compile(r"[^a-z0-9_]+")
 
 
@@ -99,49 +98,6 @@ def save_seed(paths: Paths, draft: SeedDraft) -> None:
 
 
 # -- voices ----------------------------------------------------------------------------------------
-
-def voice_clips(paths: Paths) -> dict[str, list[Path]]:
-    root = paths.bootstrap / "voices"
-    if not root.is_dir():
-        return {}
-    out = {}
-    for d in sorted(p for p in root.iterdir() if p.is_dir()):
-        clips = sorted(f for f in d.iterdir() if f.suffix.lower() in AUDIO_EXTS)
-        if clips:
-            out[d.name] = clips
-    return out
-
-
-def compute_centroids(config: Config, paths: Paths, char_ids: set[str] | None = None,
-                      embed=None) -> dict[str, tuple[np.ndarray, int]]:
-    from subagent.stages.voice import get_embedder, l2_normalize, load_audio_any
-
-    clips = {c: fs for c, fs in voice_clips(paths).items() if char_ids is None or c in char_ids}
-    if not clips:
-        return {}
-    embed = embed or get_embedder(config, paths).embed
-    out = {}
-    for char_id, files in clips.items():
-        embs = [embed(load_audio_any(f, config.audio.sample_rate)) for f in files]
-        out[char_id] = (l2_normalize(np.mean(np.stack(embs), axis=0)), len(files))
-    return out
-
-
-def pair_similarities(centroids: dict[str, np.ndarray], threshold: float,
-                      only: set[str] | None = None) -> dict[tuple[str, str], float]:
-    pairs = {}
-    for a, b in itertools.combinations(sorted(centroids), 2):
-        if only is not None and a not in only and b not in only:
-            continue
-        sim = float(np.dot(centroids[a], centroids[b]))
-        if sim >= threshold:
-            pairs[(a, b)] = round(sim, 4)
-    return pairs
-
-
-def all_similarities(centroids: dict[str, np.ndarray]) -> dict[tuple[str, str], float]:
-    return pair_similarities(centroids, threshold=-2.0)
-
 
 # -- seed ------------------------------------------------------------------------------------------
 

@@ -21,9 +21,9 @@ import numpy as np
 
 from subagent.config import Config, Paths
 from subagent.episodes import Registry
+from subagent.memory.evidence import is_auto_episode, trusted_auto_lines, usable_line
 from subagent.memory.store import MemoryStore
-from subagent.models import Episode, Evaluation, LineTranslation, ReviewedLine, SpeakerCandidates
-from subagent.state import load_state
+from subagent.models import Episode, ReviewedLine
 from subagent.util import read_jsonl
 
 log = logging.getLogger(__name__)
@@ -58,17 +58,6 @@ class LearnResult:
     auto: AutoGate | None = None       # None: no auto-mode lines were offered
 
 
-def is_auto_episode(paths: Paths, episode_id: str) -> bool:
-    """Approved without a person: speakers there are machine guesses."""
-    return load_state(paths.episode_dir(episode_id), episode_id).mode == "auto"
-
-
-def _usable(x: ReviewedLine, config: Config, known: set[str], min_ms: int | None = None) -> bool:
-    min_ms = config.voice.learn_min_ms if min_ms is None else min_ms
-    return (x.approved and not x.deleted and x.line_type == "dialogue" and x.speaker in known
-            and x.end_ms - x.start_ms >= min_ms)
-
-
 def reviewed_clips(paths: Paths, config: Config, known: set[str], episodes: set[str] | None = None) -> list[Clip]:
     """Lines a person approved (human-mode episodes only) with a known speaker, long enough to carry a voice."""
     clips: list[Clip] = []
@@ -76,7 +65,7 @@ def reviewed_clips(paths: Paths, config: Config, known: set[str], episodes: set[
         if (episodes is not None and ep.id not in episodes) or is_auto_episode(paths, ep.id):
             continue
         for x in read_jsonl(paths.episode_dir(ep.id) / "approved.jsonl", ReviewedLine):
-            if _usable(x, config, known):
+            if usable_line(x, config, known):
                 clips.append(Clip(ep.id, x.event_id, x.speaker, x.start_ms, x.end_ms))
     return clips
 
@@ -94,32 +83,6 @@ def auto_clips(paths: Paths, config: Config, known: set[str]) -> list[Clip]:
             clips += [Clip(ep.id, x.event_id, x.speaker, x.start_ms, x.end_ms)
                       for x in trusted_auto_lines(paths, config, ep.id, known)]
     return clips
-
-
-def trusted_auto_lines(paths: Paths, config: Config, episode_id: str, known: set[str],
-                       min_ms: int | None = None) -> list[ReviewedLine]:
-    """The lines of one auto-mode episode whose speaker every independent signal agrees on (see auto_clips)."""
-    v = config.voice
-    allowed = set(v.learn_auto_allowed_flags)
-    work = paths.episode_dir(episode_id)
-    if not (work / "speakers.jsonl").is_file():
-        return []
-    voices = {s.event_id: s for s in read_jsonl(work / "speakers.jsonl", SpeakerCandidates)}
-    translated = {t.event_id: t for t in read_jsonl(work / "translations.jsonl", LineTranslation)}
-    first_pass = {e.event_id for e in read_jsonl(work / "evaluations.jsonl", Evaluation)
-                  if e.attempt == 1 and e.passed}
-    out = []
-    for x in read_jsonl(work / "approved.jsonl", ReviewedLine):
-        s, t = voices.get(x.event_id), translated.get(x.event_id)
-        if not (_usable(x, config, known, min_ms) and s and t and s.status in ("fixed", "new_voice") and s.candidates):
-            continue
-        top, score = s.candidates[0]
-        margin = score - (s.candidates[1][1] if len(s.candidates) > 1 else -1.0)
-        if (top == x.speaker == t.speaker and score >= v.learn_auto_min_score
-                and margin >= v.learn_auto_min_margin and x.event_id in first_pass
-                and set(x.flags) <= allowed and set(t.flags) <= allowed):
-            out.append(x)
-    return out
 
 
 def _samples(manual: dict[str, list[np.ndarray]], clips: list[Clip],
@@ -205,8 +168,7 @@ def embed_clips(paths: Paths, config: Config, clips: list[Clip], embed) -> dict[
 
 
 def manual_clip_embeddings(paths: Paths, config: Config, known: set[str], embed) -> dict[str, list[np.ndarray]]:
-    from subagent.memory.bootstrap import voice_clips
-    from subagent.stages.voice import load_audio_any
+    from subagent.stages.voice import load_audio_any, voice_clips
 
     out: dict[str, list[np.ndarray]] = defaultdict(list)
     for char, files in voice_clips(paths).items():
@@ -239,9 +201,8 @@ def build_centroids(samples: dict[str, list[np.ndarray]], config: Config) -> dic
 
 def learn_voices(config: Config, paths: Paths, embed=None, *, commit: bool = True) -> LearnResult:
     """Rebuild the voice bank from every reviewed episode plus the manual clips, then commit it to memory."""
-    from subagent.memory.bootstrap import pair_similarities
     from subagent.memory.manager import MemoryManager
-    from subagent.stages.voice import get_embedder
+    from subagent.stages.voice import get_embedder, pair_similarities
 
     manager = MemoryManager(paths, config)
     manager.ensure_repo()

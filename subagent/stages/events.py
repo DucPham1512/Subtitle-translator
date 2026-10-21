@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from subagent.config import Config, NonDialogueConfig
 from subagent.context import EpisodeContext
 from subagent.models import OcrReading, SubtitleEvent
-from subagent.textutil import edit_distance, normalize_zh
+from subagent.textutil import edit_distance, normalize_zh, relatedness
 from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
@@ -82,16 +82,6 @@ def _merge_flicker(groups: list[_Group], max_distance: int) -> list[_Group]:
     return out
 
 
-def _relatedness(a: str, b: str) -> float:
-    """1.0 when one text contains the other (caught mid-change), else character similarity."""
-    na, nb = normalize_zh(a), normalize_zh(b)
-    if not na or not nb:
-        return 0.0
-    if na in nb or nb in na:
-        return 1.0
-    return 1.0 - edit_distance(na, nb) / max(len(na), len(nb))
-
-
 def frames_on_screen(g: _Group, frame_ms: float) -> int:
     """How many sampled frames the event spans. OCR readings only exist where the band changed, so a
     subtitle shown for seconds over a still background still has a single reading: count time, not readings."""
@@ -115,7 +105,7 @@ def absorb_fragments(groups: list[_Group], max_samples: int, threshold: float, f
         text = g.winner()
         prev = out[-1] if out and out[-1].end_ms == g.start_ms else None
         nxt = groups[i + 1] if i + 1 < len(groups) and g.end_ms == groups[i + 1].start_ms else None
-        options = [(_relatedness(text, n.winner()), len(n.readings), side, n)
+        options = [(relatedness(text, n.winner()), len(n.readings), side, n)
                    for side, n in (("prev", prev), ("next", nxt)) if n is not None]
         options = [o for o in options if o[0] >= threshold]
         if not options:

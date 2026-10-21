@@ -379,9 +379,9 @@ def score_cast(gold: Gold, system: Path) -> dict:
 # -- 4. translation + evaluator ------------------------------------------------------------------
 
 def _kept_evaluation(evals: list[Evaluation]) -> Evaluation | None:
-    from subagent.stages.translate import _rank
+    from subagent.stages.translate import rank_attempt
 
-    return max(evals, key=_rank) if evals else None
+    return max(evals, key=rank_attempt) if evals else None
 
 
 def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict[str, bool] | None = None) -> dict:

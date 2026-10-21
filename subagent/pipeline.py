@@ -86,6 +86,11 @@ def _lazy(module: str) -> Callable[[EpisodeContext], dict]:
     return run
 
 
+def run_stage(module: str, ctx: EpisodeContext) -> dict:
+    """One stage module's `run(ctx)`, directly: no resume, state or progress (benchmarks)."""
+    return _lazy(module)(ctx)
+
+
 STAGES: list[StageDef] = [
     StageDef("ingest", _lazy("ingest"), [], ["video"], ["bands", "changes.jsonl", "video.json"], extra=_source_key),
     StageDef("ocr", _lazy("ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"], extra=_style_key),
@@ -263,12 +268,13 @@ def _counts_text(counts: dict[str, int]) -> str:
 
 class Pipeline:
     def __init__(self, config: Config, paths: Paths, *, progress: Progress = NULL_PROGRESS, use_cache: bool = True,
-                 llm: LLMClient | None = None):
+                 llm: LLMClient | None = None, after_finish: list[Callable[[EpisodeContext], None]] | None = None):
         self.config = config
         self.paths = paths
         self.progress = progress
         self.use_cache = use_cache
         self.llm = llm
+        self.after_finish = after_finish or []   # called with each finished episode (e.g. the baseline copy)
         self.registry = Registry(paths)
 
     def context(self, episode: Episode) -> EpisodeContext:
@@ -469,17 +475,8 @@ class Pipeline:
         self._render_and_deliver(ctx, on_exists)
         self.registry.set_status(ctx.episode.id, "done")
         write_report(ctx)
-        if self.config.baseline.name:
-            from subagent.baseline import freeze_episode
-
-            try:
-                freeze_episode(self.config, self.paths, ctx.episode.id, self.config.baseline.name)
-                self.progress.emit("baseline", "done", message=f"{ctx.episode.id} copied to baseline "
-                                                               f"{self.config.baseline.name}")
-            except Exception as exc:  # noqa: BLE001 - the episode is finished; the copy can be made again
-                log.warning("baseline copy of %s failed: %s", ctx.episode.id, exc)
-                self.progress.emit("baseline", "info", message=f"baseline copy failed: {exc}",
-                                   error_code="baseline_failed")
+        for hook in self.after_finish:
+            hook(ctx)
         if self.config.cleanup.auto:
             cleanup(ctx.work, ctx.episode.id)
             self.progress.emit("cleanup", "done")

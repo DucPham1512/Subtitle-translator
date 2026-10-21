@@ -237,7 +237,7 @@ def run_ocr_benchmark(config: Config, paths: Paths, episode_ids: list[str] | Non
     from subagent.benchmark import _sandbox_paths
     from subagent.context import EpisodeContext
     from subagent.episodes import Registry
-    from subagent.pipeline import _lazy
+    from subagent.pipeline import run_stage
 
     episode_ids = episode_ids or ocr_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]
@@ -246,7 +246,7 @@ def run_ocr_benchmark(config: Config, paths: Paths, episode_ids: list[str] | Non
                             folder=str(folder), existing=existing)
     cfg, sandbox = _sandbox_paths(config, paths, folder)
     registry = Registry(paths)
-    run = stage_runner or (lambda name, ctx: _lazy(name)(ctx))
+    run = stage_runner or run_stage
     key = load_key(paths)
     result.key = {k: len(v) for k, v in key.items()}
     for n, ep_id in enumerate(episode_ids, 1):

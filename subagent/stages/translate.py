@@ -206,7 +206,7 @@ def to_translation(t: TranslatedLine, attempt: int, identify: bool = True) -> Li
                            notes=t.notes)
 
 
-def _rank(ev: Evaluation) -> tuple:
+def rank_attempt(ev: Evaluation) -> tuple:
     return (ev.passed, not ev.rule_failures, sum(ev.scores.values()), -ev.attempt)
 
 
@@ -357,7 +357,7 @@ def _same(a: LineTranslation, b: LineTranslation) -> bool:
 
 
 def _best(tries: list[tuple[LineTranslation, Evaluation]]) -> tuple[LineTranslation, Evaluation]:
-    return max(tries, key=lambda pair: _rank(pair[1]))
+    return max(tries, key=lambda pair: rank_attempt(pair[1]))
 
 
 def run(ctx: EpisodeContext) -> dict[str, int]:

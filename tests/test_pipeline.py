@@ -8,6 +8,7 @@ import wave
 
 import pytest
 
+from subagent.baseline import freeze_finished
 from subagent.episodes import Registry
 from subagent.errors import OutputExistsError
 from subagent.models import EditRecord, OcrReading, VideoInfo
@@ -109,7 +110,7 @@ def _pipeline(project, stream=None):
     config, paths = project
     llm, clients = make_llm(config, paths, _handlers())
     progress = Progress("json", stream=stream or io.StringIO())
-    return Pipeline(config, paths, progress=progress, llm=llm), clients, progress
+    return Pipeline(config, paths, progress=progress, llm=llm, after_finish=[freeze_finished]), clients, progress
 
 
 def test_human_mode_then_finish_review(project, stubs, calls):

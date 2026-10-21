@@ -17,6 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 from subagent.config import Config, Paths
+from subagent.context import EpisodeContext
 from subagent.state import load_state
 from subagent.util import atomic_write_text, hash_path, now_iso, sha256_json
 
@@ -68,6 +69,19 @@ def _manifest(folder: Path, name: str) -> dict:
 def _save_manifest(folder: Path, manifest: dict) -> None:
     manifest["episodes"] = dict(sorted(manifest["episodes"].items()))
     atomic_write_text(folder / "manifest.json", json.dumps(manifest, ensure_ascii=False, indent=1))
+
+
+def freeze_finished(ctx: EpisodeContext) -> None:
+    """Pipeline after-finish hook: with `baseline.name` set, copy the finished episode into that baseline."""
+    name = ctx.config.baseline.name
+    if not name:
+        return
+    try:
+        freeze_episode(ctx.config, ctx.paths, ctx.episode.id, name)
+        ctx.progress.emit("baseline", "done", message=f"{ctx.episode.id} copied to baseline {name}")
+    except Exception as exc:  # noqa: BLE001 - the episode is finished; the copy can be made again
+        log.warning("baseline copy of %s failed: %s", ctx.episode.id, exc)
+        ctx.progress.emit("baseline", "info", message=f"baseline copy failed: {exc}", error_code="baseline_failed")
 
 
 def freeze_episode(config: Config, paths: Paths, episode_id: str, name: str) -> Path:

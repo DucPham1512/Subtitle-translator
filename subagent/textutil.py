@@ -47,6 +47,16 @@ def edit_distance(a: str, b: str) -> int:
     return prev[-1]
 
 
+def relatedness(a: str, b: str) -> float:
+    """1.0 when one text contains the other (caught mid-change), else character similarity."""
+    na, nb = normalize_zh(a), normalize_zh(b)
+    if not na or not nb:
+        return 0.0
+    if na in nb or nb in na:
+        return 1.0
+    return 1.0 - edit_distance(na, nb) / max(len(na), len(nb))
+
+
 def nfc(text: str) -> str:
     return unicodedata.normalize("NFC", text)
 

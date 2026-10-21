@@ -41,6 +41,7 @@ from app.preview import PreviewWidget
 from app.widgets import ClipPlayer, FrameSelector, confirm, fmt_ms, show_error, to_qimage
 from app.workers import run_async
 from subagent.memory import bootstrap as bs
+from subagent.stages.voice import voice_clips
 from subagent.util import atomic_write_text
 
 SEED_TABLES = {
@@ -157,7 +158,7 @@ class BootstrapView(QWidget):
         ids = {c.id for c in self.services.store.characters()}
         with contextlib.suppress(Exception):   # no seed yet
             ids |= {c.id for c in bs.load_seed(self.services.paths).characters}
-        ids |= set(bs.voice_clips(self.services.paths))
+        ids |= set(voice_clips(self.services.paths))
         return sorted(ids)
 
     def _fill_characters(self, box: QComboBox) -> None:
@@ -452,7 +453,7 @@ class BootstrapView(QWidget):
     def _load_clips(self) -> None:
         char = self._char_id(self.voice_char)
         self.clips.clear()
-        files = bs.voice_clips(self.services.paths).get(char or "", [])
+        files = voice_clips(self.services.paths).get(char or "", [])
         for f in files:
             item = QListWidgetItem(f.name)
             item.setData(Qt.ItemDataRole.UserRole, f)
@@ -663,7 +664,7 @@ class BootstrapView(QWidget):
         if col > 1:
             return
         char = self.confusable.item(row, col).text()
-        clips = bs.voice_clips(self.services.paths).get(char, [])
+        clips = voice_clips(self.services.paths).get(char, [])
         if clips:
             self.player.play(clips[0])
 

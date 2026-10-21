@@ -14,6 +14,14 @@ ON_EXISTS_CHOICES = ["overwrite", "keep-both", "fail"]
 log = logging.getLogger("subagent")
 
 
+def build_pipeline(config: Config, paths: Paths, **kwargs):
+    """The CLI's Pipeline: a finished episode is also copied into `baseline.name` when that is set (6.11d)."""
+    from subagent.baseline import freeze_finished
+    from subagent.pipeline import Pipeline
+
+    return Pipeline(config, paths, after_finish=[freeze_finished], **kwargs)
+
+
 def _interactive() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty()
 

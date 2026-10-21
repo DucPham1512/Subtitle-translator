@@ -87,9 +87,8 @@ class CandidatesMixin:
         make this episode's new voices and new names candidates, hold the proposals about candidates, drop the
         candidates whose window has passed. Returns the proposals to apply now, counts, and evidence ids of
         held proposals released by a promotion."""
-        from subagent.memory.voice_learning import trusted_auto_lines
+        from subagent.memory.evidence import load_line_voices, trusted_auto_lines
         from subagent.models import CastLine
-        from subagent.stages.voice import load_line_voices
         from subagent.util import read_jsonl
 
         work = self.paths.episode_dir(episode_id)

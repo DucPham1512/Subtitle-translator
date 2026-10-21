@@ -86,7 +86,7 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
     """stage_runner(name, ctx) runs one stage (tests inject fakes); default: the real stage modules."""
     from subagent.context import EpisodeContext
     from subagent.episodes import Registry
-    from subagent.pipeline import _lazy, collect_metrics
+    from subagent.pipeline import collect_metrics, run_stage
 
     episode_ids = episode_ids or benchmark_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]
@@ -94,7 +94,7 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
     cfg, sandbox = _sandbox_paths(config, paths, folder)
     registry = Registry(paths)
     _copy_reviewer_context(paths, sandbox, set(episode_ids))
-    run = stage_runner or (lambda name, ctx: _lazy(name)(ctx))
+    run = stage_runner or run_stage
     result = BenchmarkResult(label=label, started_at=now_iso(), folder=str(folder))
     cells, before_cells = [], []
     dis = [0, 0]

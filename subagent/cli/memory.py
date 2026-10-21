@@ -11,6 +11,7 @@ from subagent.cli.common import (  # noqa: F401
     _interactive,
     _output_exists,
     _resolve_on_exists,
+    build_pipeline,
 )
 
 log = logging.getLogger("subagent")
@@ -114,12 +115,10 @@ def cmd_voices(args, config, paths, progress) -> int:
 
 
 def cmd_sprites(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
     if not config.cast.enabled:
         print("cast.enabled is false in config.yaml: nothing to learn.")
         return 1
-    pipe = Pipeline(config, paths, progress=progress)
+    pipe = build_pipeline(config, paths, progress=progress)
     for ep, counts in pipe.learn_sprites_backfill():
         print(f"{ep}: " + (", ".join(f"{k}={v}" for k, v in counts.items()) or "already learned"))
     return 0

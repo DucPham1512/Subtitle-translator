@@ -19,8 +19,7 @@ from subagent.context import EpisodeContext
 from subagent.llm import build_messages, load_prompt
 from subagent.memory.store import LineDecision, MemoryStore
 from subagent.models import LineTranslation, ScriptDecision, SubtitleEvent
-from subagent.stages.events import _relatedness
-from subagent.textutil import is_han, normalize_zh
+from subagent.textutil import is_han, normalize_zh, relatedness
 from subagent.util import read_jsonl, write_jsonl
 
 log = logging.getLogger(__name__)
@@ -52,7 +51,7 @@ def find_repeats(events: list[SubtitleEvent], cfg: ScriptReviewConfig) -> list[S
                 merged.add(b.id)
                 out.append(ScriptDecision(event_id=b.id, action="remove", reason="repeat", source="rule", keep_id=a.id,
                                           note=f"same text as the line before it ({a.id}); merged into it"))
-            elif b.id not in flagged and _relatedness(a.zh, b.zh) >= cfg.repeat_similarity:
+            elif b.id not in flagged and relatedness(a.zh, b.zh) >= cfg.repeat_similarity:
                 weaker = b if len(normalize_zh(b.zh)) <= len(normalize_zh(a.zh)) else a
                 other = a if weaker is b else b
                 if weaker.id not in merged and weaker.id not in flagged:

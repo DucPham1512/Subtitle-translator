@@ -157,4 +157,4 @@ class MemoryManager(ApplyMixin, EpisodeMixin, CandidatesMixin, UpdatesMixin, Ban
             migrate(conn)
 
 
-__all__ = ["MemoryManager", "KIND_ORDER", "KIND_TABLE", "COLUMNS", "REQUIRED", "LOCKING_SOURCES", "EVIDENCE_SOURCES", "BRIEFING_FILES", "UPDATES_FILE", "UPDATE_REJECTIONS_FILE", "BACKUP_ITEMS", "_fetch", "_where", "_insert", "_update", "_delete", "_current_evidence", "_loggable", "_content", "ApplyResult", "Conflict", "PendingUpdate", "CommitInfo", "TableDiff", "MemoryDiff", "dumps_aliases", "held_updates", "describe_update", "merge_proposals", "replaced_term", "_PUNCT", "reviewed_glossary"]
+__all__ = ["MemoryManager", "KIND_ORDER", "KIND_TABLE", "COLUMNS", "REQUIRED", "LOCKING_SOURCES", "EVIDENCE_SOURCES", "BRIEFING_FILES", "UPDATES_FILE", "UPDATE_REJECTIONS_FILE", "BACKUP_ITEMS", "ApplyResult", "Conflict", "PendingUpdate", "CommitInfo", "TableDiff", "MemoryDiff", "dumps_aliases", "held_updates", "describe_update", "merge_proposals", "replaced_term", "reviewed_glossary"]

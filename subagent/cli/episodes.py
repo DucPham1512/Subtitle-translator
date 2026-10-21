@@ -13,6 +13,7 @@ from subagent.cli.common import (  # noqa: F401
     _interactive,
     _output_exists,
     _resolve_on_exists,
+    build_pipeline,
 )
 from subagent.config import Config, Paths
 from subagent.errors import SubagentError
@@ -82,10 +83,8 @@ def cmd_relink(args, config: Config, paths: Paths, progress: Progress) -> int:
 
 
 def cmd_calibrate(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
     if args.style:
-        style, path, preview = Pipeline(config, paths, progress=progress).calibrate_style(args.episode)
+        style, path, preview = build_pipeline(config, paths, progress=progress).calibrate_style(args.episode)
         print(f"subtitle style ({style.regions} text-like regions): {style.polarity} text, fill {style.fill_min}-"
               f"{style.fill_max}, outline {style.outline_level if style.outline_level is not None else 'none'}, "
               f"stroke {style.stroke:.3f} of the band height (spread {style.stroke_spread:.2f}), letter height "
@@ -93,18 +92,16 @@ def cmd_calibrate(args, config, paths, progress) -> int:
         print(f"saved: {path}")
         print(f"preview (band above, segmentation below): {preview}")
         return 0
-    for p in Pipeline(config, paths, progress=progress).calibrate(args.episode):
+    for p in build_pipeline(config, paths, progress=progress).calibrate(args.episode):
         print(p)
     print("Adjust video.subtitle_band in config.yaml until the red rectangle covers the subtitle line.")
     return 0
 
 
 def cmd_run(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
     mode = args.mode or config.review.mode
     on_exists = _resolve_on_exists(config, paths, args.episode, args.on_exists) if mode == "auto" else "fail"
-    result = Pipeline(config, paths, progress=progress, use_cache=not args.no_cache).run(
+    result = build_pipeline(config, paths, progress=progress, use_cache=not args.no_cache).run(
         args.episode, mode=mode, from_stage=args.from_stage, force_stage=args.force, on_exists=on_exists,
         rerun=args.rerun)
     print(f"{args.episode}: {result}")
@@ -113,8 +110,6 @@ def cmd_run(args, config, paths, progress) -> int:
 
 def cmd_batch(args, config, paths, progress) -> int:
     from subagent.episodes import Registry
-    from subagent.pipeline import Pipeline
-
     registry = Registry(paths)
     refs = list(args.episodes)
     if args.pending:
@@ -130,7 +125,7 @@ def cmd_batch(args, config, paths, progress) -> int:
             choice = _ask("Some outputs already exist. [o]verwrite, [k]eep both, [c]ancel those? ",
                           {"o": "overwrite", "k": "keep_both", "c": "fail"})
     keep_going = True if args.keep_going else False if args.stop_on_error else None
-    items = Pipeline(config, paths, progress=progress, use_cache=not args.no_cache).run_batch(
+    items = build_pipeline(config, paths, progress=progress, use_cache=not args.no_cache).run_batch(
         refs, mode=mode, on_exists=choice, keep_going=keep_going, max_total_cost=args.max_total_cost,
         rerun=args.rerun)
     for it in items:
@@ -161,27 +156,21 @@ def cmd_partial_review(args, config, paths, progress) -> int:
 
 
 def cmd_finish_review(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
     on_exists = _resolve_on_exists(config, paths, args.episode, args.on_exists)
-    result = Pipeline(config, paths, progress=progress).finish_review(args.episode, on_exists=on_exists)
+    result = build_pipeline(config, paths, progress=progress).finish_review(args.episode, on_exists=on_exists)
     print(f"{args.episode}: {result}")
     return 0
 
 
 def cmd_render(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
     on_exists = _resolve_on_exists(config, paths, args.episode, args.on_exists)
-    final = Pipeline(config, paths, progress=progress).render(args.episode, on_exists=on_exists)
+    final = build_pipeline(config, paths, progress=progress).render(args.episode, on_exists=on_exists)
     print(final)
     return 0
 
 
 def cmd_clean(args, config, paths, progress) -> int:
-    from subagent.pipeline import Pipeline
-
-    removed = Pipeline(config, paths, progress=progress).clean(args.episode)
+    removed = build_pipeline(config, paths, progress=progress).clean(args.episode)
     print("removed: " + (", ".join(removed) or "nothing"))
     return 0
 

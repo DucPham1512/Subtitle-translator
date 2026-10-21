@@ -53,7 +53,7 @@ class SpriteLearnResult:
 
 def trusted_speakers(paths: Paths, config: Config, episode_id: str, known: set[str]) -> dict[str, str]:
     """event id -> speaker for the lines whose speaker can teach (see module docstring)."""
-    from subagent.memory.voice_learning import is_auto_episode, trusted_auto_lines
+    from subagent.memory.evidence import is_auto_episode, trusted_auto_lines
 
     if is_auto_episode(paths, episode_id):
         lines = trusted_auto_lines(paths, config, episode_id, known, min_ms=0)
