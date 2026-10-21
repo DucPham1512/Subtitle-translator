@@ -369,7 +369,7 @@ class MainWindow(QMainWindow):
         view.open_episode(episode_id, event_id=event_id, read_only=read_only, audit=audit)
 
     def _detect_device(self) -> None:
-        from subagent.device import describe
+        from subagent.infra.device import describe
 
         config = self.services.config
         run_async(lambda: describe(config),

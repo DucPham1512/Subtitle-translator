@@ -8,7 +8,7 @@ from pathlib import Path
 from subagent.episodes import Registry
 from subagent.kernel.models import Episode, VideoInfo
 from subagent.kernel.progress import NULL_PROGRESS, Progress
-from subagent.llm import LLMClient
+from subagent.llm.client import LLMClient
 from subagent.settings.config import Config, Paths
 
 
@@ -63,7 +63,7 @@ class EpisodeContext:
             if path.is_file():
                 self._video = VideoInfo.model_validate_json(path.read_text(encoding="utf-8"))
             else:
-                from subagent.media import probe
+                from subagent.infra.media import probe
 
                 self._video = probe(self.require_source())
         return self._video

@@ -236,7 +236,7 @@ class SettingsView(QWidget):
         self.keys_status.setText(self.tr("Keys saved to .env."))
 
     def _test(self, role: str) -> None:
-        from subagent.llm import LLMClient
+        from subagent.llm.client import LLMClient
 
         self._save_keys()
         client = LLMClient(self.services.config, self.services.paths, use_cache=False)

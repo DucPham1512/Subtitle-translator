@@ -54,7 +54,7 @@ def sandbox(config: Config, paths: Paths, folder: Path) -> tuple[Config, Paths]:
 
 def checkout_memory(paths: Paths, sp: Paths, sha: str) -> None:
     """The sandbox memory at a commit of the real memory folder (cloned once; the real folder is only read)."""
-    from subagent.media import git
+    from subagent.infra.media import git
 
     if not (sp.memory / ".git").exists():
         sp.memory.parent.mkdir(parents=True, exist_ok=True)

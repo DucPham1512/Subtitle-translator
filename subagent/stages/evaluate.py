@@ -16,7 +16,7 @@ from subagent.kernel.textutil import (
     split_explicit_lines,
     visible_chars,
 )
-from subagent.llm import LLMClient, build_messages
+from subagent.llm.client import LLMClient, build_messages
 from subagent.memory.store import GlossaryEntry, MemoryStore, PronounPair
 from subagent.settings.config import Config
 

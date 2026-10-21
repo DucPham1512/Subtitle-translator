@@ -8,7 +8,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from subagent.kernel.models import ReviewedLine
-from subagent.llm import build_messages, load_prompt
+from subagent.llm.client import build_messages, load_prompt
 from subagent.memory import briefings as bf
 from subagent.memory.prefix import characters_block
 from subagent.memory.store import MemoryStore

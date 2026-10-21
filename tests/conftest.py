@@ -13,7 +13,7 @@ import yaml
 
 from subagent.kernel.models import Episode, SubtitleEvent
 from subagent.kernel.util import write_jsonl
-from subagent.llm import LLMClient
+from subagent.llm.client import LLMClient
 from subagent.settings.config import Config, Paths, load_config
 
 REPO = Path(__file__).resolve().parent.parent

@@ -9,12 +9,12 @@ from collections.abc import Callable, Sequence
 import numpy as np
 
 from subagent.context import EpisodeContext
-from subagent.device import onnx_use_cuda
+from subagent.infra.device import onnx_use_cuda
+from subagent.infra.media import imread
 from subagent.kernel.errors import ModelUnavailableError
 from subagent.kernel.models import ChangeRecord, OcrBox, OcrReading, VideoInfo
 from subagent.kernel.textutil import keep_cjk
 from subagent.kernel.util import read_jsonl, write_jsonl
-from subagent.media import imread
 from subagent.settings.config import Band, Config, OcrConfig
 
 log = logging.getLogger(__name__)
@@ -288,7 +288,7 @@ def save_sample(folder, t_ms: int, band: np.ndarray, prepared: np.ndarray, text:
     """Before (top) and after (bottom) pre-processing, at the same width (ocr_samples/, temporary)."""
     import cv2
 
-    from subagent.media import imwrite_png
+    from subagent.infra.media import imwrite_png
 
     w = prepared.shape[1]
     top = cv2.resize(band, (w, max(1, round(band.shape[0] * w / band.shape[1]))), interpolation=cv2.INTER_NEAREST)
@@ -381,7 +381,7 @@ def run(ctx: EpisodeContext, engine: OcrEngine | None = None) -> dict[str, int]:
         reading = reading_from_boxes(change.t_ms, raw, w, h, cfg)
         readings.append(reading)
         if keep_crops:
-            from subagent.media import imwrite_png
+            from subagent.infra.media import imwrite_png
 
             imwrite_png(crop_path(ctx.work, change.t_ms), crop_view(band, image, scale, pad))
         if step and done % step == 0 and done // step < cfg.sample_images and image.size:

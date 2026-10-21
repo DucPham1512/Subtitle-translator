@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from subagent.kernel.errors import BudgetExceeded, ConfigError, LLMCallError, LLMOutputError
 from subagent.kernel.models import CostRecord
 from subagent.kernel.util import read_jsonl
-from subagent.llm import build_messages
+from subagent.llm.client import build_messages
 from subagent.settings.config import Band, update_config_values
 from tests.conftest import make_llm
 
@@ -108,7 +108,7 @@ def test_network_errors_are_retried(project):
 
 
 def test_missing_api_key_is_reported_without_the_key(project, monkeypatch):
-    from subagent.llm import LLMClient
+    from subagent.llm.client import LLMClient
 
     config, paths = project
     monkeypatch.delenv("DEEPSEEK_API_KEY")
@@ -120,7 +120,7 @@ def test_missing_api_key_is_reported_without_the_key(project, monkeypatch):
 def test_unpriced_calls_are_marked_and_repriced_later(project):
     from types import SimpleNamespace
 
-    from subagent.llm import LLMClient, missing_prices, record_cost
+    from subagent.llm.client import LLMClient, missing_prices, record_cost
     from subagent.pipeline import collect_metrics
     from subagent.settings.config import PriceConfig
 
@@ -149,7 +149,7 @@ def test_unpriced_calls_are_marked_and_repriced_later(project):
     assert record_cost(legacy, prices) == pytest.approx(expected)
     assert record_cost(legacy.model_copy(update={"cost": 0.5}), {}) == 0.5
 
-    from subagent.llm import _usage_numbers
+    from subagent.llm.client import _usage_numbers
     thinking = SimpleNamespace(prompt_tokens=100, completion_tokens=10, total_tokens=410)
     assert _usage_numbers(thinking) == (100, 0, 310)                      # hidden thinking tokens billed
 
@@ -171,7 +171,7 @@ def test_report_and_status_flag_missing_prices(project):
 def test_retry_waits_as_long_as_the_provider_asks():
     from types import SimpleNamespace
 
-    from subagent.llm import _server_delay
+    from subagent.llm.client import _server_delay
 
     gemini = Exception("Error code: 429 - Quota exceeded ...\nPlease retry in 37.322318889s.")
     assert _server_delay(gemini) == pytest.approx(37.322318889)
@@ -183,7 +183,7 @@ def test_retry_waits_as_long_as_the_provider_asks():
 
 
 def test_daily_quota_is_not_retried():
-    from subagent.llm import _daily_quota
+    from subagent.llm.client import _daily_quota
 
     exc = Exception("429 ... 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier' ... retry in 45s")
     exc.status_code = 429  # type: ignore[attr-defined]

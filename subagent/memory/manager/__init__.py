@@ -90,7 +90,7 @@ class MemoryManager(ApplyMixin, EpisodeMixin, CandidatesMixin, UpdatesMixin, Ban
                               message="Memory is being written by another process")
 
     def ensure_repo(self) -> None:
-        from subagent.media import git
+        from subagent.infra.media import git
 
         self.dir.mkdir(parents=True, exist_ok=True)
         (self.dir / "briefings").mkdir(exist_ok=True)

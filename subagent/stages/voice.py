@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 
 from subagent.context import EpisodeContext
-from subagent.device import torch_device
+from subagent.infra.device import torch_device
 from subagent.kernel.errors import MediaError, ModelUnavailableError
 from subagent.kernel.models import NewVoice, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
@@ -47,7 +47,7 @@ def load_audio_any(path: Path, sample_rate: int) -> np.ndarray:
                 return samples
         except (MediaError, wave.Error, EOFError):
             pass
-    from subagent.media import require_binary, run
+    from subagent.infra.media import require_binary, run
 
     proc = run([require_binary("ffmpeg"), "-hide_banner", "-loglevel", "error", "-nostdin", "-i", str(path),
                 "-ac", "1", "-ar", str(sample_rate), "-f", "s16le", "-"])

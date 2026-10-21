@@ -22,7 +22,7 @@ from subagent.kernel.models import (
     Window,
 )
 from subagent.kernel.util import atomic_write_text, read_json, read_jsonl, write_jsonl
-from subagent.llm import build_messages, load_prompt
+from subagent.llm.client import build_messages, load_prompt
 from subagent.memory.prefix import (
     corrections_block,
     evaluator_prefix,

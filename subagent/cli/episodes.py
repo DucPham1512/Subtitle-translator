@@ -137,7 +137,7 @@ def cmd_batch(args, config, paths, progress) -> int:
 
 def cmd_partial_review(args, config, paths, progress) -> int:
     from subagent.episodes import Registry
-    from subagent.joblock import job_lock
+    from subagent.infra.joblock import job_lock
     from subagent.partial_review import partial_review
 
     ep = Registry(paths).resolve(args.episode)
@@ -205,8 +205,8 @@ def cmd_status(args, config, paths, progress) -> int:
 def cmd_check(args, config, paths, progress) -> int:
     """Startup checks: external binaries, fonts, output folder, API keys (NFR-PT2)."""
     from subagent.delivery import output_folder
-    from subagent.device import describe
-    from subagent.media import INSTALL_HINTS, missing_binaries
+    from subagent.infra.device import describe
+    from subagent.infra.media import INSTALL_HINTS, missing_binaries
     from subagent.stages.render import font_files
 
     ok = True
@@ -223,7 +223,7 @@ def cmd_check(args, config, paths, progress) -> int:
     for role, provider in config.llm.providers.items():
         if not os.environ.get(provider.api_key_env):
             print(f"api key: {provider.api_key_env} is not set ({role})")
-    from subagent.llm import missing_prices
+    from subagent.llm.client import missing_prices
 
     for model in missing_prices(config):
         print(f"price: no entry for {model} under llm.prices (cost shows as unknown, budget not enforced)")

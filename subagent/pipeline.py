@@ -13,7 +13,7 @@ from pathlib import Path
 from subagent.context import EpisodeContext
 from subagent.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
 from subagent.episodes import Registry
-from subagent.joblock import job_lock
+from subagent.infra.joblock import job_lock
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
     CostRecord,
@@ -29,7 +29,7 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.progress import NULL_PROGRESS, Progress
 from subagent.kernel.util import atomic_write_text, hash_path, now_iso, read_json, read_jsonl, sha256_json
-from subagent.llm import LLMClient, missing_prices, record_cost
+from subagent.llm.client import LLMClient, missing_prices, record_cost
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config, Paths
@@ -426,7 +426,7 @@ class Pipeline:
 
     def calibrate_style(self, ep_ref: str):
         """Learn the series' subtitle style from one episode (5.4a); saved for every later episode."""
-        from subagent.media import imwrite_png, iter_gray_frames, probe
+        from subagent.infra.media import imwrite_png, iter_gray_frames, probe
         from subagent.subtitle_style import calibrate, save_style, style_preview
 
         ctx = self.context(self.registry.resolve(ep_ref))

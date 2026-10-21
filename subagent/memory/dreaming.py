@@ -14,7 +14,7 @@ from subagent.episodes import Registry
 from subagent.kernel.models import EditRecord, MemoryProposal, ReviewedLine
 from subagent.kernel.textutil import contains_term
 from subagent.kernel.util import hash_path, now_iso, read_json, read_jsonl, sha256_json
-from subagent.llm import build_messages, load_prompt
+from subagent.llm.client import build_messages, load_prompt
 from subagent.memory import briefings as bf
 from subagent.memory.briefing_gen import compress_story
 from subagent.memory.manager import ApplyResult, MemoryManager

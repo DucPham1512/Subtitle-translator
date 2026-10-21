@@ -133,7 +133,7 @@ class Registry:
                     check_video: Callable[[Path], tuple[bool, str]] | None = None) -> list[AddCandidate]:
         """Scan inputs and detect numbers. Registers nothing; the user confirms first."""
         if check_video is None:
-            from subagent.media import has_video_stream
+            from subagent.infra.media import has_video_stream
 
             check_video = has_video_stream
         existing = {e.source_fingerprint: e.id for e in self.load()}

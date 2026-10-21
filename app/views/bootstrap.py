@@ -304,7 +304,7 @@ class BootstrapView(QWidget):
         source = self._source()
         if source is None or not hasattr(self, "_video"):
             return
-        from subagent.media import extract_frame
+        from subagent.infra.media import extract_frame
 
         t, info = self.cal_slider.value(), self._video
         self.cal_time.setText(fmt_ms(t))
@@ -500,7 +500,7 @@ class BootstrapView(QWidget):
         source = self._source()
         if source is None:
             return
-        from subagent.media import extract_frame
+        from subagent.infra.media import extract_frame
 
         self.preview.pause()
         t = self.preview.current_ms()
@@ -526,7 +526,7 @@ class BootstrapView(QWidget):
         folder = self.services.paths.bootstrap / "sprites" / (char or "")
         if not char or not folder.is_dir():
             return
-        from subagent.media import imread
+        from subagent.infra.media import imread
 
         for f in sorted(folder.glob("*.png")):
             item = QListWidgetItem(QIcon(QPixmap.fromImage(to_qimage(imread(f)))), f.stem)

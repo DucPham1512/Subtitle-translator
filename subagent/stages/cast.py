@@ -45,7 +45,7 @@ class CastEngine:
                 "Cast recognition needs transformers + torch: pip install -e \".[cast]\" (see README)") from exc
         from transformers.utils import logging as hf_logging
 
-        from subagent.device import torch_device
+        from subagent.infra.device import torch_device
 
         hf_logging.disable_progress_bar()       # progress output is ours (--progress json)
         self.cfg = config.cast
@@ -230,7 +230,7 @@ def talking_index(motions: list[float | None], dominance: float) -> int | None:
 # -- video -----------------------------------------------------------------------------------------
 
 def _ffmpeg() -> str:
-    from subagent.media import require_binary
+    from subagent.infra.media import require_binary
 
     return require_binary("ffmpeg")
 

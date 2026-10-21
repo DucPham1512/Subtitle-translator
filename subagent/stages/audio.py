@@ -7,8 +7,8 @@ import os
 import wave
 
 from subagent.context import EpisodeContext
-from subagent.media import require_binary
-from subagent.media import run as run_cmd
+from subagent.infra.media import require_binary
+from subagent.infra.media import run as run_cmd
 
 
 def write_silence(path: os.PathLike, sample_rate: int) -> None:

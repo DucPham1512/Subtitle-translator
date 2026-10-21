@@ -181,7 +181,7 @@ def rename(root: Path, old: str, new: str) -> Path:
 
 def _refuse_while_jobs_run(root: Path, slug: str | None = None) -> None:
     """No series change while a job of that series (or of the single-series layout) runs."""
-    from subagent.joblock import running_jobs
+    from subagent.infra.joblock import running_jobs
     from subagent.kernel.errors import JobRunningError
     from subagent.settings.config import load_config
 

@@ -37,7 +37,7 @@ def baseline_dir(paths: Paths, name: str) -> Path:
 
 
 def _git_head(folder: Path) -> str | None:
-    from subagent.media import git
+    from subagent.infra.media import git
 
     if not (folder / ".git").exists():
         return None
@@ -47,7 +47,7 @@ def _git_head(folder: Path) -> str | None:
 def memory_at_run(paths: Paths, work: Path, episode_id: str) -> str | None:
     """The memory commit the episode's machine output was made with: the newest memory commit made before its
     first memory-reading stage started (an earlier episode finished again later does not count)."""
-    from subagent.media import git
+    from subagent.infra.media import git
     from subagent.pipeline import RERUN_FROM
 
     st = load_state(work, episode_id).stages.get(RERUN_FROM)

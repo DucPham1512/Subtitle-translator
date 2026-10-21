@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from subagent.episodes import AddCandidate, Registry
-from subagent.joblock import job_lock_path, running_jobs
+from subagent.infra.joblock import job_lock_path, running_jobs
 from subagent.kernel.models import (
     CastLine,
     Episode,
@@ -255,7 +255,7 @@ class Services:
                    video: VideoInfo | None):
         """The frame the cast stage used for a line (BGR, full video size) and the subtitle band crop
         (x, y, w, h). Raises when the video is missing."""
-        from subagent.media import extract_frame, probe
+        from subagent.infra.media import extract_frame, probe
         from subagent.stages.cast import frame_time_ms
 
         ep = self.registry.get(ep_id)
@@ -288,9 +288,9 @@ class Services:
     def line_ocr_crop(self, ep_id: str, event: SubtitleEvent | None):
         """What OCR read for a line (band-sized grey image; ocr_crops/, temporary): the line's first reading whose
         text is the line's raw OCR text, else its first reading. None when no crop was saved."""
+        from subagent.infra.media import imread
         from subagent.kernel.models import OcrReading
         from subagent.kernel.textutil import normalize_zh
-        from subagent.media import imread
         from subagent.stages.ocr import crop_path
 
         work = self.paths.episode_dir(ep_id)
@@ -317,7 +317,7 @@ class Services:
         save_draft(self.paths.episode_dir(ep_id), lines)
 
     def video_info(self, ep_id: str) -> VideoInfo:
-        from subagent.media import probe
+        from subagent.infra.media import probe
 
         work = self.paths.episode_dir(ep_id)
         if (work / "video.json").is_file():

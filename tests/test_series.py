@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from subagent.kernel.errors import ConfigError, SubagentError
-from subagent.llm import SERIES_NOTES, load_prompt
+from subagent.llm.client import SERIES_NOTES, load_prompt
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import _prompt_hash
 from subagent.settings import series as sr

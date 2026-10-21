@@ -63,7 +63,7 @@ def test_reading_detects_multiple_rows_and_low_confidence(project):
 
 def test_ocr_stage_with_fake_engine(project):
     config, paths = project
-    from subagent.media import imwrite_png
+    from subagent.infra.media import imwrite_png
 
     ctx = EpisodeContext(config, paths, make_episode(paths))
     ctx.work.mkdir(parents=True)

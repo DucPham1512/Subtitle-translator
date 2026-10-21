@@ -161,7 +161,7 @@ def card_info(paths: Paths, config: Config, char_id: str, *, current: str | None
 def _frame(paths: Paths, config: Config, episode_id: str, event_id: str, start_ms: int, end_ms: int,
            source: Path) -> np.ndarray | None:
     """The frame the cast stage analysed for a line (BGR), else the video frame at the same time."""
-    from subagent.media import extract_frame, probe
+    from subagent.infra.media import extract_frame, probe
     from subagent.stages.cast import frame_time_ms, load_frame
 
     work = paths.episode_dir(episode_id)
@@ -183,7 +183,7 @@ def _source(paths: Paths, episode_id: str) -> Path:
 
 
 def _cut_clip(paths: Paths, config: Config, episode_id: str, start_ms: int, end_ms: int, out: Path) -> None:
-    from subagent.media import extract_clip
+    from subagent.infra.media import extract_clip
 
     source = _source(paths, episode_id)
     if source.is_file():
@@ -193,7 +193,7 @@ def _cut_clip(paths: Paths, config: Config, episode_id: str, start_ms: int, end_
 def _cut_picture(paths: Paths, config: Config, episode_id: str, event_id: str, start_ms: int, end_ms: int,
                  box: list[float], out: Path) -> None:
     """The picture of `box` (cast frame coordinates) on the line's frame."""
-    from subagent.media import imwrite_png
+    from subagent.infra.media import imwrite_png
 
     frame = _frame(paths, config, episode_id, event_id, start_ms, end_ms, _source(paths, episode_id))
     if frame is None:

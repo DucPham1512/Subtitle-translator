@@ -11,7 +11,7 @@ from subagent.context import EpisodeContext
 from subagent.kernel.models import SubtitleEvent
 from subagent.kernel.textutil import edit_distance, keep_cjk
 from subagent.kernel.util import chunked, read_jsonl, write_jsonl
-from subagent.llm import build_messages, load_prompt
+from subagent.llm.client import build_messages, load_prompt
 from subagent.memory.prefix import ocr_fix_prefix
 from subagent.memory.store import MemoryStore
 

@@ -100,7 +100,7 @@ def align(gold: list[ReviewedLine], events: list[SubtitleEvent]) -> dict[str, st
 
 def characters_at(memory: Path, sha: str | None, cache: dict[str, set[str]] | None = None) -> set[str]:
     """Character ids in memory.db at a memory commit (read with git show; nothing is checked out)."""
-    from subagent.media import require_binary, run
+    from subagent.infra.media import require_binary, run
 
     if not sha or not (memory / ".git").exists():
         return set()

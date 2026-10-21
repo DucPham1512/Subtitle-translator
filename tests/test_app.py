@@ -537,7 +537,7 @@ def test_bootstrap_learns_the_subtitle_style_as_a_job(qapp, project, monkeypatch
 
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent.media import imwrite_png
+    from subagent.infra.media import imwrite_png
     from subagent.subtitle_style import SubtitleStyle, save_style
 
     config, paths = project
@@ -649,7 +649,7 @@ def test_character_browser_lists_cards_and_assigns(qapp):
 
 
 def test_use_this_line_pins_the_card_sample(qapp, project, monkeypatch):
-    import subagent.media as media
+    import subagent.infra.media as media
     from app.main_window import MainWindow
     from app.services import Services
 

@@ -123,7 +123,7 @@ def test_cli_status_and_add(project, tmp_path, capsys, monkeypatch):
     video = tmp_path / "vids" / "第2集.mp4"
     video.parent.mkdir()
     video.write_bytes(b"v" * 5000)
-    monkeypatch.setattr("subagent.media.has_video_stream", lambda p: (True, ""))
+    monkeypatch.setattr("subagent.infra.media.has_video_stream", lambda p: (True, ""))
     assert main(["add", str(video.parent), "--yes"]) == 0
     assert "registered ep002" in capsys.readouterr().out
     assert main(["--progress", "json", "status", "2", "--json"]) == 0
