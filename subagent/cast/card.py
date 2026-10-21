@@ -161,8 +161,8 @@ def card_info(paths: Paths, config: Config, char_id: str, *, current: str | None
 def _frame(paths: Paths, config: Config, episode_id: str, event_id: str, start_ms: int, end_ms: int,
            source: Path) -> np.ndarray | None:
     """The frame the cast stage analysed for a line (BGR), else the video frame at the same time."""
+    from subagent.cast.cast import frame_time_ms, load_frame
     from subagent.infra.media import extract_frame, probe
-    from subagent.stages.cast import frame_time_ms, load_frame
 
     work = paths.episode_dir(episode_id)
     frame = load_frame(work, event_id)                      # RGB, until cleanup

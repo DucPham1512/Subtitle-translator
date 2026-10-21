@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from subagent.cast import cast
+from subagent.cast.learning import learn_sprites, plan
 from subagent.kernel.models import (
     CastDetection,
     CastLine,
@@ -18,8 +20,6 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.manager import MemoryManager
-from subagent.memory.sprite_learning import learn_sprites, plan
-from subagent.stages import cast
 from subagent.workspace.context import EpisodeContext
 from subagent.workspace.state import save_state
 from tests.conftest import make_episode, register_episode, sample_events, seed_memory, write_events
@@ -220,7 +220,7 @@ def test_backfill_runs_cast_where_missing_then_learns(project, monkeypatch):
         np.save(ctx.artifact("cast_embeddings.npy"), embs)
         return {"lines": len(lines)}
 
-    monkeypatch.setattr("subagent.stages.cast.run", fake_cast)
+    monkeypatch.setattr("subagent.cast.cast.run", fake_cast)
     out = Pipeline(config, paths).learn_sprites_backfill()
     assert ran == ["ep001"] and out[0][0] == "ep001" and out[0][1]["named"] == 1
     assert Pipeline(config, paths).learn_sprites_backfill()[0][1] == out[0][1]     # second run: nothing relearned
@@ -228,7 +228,7 @@ def test_backfill_runs_cast_where_missing_then_learns(project, monkeypatch):
 
 
 def test_reviewer_box_labels_teach_first(project):
-    from subagent.stages.cast import NOT_A_CHARACTER
+    from subagent.cast.cast import NOT_A_CHARACTER
     from subagent.stages.review import compute_edits
 
     config, _ = project
@@ -246,8 +246,8 @@ def test_reviewer_box_labels_teach_first(project):
 
 
 def test_reviewer_box_edits_and_talking_mark_teach(project):
+    from subagent.cast.learning import apply_review_edits
     from subagent.kernel.models import CastBoxEdit
-    from subagent.memory.sprite_learning import apply_review_edits
 
     config, _ = project
     lines, embs = _lines([(["stranger", "lin_yuan"], 1)])            # detector: lin_yuan talks; shi_zun was missed

@@ -132,9 +132,9 @@ def test_old_memory_gets_the_new_columns(project):
 
 
 def test_generic_characters_are_never_matched_or_learned(project):
+    from subagent.cast.cast import build_bank
     from subagent.kernel.models import NewVoice
     from subagent.memory.prefix import new_voices_block
-    from subagent.stages.cast import build_bank
 
     m = _setup(project, "npc_005_01")
     m.write_voices({"lin_yuan": (np.array([1, 0, 0], np.float32), 3), "shi_zun": (np.array([0, 1, 0], np.float32), 3)})

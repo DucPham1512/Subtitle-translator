@@ -83,7 +83,7 @@ def plan(lines: list[CastLine], embs: np.ndarray, speakers: dict[str, str], bank
     stats: exemplar id -> (right, wrong) so far.
     labels: event id -> {detection position: character id or NOT_A_CHARACTER} from the reviewer.
     """
-    from subagent.stages.cast import match
+    from subagent.cast.cast import match
 
     cfg = config.cast
     label: dict[int, tuple[str, float, int | None]] = {}
@@ -111,7 +111,7 @@ def plan(lines: list[CastLine], embs: np.ndarray, speakers: dict[str, str], bank
 def _apply_labels(st: _Plan, lines: list[CastLine], labels: dict[str, dict[str, str]] | None) -> None:
     """The reviewer's box labels come first: the box is that character (or no character); the exemplar that had
     named it gains a right or a wrong."""
-    from subagent.stages.cast import NOT_A_CHARACTER
+    from subagent.cast.cast import NOT_A_CHARACTER
 
     for ln in lines:
         for pos, lab in (labels or {}).get(ln.event_id, {}).items():
@@ -156,7 +156,7 @@ def _name_unknowns(st: _Plan, lines: list[CastLine], embs: np.ndarray, talking: 
                    cfg) -> None:
     """Unknown sprites of this episode get the speaker their talking lines vote for (a few passes, as each new name
     explains more lines)."""
-    from subagent.stages.cast import group_unknowns
+    from subagent.cast.cast import group_unknowns
 
     unknown_idx = [d.index for ln in lines for d in ln.detections if d.index not in st.label
                    and d.index not in st.decided]
@@ -231,8 +231,8 @@ def apply_review_edits(lines: list[CastLine], embs: np.ndarray, reviewed: dict[s
 
 def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn | None = None) -> SpriteLearnResult:
     """Teach the sprite bank from one finished episode and commit the change to memory."""
+    from subagent.cast.cast import build_bank
     from subagent.memory.manager import MemoryManager
-    from subagent.stages.cast import build_bank
 
     work = paths.episode_dir(episode_id)
     lines = read_jsonl(work / "cast.jsonl", CastLine)
@@ -244,7 +244,7 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
     store = manager.store
     known = store.character_ids()
     speakers = trusted_speakers(paths, config, episode_id, known)
-    from subagent.stages.cast import NOT_A_CHARACTER
+    from subagent.cast.cast import NOT_A_CHARACTER
 
     reviewed = {x.event_id: x for x in read_jsonl(work / "approved.jsonl", ReviewedLine) if not x.deleted
                 and (x.cast_labels or x.cast_boxes or x.cast_added or x.cast_talking)}
@@ -276,10 +276,10 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
 def _frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | None:
     """Describe boxes cut from a line's analysed frame (saved by the cast stage; else cut from the video at the
     same time). None when the image model cannot load: geometry edits are then skipped, labels still count."""
+    from subagent.cast.cast import crop, frame_time_ms, get_engine, load_frame
     from subagent.infra.media import extract_frame, probe
     from subagent.kernel.errors import ModelUnavailableError
     from subagent.kernel.models import SubtitleEvent
-    from subagent.stages.cast import crop, frame_time_ms, get_engine, load_frame
     from subagent.workspace.episodes import Registry
 
     try:

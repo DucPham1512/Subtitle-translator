@@ -291,7 +291,7 @@ def score_speakers(config: Config, paths: Paths, gold: Gold, system: Path) -> di
 def gold_boxes(line: ReviewedLine, cast: CastLine) -> tuple[list[tuple[list[float], str]], list[float] | None]:
     """The checked line's boxes as the reviewer left them: (box, character | UNKNOWN | NOT_A_CHARACTER), and the
     talking box (None: nobody on screen talks). Mirrors sprite_learning.apply_review_edits."""
-    from subagent.character_card import shown_talking_box
+    from subagent.cast.card import shown_talking_box
 
     boxes = []
     for k, d in enumerate(cast.detections):

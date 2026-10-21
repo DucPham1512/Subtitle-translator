@@ -255,8 +255,8 @@ class Services:
                    video: VideoInfo | None):
         """The frame the cast stage used for a line (BGR, full video size) and the subtitle band crop
         (x, y, w, h). Raises when the video is missing."""
+        from subagent.cast.cast import frame_time_ms
         from subagent.infra.media import extract_frame, probe
-        from subagent.stages.cast import frame_time_ms
 
         ep = self.registry.get(ep_id)
         source = Path(ep.source_path)
@@ -265,7 +265,7 @@ class Services:
         info = video or probe(source)
         t_ms = frame_time_ms(event, self.config.cast.sample_fps) if event else (start_ms + end_ms) // 2
         frame = extract_frame(source, t_ms, size=(info.width, info.height))
-        from subagent.stages.cast import load_frame
+        from subagent.cast.cast import load_frame
 
         analysed = load_frame(self.paths.episode_dir(ep_id), event.id) if event else None
         return frame, self.config.video.subtitle_band.pixels(info.width, info.height), analysed
@@ -273,7 +273,7 @@ class Services:
     def character_card(self, ep_id: str, char_id: str, draft: list[ReviewedLine], media: bool = True):
         """Who an id is (6.4): name, description, first episode, and a voice clip and picture from its example
         line (cut once, cached). `draft`: the lines of the episode under review."""
-        from subagent.character_card import card_info, card_media
+        from subagent.cast.card import card_info, card_media
 
         card = card_info(self.paths, self.config, char_id, current=ep_id, draft=draft)
         return card_media(self.paths, self.config, card) if media else card
@@ -281,7 +281,7 @@ class Services:
     def pin_character_card(self, ep_id: str, line: ReviewedLine, cast: CastLine | None):
         """"Use this line": the line's voice and the box shown as talking in On screen (none: no picture) become
         its speaker's card sample. The card only; memory learns nothing from it."""
-        from subagent.character_card import pin_card, shown_talking_box
+        from subagent.cast.card import pin_card, shown_talking_box
 
         return pin_card(self.paths, self.config, line.speaker, ep_id, line, shown_talking_box(line, cast))
 

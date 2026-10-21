@@ -508,7 +508,7 @@ class BootstrapView(QWidget):
                   lambda exc: show_error(self, self.tr("Sprites"), exc))
 
     def _save_sprite(self) -> None:
-        from subagent.stages.sprite import save_template
+        from subagent.cast.sprite import save_template
 
         char = self._char_id(self.sprite_char)
         crop = self.sprite_selector.crop()

@@ -62,8 +62,8 @@ def _session_bank(bank, additions, removals):
 def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[ReviewedLine], known: set[str],
              embed) -> tuple[dict[str, dict[str, tuple[str | None, float]]], dict[str, str | None], PartialResult]:
     """(event -> {position: (character, similarity)}, event -> talking character) for remaining lines."""
-    from subagent.memory.sprite_learning import _frame_embedder, apply_review_edits, plan
-    from subagent.stages.cast import build_bank, match
+    from subagent.cast.cast import build_bank, match
+    from subagent.cast.learning import _frame_embedder, apply_review_edits, plan
 
     result = PartialResult()
     work = paths.episode_dir(episode_id)

@@ -96,7 +96,7 @@ STAGES: list[StageDef] = [
     StageDef("audio", _lazy("subagent.voice.audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
     StageDef("voice", _lazy("subagent.voice.voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
              identification=True),
-    StageDef("cast", _lazy("subagent.stages.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
+    StageDef("cast", _lazy("subagent.cast.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
              extra=_source_key, identification=True),
     StageDef("pinyin", _lazy("subagent.stages.pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
              prompts=["polyphone_system"], llm_roles=["utility"]),
@@ -104,7 +104,7 @@ STAGES: list[StageDef] = [
     StageDef("translate", _lazy("subagent.stages.translate"), ["ocr_fix", "voice", "cast", "windows"],
              ["translate", "evaluate", "show", "sprite"], ["translations.jsonl", "evaluations.jsonl"],
              prompts=["translator_system", "evaluator_system"], llm_roles=["translator", "evaluator"]),
-    StageDef("sprite", _lazy("subagent.stages.sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
+    StageDef("sprite", _lazy("subagent.cast.sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
     StageDef("script_review", _lazy("subagent.stages.script_review"), ["translate", "sprite"], ["script_review"],
              ["script_review.jsonl"], prompts=["script_review_system"], llm_roles=["utility"]),
     StageDef("review", _review_run, ["pinyin", "sprite", "script_review"], ["review"], []),
@@ -561,7 +561,7 @@ class Pipeline:
         """The episode's trusted speakers teach the sprite bank (5.8b). Never fails the episode."""
         if not (self.config.show.character_identification and self.config.cast.enabled and self.config.cast.learn)                 or not ctx.artifact("cast.jsonl").is_file():
             return
-        from subagent.memory.sprite_learning import learn_sprites
+        from subagent.cast.learning import learn_sprites
 
         state = load_state(ctx.work, ctx.episode.id)
         key = sha256_json({"cast": hash_path(ctx.artifact("cast.jsonl")),

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from subagent.character_card import card_info, card_media, confirmed_box, pin_card, shown_talking_box
+from subagent.cast.card import card_info, card_media, confirmed_box, pin_card, shown_talking_box
 from subagent.kernel.models import CastBoxEdit, CastDetection, CastLine, ReviewedLine
 from subagent.kernel.util import write_jsonl
 from tests.conftest import register_episode, seed_memory

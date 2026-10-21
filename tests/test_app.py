@@ -631,7 +631,7 @@ def test_character_browser_lists_cards_and_assigns(qapp):
 
     from app.views.character_browser import CharacterBrowser
     from app.widgets import ClipPlayer
-    from subagent.character_card import CharacterCard
+    from subagent.cast.card import CharacterCard
 
     parent = QWidget()
     cards = {"npc_001_01": CharacterCard(id="npc_001_01", name="npc_001_01", first_episode="ep001", kind="candidate"),

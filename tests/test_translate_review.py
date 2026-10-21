@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from subagent.cast import sprite
 from subagent.kernel.errors import ReviewIncompleteError, SubagentError
 from subagent.kernel.models import (
     Evaluation,
@@ -14,7 +15,7 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import atomic_write_json, read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.stages import review, sprite, translate
+from subagent.stages import review, translate
 from subagent.stages.evaluate import RuleContext, rule_checks
 from subagent.stages.windows import build_windows
 from subagent.workspace.context import EpisodeContext
