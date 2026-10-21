@@ -139,7 +139,7 @@ def test_the_look_can_stop_a_promotion():
 
 
 def test_npcs_created_in_review_are_ids_of_their_episode(project):
-    from subagent.characters import episode_character_ids, review_voice_ids
+    from subagent.memory.characters import episode_character_ids, review_voice_ids
 
     config, paths = project
     lines = _lines("ep006", [1, 2], "npc_006_03") + _lines("ep006", [3], "npc_005_02")   # another episode's id

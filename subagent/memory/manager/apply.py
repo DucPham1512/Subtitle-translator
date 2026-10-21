@@ -7,7 +7,6 @@ import logging
 import re
 import sqlite3
 
-from subagent.characters import is_unnamed
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import MemoryProposal
 from subagent.kernel.util import (
@@ -18,6 +17,7 @@ from subagent.kernel.util import (
     sha256_json,
 )
 from subagent.memory import briefings as bf
+from subagent.memory.characters import is_unnamed
 from subagent.memory.manager.proposals import (  # noqa: F401
     _PUNCT,
     merge_proposals,

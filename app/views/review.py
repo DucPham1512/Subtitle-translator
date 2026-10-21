@@ -511,7 +511,7 @@ class ReviewView(QWidget):
 
     def _new_npc(self) -> None:
         """A new automatic id for this line's speaker; no memory write (probation decides at finish, 5.15b)."""
-        from subagent.characters import is_auto_id, new_voice_id
+        from subagent.memory.characters import is_auto_id, new_voice_id
 
         if self.data is None or self.data.read_only or self.current is None:
             return

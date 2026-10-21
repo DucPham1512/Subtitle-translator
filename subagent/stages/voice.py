@@ -165,7 +165,7 @@ def find_new_voices(results: list[SpeakerCandidates], embs: dict[str, np.ndarray
     one (≥ `accept_score` and `min_margin` above its best known character), or a group whose average voice does
     (≥ `new_voice_similarity`), keeps the candidate's id instead of getting a new one.
     """
-    from subagent.characters import new_voice_id
+    from subagent.memory.characters import new_voice_id
 
     back_bank = {c.id: c.embedding for c in returning or [] if c.embedding is not None}
     cand = [r for r in results if r.event_id in embs and r.status in ("unknown", "confusable")
@@ -256,7 +256,7 @@ def run(ctx: EpisodeContext, embed=None) -> dict[str, int]:
         embed = get_embedder(ctx.config, ctx.paths).embed
     elif not bank:
         log.info("voice: voice bank is empty; every event is 'unknown'")
-    from subagent.characters import save_new_voices
+    from subagent.memory.characters import save_new_voices
 
     results: list[SpeakerCandidates] = []
     embs: dict[str, np.ndarray] = {}

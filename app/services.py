@@ -347,7 +347,7 @@ class Services:
 
     def episode_voices(self, ep_id: str | None) -> dict[str, str]:
         """id -> kind: "voice" (found this episode), "review" (created in review), "candidate:<first episode>"."""
-        from subagent.characters import draft_voice_ids, load_new_voices
+        from subagent.memory.characters import draft_voice_ids, load_new_voices
 
         if not ep_id:
             return {}

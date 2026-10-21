@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from subagent.characters import (
+from subagent.kernel.models import LineTranslation, MemoryProposal, NewVoice, ReviewedLine, SpeakerCandidates
+from subagent.memory.characters import (
     episode_character_ids,
     is_auto_id,
     is_unnamed,
     load_new_voices,
     save_new_voices,
 )
-from subagent.kernel.models import LineTranslation, MemoryProposal, NewVoice, ReviewedLine, SpeakerCandidates
 from subagent.memory.manager import MemoryManager
 from subagent.memory.prefix import new_voices_block
 from subagent.stages.evaluate import RuleContext, rule_checks

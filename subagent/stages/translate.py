@@ -217,7 +217,7 @@ class WindowTranslator:
         self.ctx = ctx
         self.events = events
         self.speakers = speakers
-        from subagent.characters import load_new_voices
+        from subagent.memory.characters import load_new_voices
 
         store = MemoryStore(ctx.paths.memory_db)
         self.identify = ctx.config.show.character_identification

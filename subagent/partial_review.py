@@ -23,9 +23,9 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from subagent.characters import episode_character_ids
 from subagent.kernel.models import CastLine, PartialSuggestion, ReviewedLine, SpeakerCandidates, SubtitleEvent
 from subagent.kernel.util import read_jsonl, write_jsonl
+from subagent.memory.characters import episode_character_ids
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config, Paths
 from subagent.workspace.episodes import Registry

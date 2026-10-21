@@ -383,7 +383,7 @@ class Pipeline:
         with job_lock(self.paths, episode.id), _episode_log(ctx.work):
             self.registry.set_status(episode.id, "running")
             try:
-                from subagent.characters import episode_character_ids
+                from subagent.memory.characters import episode_character_ids
 
                 store = MemoryStore(self.paths.memory_db)
                 waiting = {c.id for c in store.returning_candidates(episode.number, self.config.memory.probation_window)}
@@ -499,7 +499,7 @@ class Pipeline:
         approved = read_jsonl(ctx.artifact("approved.jsonl"), ReviewedLine)
         translations = read_jsonl(ctx.artifact("translations.jsonl"), LineTranslation)
         edits = read_jsonl(ctx.artifact("edits.jsonl"), EditRecord)
-        from subagent.characters import load_new_voices, review_voice_ids
+        from subagent.memory.characters import load_new_voices, review_voice_ids
 
         voices = load_new_voices(ctx.work)
         known = MemoryStore(self.paths.memory_db).character_ids() | {v.id for v in voices}
