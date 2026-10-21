@@ -758,7 +758,7 @@ def test_series_picker_switches_the_window_to_another_series(qapp, project):
     from app import main_window as mw
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent.settings import series as sr
+    from subagent.workspace import series as sr
 
     config, paths = project
     seed_memory(config, paths)

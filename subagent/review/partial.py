@@ -63,7 +63,7 @@ def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[Reviewed
              embed) -> tuple[dict[str, dict[str, tuple[str | None, float]]], dict[str, str | None], PartialResult]:
     """(event -> {position: (character, similarity)}, event -> talking character) for remaining lines."""
     from subagent.cast.cast import build_bank, match
-    from subagent.cast.learning import _frame_embedder, apply_review_edits, plan
+    from subagent.cast.learning import apply_review_edits, frame_embedder, plan
 
     result = PartialResult()
     work = paths.episode_dir(episode_id)
@@ -75,7 +75,7 @@ def _sprites(config: Config, paths: Paths, episode_id: str, draft: list[Reviewed
     speakers = {e: x.speaker for e, x in approved.items() if x.line_type == "dialogue" and x.speaker in known}
     edited = {e: x for e, x in approved.items() if x.cast_labels or x.cast_boxes or x.cast_added or x.cast_talking}
     if embed is None and any(x.cast_boxes or x.cast_added for x in edited.values()):
-        embed = _frame_embedder(config, paths, episode_id)
+        embed = frame_embedder(config, paths, episode_id)
     lines, embs, labels = apply_review_edits(lines, embs, edited, speakers, embed)
     store = MemoryStore(paths.memory_db)
     bank = build_bank(store)

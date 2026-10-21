@@ -184,7 +184,7 @@ class NewSeriesDialog(QDialog):
             self._fill_styles(select=dialog.saved)
 
     def _check(self) -> None:
-        from subagent.settings import series as sr
+        from subagent.workspace import series as sr
 
         try:
             sr.check_slug(self.slug.text().strip())
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
         if slug == self.NEW_SERIES:
             dialog = NewSeriesDialog(self, self.services.root)
             if dialog.exec():
-                from subagent.settings import series as sr
+                from subagent.workspace import series as sr
 
                 try:
                     sr.add(self.services.root, *dialog.values(), **dialog.pronouns())
@@ -336,7 +336,7 @@ class MainWindow(QMainWindow):
 
     def switch_series(self, slug: str, then: str | None = None) -> None:
         """Make `slug` the default series and rebuild the window around it (every screen reloads)."""
-        from subagent.settings import series as sr
+        from subagent.workspace import series as sr
 
         if self.jobs.is_running() or self.services.jobs_running():
             QMessageBox.information(self, self.tr("Series"),

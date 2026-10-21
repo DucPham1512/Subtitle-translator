@@ -249,7 +249,7 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
     reviewed = {x.event_id: x for x in read_jsonl(work / "approved.jsonl", ReviewedLine) if not x.deleted
                 and (x.cast_labels or x.cast_boxes or x.cast_added or x.cast_talking)}
     if embed is None and any(x.cast_boxes or x.cast_added for x in reviewed.values()):
-        embed = _frame_embedder(config, paths, episode_id)
+        embed = frame_embedder(config, paths, episode_id)
     lines, embs, raw = apply_review_edits(lines, embs, reviewed, speakers, embed)
     labels = {e: {k: v for k, v in lab.items() if v in known or v == NOT_A_CHARACTER} for e, lab in raw.items()}
     # learning this episode again (a re-finished review) first takes back what it did last time
@@ -273,7 +273,7 @@ def learn_sprites(config: Config, paths: Paths, episode_id: str, embed: EmbedFn 
     return result
 
 
-def _frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | None:
+def frame_embedder(config: Config, paths: Paths, episode_id: str) -> EmbedFn | None:
     """Describe boxes cut from a line's analysed frame (saved by the cast stage; else cut from the video at the
     same time). None when the image model cannot load: geometry edits are then skipped, labels still count."""
     from subagent.cast.cast import crop, frame_time_ms, get_engine, load_frame

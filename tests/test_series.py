@@ -10,8 +10,8 @@ from subagent.kernel.errors import ConfigError, SubagentError
 from subagent.llm.client import SERIES_NOTES, load_prompt
 from subagent.memory.store import MemoryStore
 from subagent.pipeline import prompt_hash
-from subagent.settings import series as sr
 from subagent.settings.config import load_config, update_config_values
+from subagent.workspace import series as sr
 from tests.conftest import seed_memory
 
 
