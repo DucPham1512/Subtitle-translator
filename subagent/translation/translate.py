@@ -31,7 +31,7 @@ from subagent.memory.prefix import (
 )
 from subagent.memory.store import MemoryStore
 from subagent.settings.config import Config
-from subagent.stages.evaluate import (
+from subagent.translation.evaluate import (
     RULE_FLAGS,
     RuleContext,
     judge,

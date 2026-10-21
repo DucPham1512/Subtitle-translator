@@ -13,7 +13,7 @@ from subagent.memory.store import MemoryStore
 from subagent.settings import series as sr
 from subagent.settings.config import ShowConfig, load_config, parse_config
 from subagent.stages import review as review_stage
-from subagent.stages.translate import mode_prompt
+from subagent.translation.translate import mode_prompt
 from subagent.workspace.state import load_state
 from tests.conftest import register_episode, seed_memory, user_json
 from tests.test_pipeline import VI, WHO, _handlers, _pipeline, calls, stubs  # noqa: F401 - fixtures

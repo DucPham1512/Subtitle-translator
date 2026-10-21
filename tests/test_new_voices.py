@@ -14,7 +14,7 @@ from subagent.memory.characters import (
 )
 from subagent.memory.manager import MemoryManager
 from subagent.memory.prefix import new_voices_block
-from subagent.stages.evaluate import RuleContext, rule_checks
+from subagent.translation.evaluate import RuleContext, rule_checks
 from subagent.voice.voice import find_new_voices, group_voices
 from tests.conftest import sample_events, seed_memory
 

@@ -45,7 +45,7 @@ def test_a_series_takes_its_styles_text_and_pronoun_words(project):
 
 def test_the_translator_prompt_uses_the_series_style(project):
     from subagent.pipeline import _prompt_hash
-    from subagent.stages.translate import translator_static
+    from subagent.translation.translate import translator_static
 
     config, paths = project
     save_register(paths.root, "hien_dai", "Hiện đại", "## Register: hiện đại\n\nModern city life.\n", ["tôi"])

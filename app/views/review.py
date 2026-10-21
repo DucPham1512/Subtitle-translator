@@ -1229,7 +1229,7 @@ class ReviewView(QWidget):
         if not self.data or self.current is None or self.rules is None:
             self.warnings.clear()
             return
-        from subagent.stages.evaluate import rule_checks
+        from subagent.translation.evaluate import rule_checks
 
         line = self.lines[self.current]
         event = self.data.events.get(line.event_id)

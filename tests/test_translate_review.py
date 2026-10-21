@@ -15,9 +15,10 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import atomic_write_json, read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.stages import review, translate
-from subagent.stages.evaluate import RuleContext, rule_checks
-from subagent.stages.windows import build_windows
+from subagent.stages import review
+from subagent.translation import translate
+from subagent.translation.evaluate import RuleContext, rule_checks
+from subagent.translation.windows import build_windows
 from subagent.workspace.context import EpisodeContext
 from tests.conftest import make_episode, make_llm, sample_events, seed_memory, user_json, write_events
 

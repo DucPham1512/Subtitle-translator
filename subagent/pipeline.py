@@ -98,14 +98,14 @@ STAGES: list[StageDef] = [
              identification=True),
     StageDef("cast", _lazy("subagent.cast.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
              extra=_source_key, identification=True),
-    StageDef("pinyin", _lazy("subagent.stages.pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
+    StageDef("pinyin", _lazy("subagent.translation.pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
              prompts=["polyphone_system"], llm_roles=["utility"]),
-    StageDef("windows", _lazy("subagent.stages.windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
-    StageDef("translate", _lazy("subagent.stages.translate"), ["ocr_fix", "voice", "cast", "windows"],
+    StageDef("windows", _lazy("subagent.translation.windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
+    StageDef("translate", _lazy("subagent.translation.translate"), ["ocr_fix", "voice", "cast", "windows"],
              ["translate", "evaluate", "show", "sprite"], ["translations.jsonl", "evaluations.jsonl"],
              prompts=["translator_system", "evaluator_system"], llm_roles=["translator", "evaluator"]),
     StageDef("sprite", _lazy("subagent.cast.sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
-    StageDef("script_review", _lazy("subagent.stages.script_review"), ["translate", "sprite"], ["script_review"],
+    StageDef("script_review", _lazy("subagent.translation.script_review"), ["translate", "sprite"], ["script_review"],
              ["script_review.jsonl"], prompts=["script_review_system"], llm_roles=["utility"]),
     StageDef("review", _review_run, ["pinyin", "sprite", "script_review"], ["review"], []),
 ]
@@ -526,7 +526,7 @@ class Pipeline:
         """What the reviewer removed and kept, for the script reviewer's memory. Lossless repeat merges are not
         the reviewer's decision; short lines kept and pre-deleted lines restored count as kept."""
         from subagent.stages.review import original_draft
-        from subagent.stages.script_review import han_count
+        from subagent.translation.script_review import han_count
 
         rc = self.config.review
         original = {x.event_id: x for x in original_draft(ctx.work, rc.predelete_fragments, rc.noise_max_han)}

@@ -109,7 +109,7 @@ def test_stage_records_cast_and_talker(project):
 
 
 def test_translator_sees_the_cast(project):
-    from subagent.stages.translate import line_input
+    from subagent.translation.translate import line_input
 
     config, paths = project
     ctx = EpisodeContext(config, paths, make_episode(paths, 1))
@@ -277,8 +277,8 @@ def test_reviewer_box_edits_and_talking_mark_teach(project):
 
 
 def test_picture_veto_disputes_the_voice(project):
-    from subagent.stages.evaluate import RuleContext, rule_checks
-    from subagent.stages.translate import picture_veto
+    from subagent.translation.evaluate import RuleContext, rule_checks
+    from subagent.translation.translate import picture_veto
 
     config, paths = project
     seed_memory(config, paths)

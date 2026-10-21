@@ -326,7 +326,7 @@ class Services:
 
     def pinyin_engine(self):
         """Glossary-aware pinyin engine, rebuilt when memory changes (loads jieba: call off the UI thread)."""
-        from subagent.stages.pinyin_gen import PinyinEngine
+        from subagent.translation.pinyin_gen import PinyinEngine
 
         db = self.paths.memory_db
         key = db.stat().st_mtime if db.is_file() else None
@@ -336,7 +336,7 @@ class Services:
         return self._engine
 
     def rule_context(self, ep_id: str | None = None):
-        from subagent.stages.evaluate import RuleContext
+        from subagent.translation.evaluate import RuleContext
 
         return RuleContext(self.config, self.store, self.store.character_ids() | set(self.new_voice_ids(ep_id)))
 
