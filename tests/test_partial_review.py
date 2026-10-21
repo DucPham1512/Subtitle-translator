@@ -17,8 +17,8 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.partial_review import OUTPUT, partial_review, suggest
-from subagent.stages.review import gate, load_draft, save_draft
+from subagent.review.partial import OUTPUT, partial_review, suggest
+from subagent.review.review import gate, load_draft, save_draft
 from subagent.workspace.state import save_state
 from tests.conftest import register_episode, sample_events, seed_memory, write_events
 
@@ -113,7 +113,7 @@ def test_a_speaker_set_by_an_earlier_partial_review_may_change_again(project):
 
 def test_without_a_voice_update_the_pipeline_voice_still_counts(project, monkeypatch):
     config, paths, ep, work = _episode(project)
-    monkeypatch.setattr("subagent.partial_review._voices", lambda *a, **k: ({}, []))   # nothing re-matched
+    monkeypatch.setattr("subagent.review.partial._voices", lambda *a, **k: ({}, []))   # nothing re-matched
     write_jsonl(work / "speakers.jsonl", [SpeakerCandidates(event_id="ep001:0002", status="fixed",
                                                             candidates=[("lin_yuan", 0.8), ("shi_zun", 0.4)])])
     partial_review(config, paths, ep.id)

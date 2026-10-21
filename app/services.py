@@ -146,7 +146,7 @@ class Services:
         return out
 
     def load_review(self, ep_id: str, *, read_only: bool | None = None) -> ReviewData:
-        from subagent.stages.review import load_draft
+        from subagent.review.review import load_draft
 
         ep = self.registry.get(ep_id)
         work = self.paths.episode_dir(ep_id)
@@ -247,7 +247,7 @@ class Services:
         return "# Benchmark runs\n\n" + "\n".join(lines) + "\n\n" + report, latest
 
     def partial_suggestions(self, ep_id: str) -> dict[str, PartialSuggestion]:
-        from subagent.partial_review import OUTPUT
+        from subagent.review.partial import OUTPUT
 
         return {s.event_id: s for s in read_jsonl(self.paths.episode_dir(ep_id) / OUTPUT, PartialSuggestion)}
 
@@ -305,14 +305,14 @@ class Services:
 
     def original_lines(self, ep_id: str) -> dict[str, ReviewedLine]:
         """The pipeline's version of every line, before any review edit (Reset line / Discard review)."""
-        from subagent.stages.review import original_draft
+        from subagent.review.review import original_draft
 
         work = self.paths.episode_dir(ep_id)
         review = self.config.review
         return {line.event_id: line for line in original_draft(work, review.predelete_fragments, review.noise_max_han)}
 
     def save_draft(self, ep_id: str, lines: list[ReviewedLine]) -> None:
-        from subagent.stages.review import save_draft
+        from subagent.review.review import save_draft
 
         save_draft(self.paths.episode_dir(ep_id), lines)
 

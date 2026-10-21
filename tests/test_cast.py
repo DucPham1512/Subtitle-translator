@@ -229,7 +229,7 @@ def test_backfill_runs_cast_where_missing_then_learns(project, monkeypatch):
 
 def test_reviewer_box_labels_teach_first(project):
     from subagent.cast.cast import NOT_A_CHARACTER
-    from subagent.stages.review import compute_edits
+    from subagent.review.review import compute_edits
 
     config, _ = project
     bank = {"lin_yuan": (np.stack([_vec(1)]), [7])}                 # shi_zun's look wrongly filed as lin_yuan

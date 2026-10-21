@@ -14,7 +14,7 @@ from subagent.kernel.models import EditRecord, OcrReading, VideoInfo
 from subagent.kernel.progress import Progress
 from subagent.kernel.util import atomic_write_text, read_jsonl, write_jsonl
 from subagent.pipeline import Pipeline, episode_status
-from subagent.stages import review as review_stage
+from subagent.review import review as review_stage
 from subagent.workspace.episodes import Registry
 from subagent.workspace.state import load_state
 from tests.conftest import make_llm, register_episode, seed_memory, user_json

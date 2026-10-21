@@ -457,7 +457,7 @@ def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict
 
 def score_script_review(config: Config, gold: Gold, system: Path) -> dict:
     from subagent.ocr_benchmark import gold_lines
-    from subagent.stages.review import original_draft
+    from subagent.review.review import original_draft
 
     rc = config.review
     c = Counter()

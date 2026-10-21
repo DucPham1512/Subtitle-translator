@@ -15,7 +15,7 @@ from subagent.kernel.models import (
 )
 from subagent.kernel.util import atomic_write_json, read_jsonl, write_jsonl
 from subagent.memory.store import MemoryStore
-from subagent.stages import review
+from subagent.review import review
 from subagent.translation import translate
 from subagent.translation.evaluate import RuleContext, rule_checks
 from subagent.translation.windows import build_windows

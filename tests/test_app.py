@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from subagent.kernel.models import LineTranslation, PinyinLine  # noqa: E402
 from subagent.kernel.util import write_jsonl  # noqa: E402
-from subagent.stages.review import gate, load_draft  # noqa: E402
+from subagent.review.review import gate, load_draft  # noqa: E402
 from subagent.workspace.episodes import Registry  # noqa: E402
 from tests.conftest import register_episode, sample_events, seed_memory, write_events  # noqa: E402
 
@@ -343,7 +343,7 @@ def test_partial_review_suggestions_in_review(qapp, project, monkeypatch):
     from app.main_window import MainWindow
     from app.services import Services
     from subagent.kernel.models import PartialSuggestion
-    from subagent.partial_review import OUTPUT
+    from subagent.review.partial import OUTPUT
 
     config, paths = project
     seed_memory(config, paths)
@@ -694,7 +694,7 @@ def test_on_screen_checked_mark(qapp):
 
     from app.views.cast_panel import CastPanel
     from subagent.kernel.models import CastDetection, CastLine, ReviewedLine
-    from subagent.stages.review import compute_edits
+    from subagent.review.review import compute_edits
 
     line = CastLine(event_id="ep001:0000", talking=0, detections=[
         CastDetection(index=0, box=[100, 50, 300, 400], score=0.5, label="c", character="lin_yuan", similarity=0.81)])

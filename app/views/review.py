@@ -42,7 +42,7 @@ from app.views.common import choose_on_exists, job_busy
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
 from subagent.kernel.models import LineTranslation, ReviewedLine
-from subagent.stages.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
+from subagent.review.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
 
 LINE_TYPES = ["dialogue", "sign", "title", "sfx"]
 
@@ -767,7 +767,7 @@ class ReviewView(QWidget):
     def _regenerate_async(self, eid: str) -> None:
         if self.engine is None:
             return
-        from subagent.stages.review import regenerate_pinyin
+        from subagent.review.review import regenerate_pinyin
 
         snapshot = self.lines[eid]
         engine = self.engine
@@ -1019,7 +1019,7 @@ class ReviewView(QWidget):
             return
         if self.data is None:
             return
-        from subagent.partial_review import PARTIAL_FLAG
+        from subagent.review.partial import PARTIAL_FLAG
 
         ep_id = self.data.episode.id
         self.data.partial = self.services.partial_suggestions(ep_id)

@@ -137,7 +137,7 @@ def cmd_batch(args, config, paths, progress) -> int:
 
 def cmd_partial_review(args, config, paths, progress) -> int:
     from subagent.infra.joblock import job_lock
-    from subagent.partial_review import partial_review
+    from subagent.review.partial import partial_review
     from subagent.workspace.episodes import Registry
 
     ep = Registry(paths).resolve(args.episode)

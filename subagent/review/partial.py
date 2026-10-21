@@ -170,7 +170,7 @@ def suggest(line: ReviewedLine, original_speaker: str | None, talker: str | None
 
 def partial_review(config: Config, paths: Paths, episode_id: str, *, sprite_embed: Callable | None = None,
                    voice_embed: Callable | None = None) -> PartialResult:
-    from subagent.stages.review import load_draft, original_draft
+    from subagent.review.review import load_draft, original_draft
 
     work = paths.episode_dir(episode_id)
     draft = load_draft(work)

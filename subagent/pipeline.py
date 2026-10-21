@@ -69,7 +69,7 @@ def _style_key(ctx: EpisodeContext) -> object:
 
 
 def _review_run(ctx: EpisodeContext) -> dict:
-    from subagent.stages.review import gate
+    from subagent.review.review import gate
 
     mode = load_state(ctx.work, ctx.episode.id).mode or ctx.config.review.mode
     result = gate(ctx.work, mode, ctx.config.review.predelete_fragments, ctx.config.review.noise_max_han)
@@ -376,7 +376,7 @@ class Pipeline:
         return items
 
     def finish_review(self, ep_ref: str, *, on_exists: OnExists = "fail") -> str:
-        from subagent.stages.review import finish_review
+        from subagent.review.review import finish_review
 
         episode = self.registry.resolve(ep_ref)
         ctx = self.context(episode)
@@ -525,7 +525,7 @@ class Pipeline:
     def _line_decisions(self, ctx: EpisodeContext, approved: list[ReviewedLine]) -> tuple[list[str], list[str]]:
         """What the reviewer removed and kept, for the script reviewer's memory. Lossless repeat merges are not
         the reviewer's decision; short lines kept and pre-deleted lines restored count as kept."""
-        from subagent.stages.review import original_draft
+        from subagent.review.review import original_draft
         from subagent.translation.script_review import han_count
 
         rc = self.config.review
