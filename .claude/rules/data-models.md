@@ -1,11 +1,11 @@
 ---
 paths:
-  - "subagent/models.py"
+  - "subagent/kernel/models.py"
   - "subagent/memory/**"
 ---
 ## 4. Data models
 
-Defined in `subagent/models.py`. All JSONL artifacts are one serialized model per line.
+Defined in `subagent/kernel/models.py`. All JSONL artifacts are one serialized model per line.
 
 ```python
 class Episode(BaseModel):
@@ -141,7 +141,7 @@ class CostRecord(BaseModel):   # cost.jsonl, one per LLM call (5.1)
     priced: bool | None = None      # False: no price when the call was made; repriced once one is configured
 ```
 
-Other models in `models.py`: `VideoInfo`, `ChangeRecord`, `OcrBox`, `OcrReading`, `PinyinLine`, `Window`, `StageState`, `EpisodeState`, `CastBoxEdit` (5.8b), `PartialSuggestion` (6.4b), `AuditSample` / `AuditMark` (6.11; aspects `AUDIT_ASPECTS` = speaker, ocr, translation, pronouns; `AuditMark.na` lists aspects marked not applicable).
+Other models in `kernel/models.py`: `VideoInfo`, `ChangeRecord`, `OcrBox`, `OcrReading`, `PinyinLine`, `Window`, `StageState`, `EpisodeState`, `CastBoxEdit` (5.8b), `PartialSuggestion` (6.4b), `AuditSample` / `AuditMark` (6.11; aspects `AUDIT_ASPECTS` = speaker, ocr, translation, pronouns; `AuditMark.na` lists aspects marked not applicable).
 
 ### 4.1 SQLite schema (`data/memory/memory.db`)
 

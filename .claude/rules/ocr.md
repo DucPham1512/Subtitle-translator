@@ -1,13 +1,13 @@
 ---
 paths:
-  - "subagent/stages/ingest.py"
-  - "subagent/stages/ocr.py"
-  - "subagent/stages/events.py"
-  - "subagent/stages/ocr_fix.py"
-  - "subagent/subtitle_style.py"
+  - "subagent/ocr/ingest.py"
+  - "subagent/ocr/ocr.py"
+  - "subagent/ocr/events.py"
+  - "subagent/ocr/ocr_fix.py"
+  - "subagent/ocr/subtitle_style.py"
   - "prompts/ocr_fix_system.md"
 ---
-### 5.3 Frame sampling + change detection (`stages/ingest.py`)
+### 5.3 Frame sampling + change detection (`ocr/ingest.py`)
 
 - **Responsibility:** find the moments when the subtitle band changes, without OCR-ing every frame.
 - **Input:** episode video path.
@@ -21,7 +21,7 @@ paths:
 - **Failure handling:** missing ffmpeg or unreadable video → fail fast with a clear message.
 - **Calibration:** `python -m subagent calibrate EPISODE` saves a few sample frames with the configured band drawn as a rectangle to `work/<episode>/calibration/`, so the user can adjust `video.subtitle_band` once. The position is fixed across episodes, so this is a one-time step.
 
-### 5.4 OCR (`stages/ocr.py`)
+### 5.4 OCR (`ocr/ocr.py`)
 
 - **Responsibility:** read Chinese text from saved bands.
 - **Output:** `ocr_raw.jsonl` with `{t_ms, text, confidence, boxes}`.
@@ -42,14 +42,14 @@ paths:
   - All options default to today's behaviour; which to switch on is decided by the OCR benchmark (6.11c).
   - **Resolution** (`video.band_frames` > 1, 5.3): ingest keeps the frames that still show the same subtitle; the saved band is their per-pixel median (static text sharpens, compression noise and moving background average out) and `bands/<t>.stable.png` marks pixels that changed by at most `video.stable_range`. Plain upscaling is not used: the recognizer resizes every crop to 48 px tall.
 
-### 5.4a Generic subtitle segmentation (`subtitle_style.py`, `ocr.preprocess: segment`)
+### 5.4a Generic subtitle segmentation (`ocr/subtitle_style.py`, `ocr.preprocess: segment`)
 
 - **Calibration, once per series** (user decision 2026-10-03; `python -m subagent calibrate EPISODE --style`, or the bootstrap wizard's Calibrate step, 6.6): bands sampled across one episode (`video.calibrate_fps`, at most `calibrate_max_bands`). Candidate regions come from MSER and from connected components at a few grey levels (Otsu and fixed steps; threshold-based), in both polarities; the stroke-width transform (edge-based: Canny edges paired across each stroke along the gradient, rays capped at a third of the band height) measures their stroke widths. Text-like regions (letter-sized, stroke widths consistent, unchanged between consecutive samples) are kept. The polarity whose regions are consistently set off from their surroundings wins (an outline, itself a constant-width stroke, has fill on one side and background on the other); with an outline, only outlined regions are learned from. Saved to `data/bootstrap/subtitle_style.json` (series data, not `config.yaml`, which would lose its comments): polarity, fill grey range (two thirds of the way from the outline to the fill, leaving room for compression), outline level, stroke width and letter height as shares of the band height. A preview (band above, segmentation below) goes to `work/<episode>/calibration/style.png`. With `preprocess: segment` the OCR stage's input hash includes the style's values (not its date or region count), so a new calibration re-reads the subtitles of every episode run afterwards; other pre-processing never reads it.
 - **Segmentation, every band:** fill-range components (threshold) whose median SWT stroke width is within `seg_stroke_tolerance` of the series', at most `seg_max_height` / `seg_max_width` letter heights, ringed by the outline for at least `seg_outline_share` of their surroundings when the style has one, and at least `seg_min_stable` still when ingest saved a stability map. Region growing then adds neighbouring components on the same rows that pass every test but the stroke width (letters at a line's ends still widen the line). The result feeds line grouping, cropping and recognition like the show-tuned mask.
 - **Outline level:** a quarter of the way from the outline's typical grey towards the fill.
 - **In use** (user decision 2026-10-03): the project's `config.yaml` sets `ocr.preprocess: segment`, `recognize: line`, `mask_image: original`, `mask_scale: 1.0`, `symmetric_crop: true` (tolerance 0.75) and `video.band_frames: 5` (code defaults stay off, since segmentation needs a calibrated style). `python -m subagent check` reports a missing style; tests reset these keys (`tests/conftest.py`). Generality can only be measured on a second series with its own answer key.
 
-### 5.5 Event building (`stages/events.py`)
+### 5.5 Event building (`ocr/events.py`)
 
 - **Responsibility:** turn per-frame OCR results into subtitle events with start and end times.
 - **Details:**
@@ -65,7 +65,7 @@ paths:
   - Suspect events are not dropped. They skip voice match and go to the translator marked as suspect (5.11).
   - The report shows the suspect count, so the thresholds can be tightened or the check turned off once the show's behavior is known.
 
-### 5.6 OCR correction (`stages/ocr_fix.py`)
+### 5.6 OCR correction (`ocr/ocr_fix.py`)
 
 - **Responsibility:** fix OCR character errors (similar-looking characters) using context and the glossary.
 - **Details:**

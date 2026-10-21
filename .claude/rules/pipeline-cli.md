@@ -1,13 +1,13 @@
 ---
 paths:
-  - "subagent/stages/render.py"
-  - "subagent/pipeline.py"
+  - "subagent/output/render.py"
+  - "subagent/pipeline/**"
   - "subagent/__main__.py"
-  - "subagent/episodes.py"
-  - "subagent/delivery.py"
-  - "subagent/state.py"
+  - "subagent/workspace/episodes.py"
+  - "subagent/output/delivery.py"
+  - "subagent/workspace/state.py"
 ---
-### 5.19 Output renderer (`stages/render.py`)
+### 5.19 Output renderer (`output/render.py`)
 
 - **ASS:** `pysubs2` with two styles, both always rendered: `Pinyin` (smaller, top line) and `Vi` (larger, below), positioned inside the original subtitle band. Set `PlayResX/PlayResY` to the video resolution and scale font sizes by `height / 1080`.
   - Each approved line produces one pinyin event and one Vietnamese event with the same timing.
@@ -22,7 +22,7 @@ paths:
 - **Windows path handling:** the `ass=` filter argument breaks on drive letters and backslashes. Run ffmpeg with `cwd=work/<episode>/` and pass relative paths (`ass=output.ass:fontsdir=fonts`, with fonts copied or linked into the work dir). Never build filter strings from absolute Windows paths.
 - The font must cover Vietnamese diacritics and pinyin tone marks; check at startup that the font file exists.
 
-### 5.20 Pipeline and CLI (`pipeline.py`, `__main__.py`)
+### 5.20 Pipeline and CLI (`pipeline/`, `__main__.py`)
 
 Commands:
 
@@ -60,7 +60,7 @@ python -m subagent check                     # binaries, fonts, output folder, A
 - `report.md` per episode: stage timings, cost (total vs budget, unpriced models, cache-hit share, by role, by agent), voice-match status shares, evaluator pass rate on first attempt, retry rate, flag counts by type, flagged lines, sprite trigger/resolve counts, human edit rate. Stage counts (e.g. script review removals by source, new voices) are in `state.json` and the run log.
 - Before a run, models without a price in `llm.prices` are reported (`error_code: price_missing`).
 
-### 5.21 Episode registry (`episodes.py`)
+### 5.21 Episode registry (`workspace/episodes.py`)
 
 - **Responsibility:** add episode videos, assign episode numbers, and keep track of where each video lives.
 - **Adding videos** (the app offers all of these, and the CLI accepts files and folders):
@@ -79,7 +79,7 @@ python -m subagent check                     # binaries, fonts, output folder, A
   - On relink, the fingerprint is compared. A mismatch shows a warning that it may be a different file and that existing results may not line up; the user chooses to keep the results or rerun from the start.
 - **Registry file:** `data/episodes/index.json`, written atomically.
 
-### 5.22 Output delivery (`delivery.py`)
+### 5.22 Output delivery (`output/delivery.py`)
 
 - **Output folder:** a single default folder set in Settings (`output.folder`). It is required: rendering is blocked with a clear message until it is set. On startup and before each render, check that it exists and is writable.
 - **What is saved there:** only the finished video. Scripts, subtitle files, reports and logs stay in the working folder.
@@ -90,7 +90,7 @@ python -m subagent check                     # binaries, fonts, output folder, A
 - **Move:** the finished `render.tmp.mp4` is moved into the output folder only after ffmpeg exits successfully. When the output folder is on another drive, copy to a temp name in the output folder, then rename, so a half-written video never appears under the final name.
 - The final path is stored in the registry (`output_path`). The app's "Open output folder" selects that file in Explorer.
 
-### 5.23 Cleanup (`delivery.py`)
+### 5.23 Cleanup (`output/delivery.py`)
 
 - **When:** automatically when an episode becomes `done` (review finished and video delivered), if `cleanup.auto` is true. Also available as `python -m subagent clean EPISODE` and from the app.
 - **Deleted (temporary):** `bands/`, `audio.wav`, `preview.ass`, `calibration/`, `render.tmp.mp4`, `sprite_frames/`, `cast_frames/`, `ocr_samples/`, `ocr_crops/`, the `fonts` copy in the work folder.

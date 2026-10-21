@@ -1,14 +1,14 @@
 ---
 paths:
-  - "subagent/stages/pinyin_gen.py"
-  - "subagent/stages/windows.py"
-  - "subagent/stages/translate.py"
-  - "subagent/stages/evaluate.py"
-  - "subagent/stages/script_review.py"
-  - "subagent/stages/review.py"
+  - "subagent/translation/pinyin_gen.py"
+  - "subagent/translation/windows.py"
+  - "subagent/translation/translate.py"
+  - "subagent/translation/evaluate.py"
+  - "subagent/translation/script_review.py"
+  - "subagent/review/review.py"
   - "prompts/**"
 ---
-### 5.9 Pinyin (`stages/pinyin_gen.py`)
+### 5.9 Pinyin (`translation/pinyin_gen.py`)
 
 - **Responsibility:** deterministic pinyin for corrected Chinese.
 - **Details:**
@@ -17,12 +17,12 @@ paths:
   - Polyphone fallback: a small config list of high-risk characters (e.g. 了, 行, 长, 得, 还) that occur outside a known phrase are sent in one batched `utility` call per episode. Everything else stays deterministic.
   - Regenerate pinyin for any line whose `zh` a human edits.
 
-### 5.10 Scene windowing (`stages/windows.py`)
+### 5.10 Scene windowing (`translation/windows.py`)
 
 - Split events into windows at gaps > `windows.gap_ms` or at `windows.max_lines`.
 - Each window carries `context_overlap` previous lines (already translated) as read-only context.
 
-### 5.11 Translator (`stages/translate.py`)
+### 5.11 Translator (`translation/translate.py`)
 
 - **Responsibility:** translate a window into Vietnamese and decide speaker and listener per line.
 - **Prompt layout:**
@@ -42,7 +42,7 @@ paths:
   - Glossary terms must be used exactly.
   - `on_screen` / `unrecognised_on_screen` / `talking` (5.8b): weak evidence, weaker than the voice and the dialogue (user decision 2026-10-02: the talking sprite made the translator override sure voices). Never a reason to change a `fixed` or `new_voice` speaker; a tie-breaker between `confusable` candidates, or for `unknown` / `too_short` lines together with a clear dialogue clue; never a speaker from the picture alone. With `translate.picture_evidence: tiebreak` (default) the picture fields are left out of `fixed` / `new_voice` lines entirely; `all` shows them everywhere, `off` nowhere.
   - `non_dialogue_suspect`: decide whether the line is dialogue. If not, set `line_type` to `sign`, `title` or `sfx`, leave speaker and listener empty, and translate it as on-screen text.
-- **Translation styles (registers)** (`subagent/registers.py`; user decision 2026-10-11): one file per style, `prompts/registers/<id>.md`, shared by every series: YAML front matter (`name`, `pronoun_terms`) and the register section of the translator prompt. A series selects one with `show.genre_register`; `{{register}}` in `prompts/translator_system.md` is replaced by its text (`translate.translator_static`; a prompt with inline `<!-- register:… -->` blocks still works). The translate stage's prompt hash covers the style file. The style's `pronoun_terms` become `translate.pronoun_terms` when the merged config sets none (`load_config`), so the pronoun rule check and the benchmark use the words of the series' style; an explicit list in config.yaml / series.yaml overrides. New styles are created in the app (New series… → New style…: id, name, pronoun words, instructions prefilled from a template) or by adding a file; an existing style file is never overwritten (series may use it).
+- **Translation styles (registers)** (`subagent/settings/registers.py`; user decision 2026-10-11): one file per style, `prompts/registers/<id>.md`, shared by every series: YAML front matter (`name`, `pronoun_terms`) and the register section of the translator prompt. A series selects one with `show.genre_register`; `{{register}}` in `prompts/translator_system.md` is replaced by its text (`translate.translator_static`; a prompt with inline `<!-- register:… -->` blocks still works). The translate stage's prompt hash covers the style file. The style's `pronoun_terms` become `translate.pronoun_terms` when the merged config sets none (`load_config`), so the pronoun rule check and the benchmark use the words of the series' style; an explicit list in config.yaml / series.yaml overrides. New styles are created in the app (New series… → New style…: id, name, pronoun words, instructions prefilled from a template) or by adding a file; an existing style file is never overwritten (series may use it).
 - **Register for cổ trang / tiên hiệp** (`prompts/registers/co_trang_tien_hiep.md`, the built-in style; moved out of the translator prompt 2026-10-11 with the assembled prompt byte-identical):
   - Names, titles, sects, places, cultivation realms, techniques and items use Hán-Việt readings (e.g. 筑基 → Trúc Cơ), recorded in the glossary with the matching `type`.
   - Classical pronoun system: ta / ngươi, huynh / đệ / tỷ / muội, sư phụ / đồ nhi, sư huynh / sư muội, tại hạ, bổn tọa, lão phu, and similar. The pronoun matrix decides which pair applies; the prompt only lists the system.
@@ -64,7 +64,7 @@ When off:
 - **Memory (finish):** translator `character` / `pronoun_pair` proposals are dropped; no character updates (5.15c), probation or new-voice characters (5.15b), lifecycle or appearances (5.15a); voice and sprite learning (5.8a, 5.8b) and the sprite backfill are skipped. Glossary, style rules, line decisions, edit mining and briefings work as usual.
 - **Review screen (6.4):** the speaker / listener dropdowns, New character / New NPC / Browse characters, the character card, the speaker column and filter, the On screen view and Partial review are hidden; the row keeps the line type.
 
-### 5.12 Evaluator (`stages/evaluate.py`)
+### 5.12 Evaluator (`translation/evaluate.py`)
 
 - **Responsibility:** decide whether each translated line is acceptable.
 - **Two layers:**
@@ -75,7 +75,7 @@ When off:
 - **Loop:** failed lines go back to the translator with feedback, max `translate.max_retries`. After the cap, keep the best attempt (passed, then no rule failures, then total score) and flag `retry_cap` plus the matching rule flags (`line_too_long`, `glossary_mismatch`, `pronoun_mismatch`, `speaker_invalid`, `missing_translation`).
 - Other flags set on the final line: `cps_exceeded` (soft), `not_evaluated` (the rubric returned no score), `speaker_override` (translator changed a `fixed` voice speaker), `low_speaker_conf` (`speaker_conf < sprite.trigger_conf_below`).
 
-### 5.13a Script review (`stages/script_review.py`)
+### 5.13a Script review (`translation/script_review.py`)
 
 - **Responsibility:** catch low-value lines the per-line evaluator cannot see, using the whole episode: repeats, OCR noise, unrelated text. Precision first: only lossless merges, the reviewer's own repeated decisions and confident model verdicts remove a line; everything else is flagged.
 - **Rules (free):**
@@ -87,7 +87,7 @@ When off:
 - **Output:** `script_review.jsonl` (`ScriptDecision`). The review draft applies it (5.14): removed lines arrive deleted (restorable) with flag `script_<reason>`; flagged lines get `script_suspect`, fixes `script_ocr`, and the note is shown in the editor. In auto mode removed lines are left out of the video; fixes are only listed.
 - **Its memory:** after each finished review, the Memory Manager counts per normalized text what the reviewer removed and kept (`record_line_decisions`). Lossless repeat merges are not the reviewer's decision; short lines kept and pre-deleted lines restored count as kept. Locked rows (edited in the Memory screen) are not changed. Each episode's share is kept in `line_decision_episodes`, so finishing a review again replaces that episode's share instead of adding to it.
 
-### 5.14 Review gate and review data (`stages/review.py`)
+### 5.14 Review gate and review data (`review/review.py`)
 
 - **Draft:** one `ReviewedLine` per event, built from events, translations and pinyin, `approved=false`, flags merged from all stages. Two kinds of lines arrive already deleted (restorable):
   - noisy OCR fragments: `ocr_fragment` and at most `review.noise_max_han` Chinese characters or stray digits (`review.predelete_fragments`);
