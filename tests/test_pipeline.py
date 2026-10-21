@@ -8,7 +8,7 @@ import wave
 
 import pytest
 
-from subagent.baseline import freeze_finished
+from subagent.bench.baseline import freeze_finished
 from subagent.kernel.errors import OutputExistsError
 from subagent.kernel.models import EditRecord, OcrReading, VideoInfo
 from subagent.kernel.progress import Progress

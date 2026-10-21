@@ -29,6 +29,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from subagent.bench.ocr_benchmark import KEY_FILE, _norm, _overlap, score_episode
 from subagent.kernel.models import (
     CastLine,
     EditRecord,
@@ -40,7 +41,6 @@ from subagent.kernel.models import (
     SubtitleEvent,
 )
 from subagent.kernel.util import append_jsonl, atomic_write_text, now_iso, read_jsonl
-from subagent.ocr_benchmark import KEY_FILE, _norm, _overlap, score_episode
 from subagent.settings.config import Config, Paths
 
 FOLDER = "_suite"
@@ -129,7 +129,7 @@ def _pct(n: int, d: int) -> float | None:
 
 
 def _rate(n: int, d: int) -> dict:
-    from subagent.audit import wilson
+    from subagent.bench.audit import wilson
 
     r = wilson(d - n, d)
     return {"right": n, "of": d, "share": _pct(n, d), "low": round(1 - r.high, 4) if d else None,
@@ -172,7 +172,7 @@ def _auto_pattern(config: Config) -> re.Pattern:
 # -- 1. OCR --------------------------------------------------------------------------------------
 
 def score_ocr(gold: Gold, system: Path) -> dict:
-    from subagent.ocr_benchmark import gold_lines
+    from subagent.bench.ocr_benchmark import gold_lines
 
     levels = {"raw": [], "ocr_fix": [], "fixes_accepted": []}
     for ep in gold.episodes:
@@ -456,7 +456,7 @@ def score_translation(config: Config, gold: Gold, system: Path, speaker_ok: dict
 # -- 5. script review ----------------------------------------------------------------------------
 
 def score_script_review(config: Config, gold: Gold, system: Path) -> dict:
-    from subagent.ocr_benchmark import gold_lines
+    from subagent.bench.ocr_benchmark import gold_lines
     from subagent.review.review import original_draft
 
     rc = config.review

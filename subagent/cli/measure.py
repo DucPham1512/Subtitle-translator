@@ -17,7 +17,7 @@ log = logging.getLogger("subagent")
 
 
 def cmd_audit(args, config, paths, progress) -> int:
-    from subagent import audit
+    from subagent.bench import audit
     from subagent.workspace.episodes import Registry
 
     registry = Registry(paths)
@@ -39,7 +39,7 @@ def cmd_audit(args, config, paths, progress) -> int:
     if args.action == "remap-key":
         from pathlib import Path
 
-        from subagent.ocr_benchmark import remap_key
+        from subagent.bench.ocr_benchmark import remap_key
 
         if not args.archive:
             print("remap-key needs --archive DIR (the folder the old key and events were archived to)")
@@ -54,8 +54,8 @@ def cmd_audit(args, config, paths, progress) -> int:
             print(f"corrections that disagreed on one line: {', '.join(note['conflicting_corrections'])}")
         return 0
     if args.action == "ocr":
-        from subagent.ocr_benchmark import ocr_episodes, run_ocr_benchmark
-        from subagent.ocr_benchmark import render as render_ocr
+        from subagent.bench.ocr_benchmark import ocr_episodes, run_ocr_benchmark
+        from subagent.bench.ocr_benchmark import render as render_ocr
 
         eps = [e.id for e in chosen] if args.episodes else ocr_episodes(paths)
         r = run_ocr_benchmark(config, paths, eps, label=args.label or "", existing=args.existing, progress=progress)
@@ -63,7 +63,7 @@ def cmd_audit(args, config, paths, progress) -> int:
         print(f"saved: {r.folder}")
         return 0
     if args.action == "benchmark":
-        from subagent.benchmark import benchmark_episodes, render, run_benchmark
+        from subagent.bench.benchmark import benchmark_episodes, render, run_benchmark
 
         eps = [e.id for e in chosen] if args.episodes else benchmark_episodes(paths)
         missing = {e: audit.missing_answers(paths.episode_dir(e)) for e in eps}
@@ -81,7 +81,7 @@ def cmd_audit(args, config, paths, progress) -> int:
 
 
 def cmd_baseline(args, config, paths, progress) -> int:
-    from subagent.baseline import baseline_dir, complete, freeze
+    from subagent.bench.baseline import baseline_dir, complete, freeze
     from subagent.workspace.episodes import Registry
 
     if args.action == "complete":
@@ -97,8 +97,8 @@ def cmd_baseline(args, config, paths, progress) -> int:
 
 
 def cmd_bench(args, config, paths, progress) -> int:
-    from subagent import suite
-    from subagent.baseline import baseline_dir
+    from subagent.bench import suite
+    from subagent.bench.baseline import baseline_dir
     from subagent.kernel.util import now_iso
 
     name = args.baseline or config.bench.baseline or config.baseline.name
@@ -115,7 +115,7 @@ def cmd_bench(args, config, paths, progress) -> int:
         stamp = now_iso().replace(":", "").replace("-", "")[:15]
         out = suite.save(paths, r, paths.work / suite.FOLDER / f"{stamp}-{label}")
     else:
-        from subagent.bench_run import run
+        from subagent.bench.bench_run import run
 
         resume = None
         if args.resume:

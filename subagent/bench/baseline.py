@@ -127,7 +127,7 @@ def complete(paths: Paths, name: str) -> dict[str, list[str]]:
     """Add what a baseline frozen by older code lacks: missing FILES (only from a work folder whose review is still
     the frozen one), `memory_at_run`, and the current OCR answer key. Frozen files are never replaced. Returns
     episode -> files added."""
-    from subagent.ocr_benchmark import FOLDER as OCR_FOLDER
+    from subagent.bench.ocr_benchmark import FOLDER as OCR_FOLDER
 
     folder = baseline_dir(paths, name)
     manifest = _manifest(folder, name)

@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
 
 from app.widgets import show_error
 from app.workers import run_async
-from subagent.audit import NO_ID_YET
+from subagent.bench.audit import NO_ID_YET
 from subagent.kernel.models import AUDIT_ASPECTS, AuditMark, AuditSample
 
 VALUES = (("ok", True), ("wrong", False), ("na", None))

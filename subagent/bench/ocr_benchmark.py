@@ -234,7 +234,7 @@ def _existing_events(work: Path) -> list[SubtitleEvent]:
 def run_ocr_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = None, *, label: str = "",
                       existing: bool = False, progress=None, stage_runner=None) -> OcrBenchResult:
     """stage_runner(name, ctx) runs one stage (tests inject fakes); default: the real stage modules."""
-    from subagent.benchmark import _sandbox_paths
+    from subagent.bench.benchmark import _sandbox_paths
     from subagent.pipeline import run_stage
     from subagent.workspace.context import EpisodeContext
     from subagent.workspace.episodes import Registry

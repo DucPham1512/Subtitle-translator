@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from subagent import bench_run, suite
+from subagent.bench import bench_run, suite
 from subagent.kernel.models import (
     CastBoxEdit,
     CastDetection,
@@ -223,7 +223,7 @@ def test_run_works_in_a_sandbox_and_learns_from_the_gold_in_chain_mode(project, 
 
 
 def test_a_stopped_chain_run_resumes_where_it_stopped(project, monkeypatch):
-    import subagent.baseline as baseline_mod
+    import subagent.bench.baseline as baseline_mod
 
     config, paths = project
     folder = paths.work / "_baseline" / "b"

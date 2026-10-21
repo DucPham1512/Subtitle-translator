@@ -180,7 +180,7 @@ class Services:
     # -- audit (6.11) -------------------------------------------------------------------------------
 
     def audit_overview(self) -> list[dict]:
-        from subagent import audit
+        from subagent.bench import audit
         from subagent.workspace.state import load_state
 
         rows = []
@@ -200,7 +200,7 @@ class Services:
 
     def draw_audit_samples(self) -> int:
         """Samples for finished episodes that have none yet (existing samples are kept: marks refer to them)."""
-        from subagent import audit
+        from subagent.bench import audit
 
         drawn = 0
         for ep in self.registry.load():
@@ -209,18 +209,18 @@ class Services:
         return drawn
 
     def audit_data(self, ep_id: str):
-        from subagent import audit
+        from subagent.bench import audit
 
         work = self.paths.episode_dir(ep_id)
         return {s.event_id: s for s in audit.load_sample(work)}, audit.load_marks(work)
 
     def save_audit_marks(self, ep_id: str, marks: dict) -> None:
-        from subagent import audit
+        from subagent.bench import audit
 
         audit.save_marks(self.paths.episode_dir(ep_id), marks)
 
     def audit_report(self) -> tuple[str, Path]:
-        from subagent import audit
+        from subagent.bench import audit
 
         eps = [e.id for e in sorted(self.registry.load(), key=lambda e: e.number)
                if e.status == "done" and audit.load_sample(self.paths.episode_dir(e.id))]

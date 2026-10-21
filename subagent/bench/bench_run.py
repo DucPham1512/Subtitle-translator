@@ -97,7 +97,7 @@ def _frozen_inputs(src: Path, dst: Path, plan: list[str]) -> None:
 def _install_review(src: Path, dst: Path) -> None:
     """Replace the episode's machine files by the frozen review and the files it was made from (the gold), so
     learning and the next episodes' reviewer-corrections block see what the replay saw."""
-    from subagent.baseline import FILES
+    from subagent.bench.baseline import FILES
     from subagent.workspace.state import load_state, save_state
 
     for name in FILES:
@@ -130,8 +130,8 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     `resume`: a run folder stopped before the end. Its settings (run.json) replace the arguments; the episodes it
     finished are skipped, the one it was in is done again from the start, and in chain mode the memory goes back
     to the commit after the last finished episode."""
-    from subagent import suite
-    from subagent.baseline import _git_head
+    from subagent.bench import suite
+    from subagent.bench.baseline import _git_head
     from subagent.kernel.errors import SubagentError
     from subagent.pipeline import _BY_NAME
     from subagent.workspace.context import EpisodeContext
@@ -194,7 +194,7 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
 def _start_or_resume(paths: Paths, mode: str, from_stage: str | None, episodes: list[str] | None, label: str,
                      use_cache: bool, resume: Path | None) -> tuple[dict, Path]:
     """(run state, run folder): a new run's settings, or a stopped run's own (run.json)."""
-    from subagent import suite
+    from subagent.bench import suite
     from subagent.kernel.errors import SubagentError
     from subagent.pipeline import RERUN_FROM
 

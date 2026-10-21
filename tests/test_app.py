@@ -385,7 +385,7 @@ def test_partial_review_suggestions_in_review(qapp, project, monkeypatch):
 def test_audit_screen_and_audit_mode(qapp, project):
     from app.main_window import MainWindow
     from app.services import Services
-    from subagent import audit
+    from subagent.bench import audit
     from subagent.kernel.models import EpisodeState
     from subagent.workspace.state import save_state
 

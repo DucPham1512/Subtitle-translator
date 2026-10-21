@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from subagent.baseline import baseline_dir, freeze, freeze_episode
+from subagent.bench.baseline import baseline_dir, freeze, freeze_episode
 from subagent.workspace.episodes import Registry
 from tests.conftest import register_episode
 
@@ -34,7 +34,7 @@ def test_freeze_copies_finished_reviews_and_replaces_on_refreeze(project):
 
 
 def test_complete_adds_missing_files_only_while_the_review_is_unchanged(project):
-    from subagent.baseline import complete
+    from subagent.bench.baseline import complete
 
     config, paths = project
     ep1, ep2 = register_episode(paths, 1), register_episode(paths, 2)

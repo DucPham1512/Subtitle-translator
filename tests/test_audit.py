@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from subagent import audit
+from subagent.bench import audit
 from subagent.kernel.models import (
     AuditMark,
     CastDetection,
@@ -97,7 +97,7 @@ def test_human_reviewed_episodes_are_not_audited_by_default(project):
 def test_gold_answers_and_benchmark(project):
     import json
 
-    from subagent.benchmark import benchmark_episodes, run_benchmark
+    from subagent.bench.benchmark import benchmark_episodes, run_benchmark
     from subagent.kernel.models import LineTranslation
 
     config, paths = project
