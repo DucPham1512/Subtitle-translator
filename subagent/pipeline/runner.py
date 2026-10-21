@@ -1,120 +1,38 @@
-"""Stage orchestration, resume logic and the per-episode report (3.2, 5.20, NFR-R1)."""
+"""Stage orchestration and resume logic (NFR-R1), and the episode-level API: run, batch, finish review, render."""
 
 from __future__ import annotations
 
 import contextlib
 import logging
 import time
-from collections import Counter
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from subagent.infra.joblock import job_lock
 from subagent.kernel.errors import SubagentError
 from subagent.kernel.models import (
-    CostRecord,
     EditRecord,
     Episode,
-    Evaluation,
     LineTranslation,
     NewVoice,
     ReviewedLine,
-    SpeakerCandidates,
     StageState,
-    SubtitleEvent,
 )
 from subagent.kernel.progress import NULL_PROGRESS, Progress
-from subagent.kernel.util import atomic_write_text, hash_path, now_iso, read_json, read_jsonl, sha256_json
-from subagent.llm.client import LLMClient, missing_prices, record_cost
+from subagent.kernel.util import hash_path, now_iso, read_jsonl, sha256_json
+from subagent.llm.client import LLMClient, missing_prices
 from subagent.memory.manager import MemoryManager
 from subagent.memory.store import MemoryStore
 from subagent.output.delivery import OnExists, cleanup, deliver, output_folder, resolve_conflict, target_path
+from subagent.pipeline.report import counts_text, episode_status, write_report
+from subagent.pipeline.stages import RERUN_FROM, STAGE_BY_NAME, STAGES, StageDef, review_outputs
 from subagent.settings.config import Config, Paths
 from subagent.workspace.context import EpisodeContext
 from subagent.workspace.episodes import Registry
 from subagent.workspace.state import load_state, save_state
 
 log = logging.getLogger(__name__)
-
-
-# -- stage table -----------------------------------------------------------------------------------
-
-@dataclass
-class StageDef:
-    name: str
-    run: Callable[[EpisodeContext], dict]
-    upstream: list[str]
-    config: list[str]
-    outputs: list[str]
-    prompts: list[str] = field(default_factory=list)
-    llm_roles: list[str] = field(default_factory=list)
-    extra: Callable[[EpisodeContext], object] | None = None
-    identification: bool = False          # skipped while show.character_identification is off (5.11a)
-
-
-def _source_key(ctx: EpisodeContext) -> object:
-    return ctx.episode.source_fingerprint
-
-
-def _style_key(ctx: EpisodeContext) -> object:
-    """Segmentation reads the series' calibrated subtitle style (5.4a), so a new calibration re-runs OCR. Only the
-    values segmentation uses count; recalibrating to the same values changes nothing."""
-    if ctx.config.ocr.preprocess != "segment":
-        return None
-    from subagent.ocr.subtitle_style import load_style
-
-    style = load_style(ctx.paths.bootstrap)
-    return style.model_dump(exclude={"regions", "calibrated_from", "calibrated_at"}) if style else None
-
-
-def _review_run(ctx: EpisodeContext) -> dict:
-    from subagent.review.review import gate
-
-    mode = load_state(ctx.work, ctx.episode.id).mode or ctx.config.review.mode
-    result = gate(ctx.work, mode, ctx.config.review.predelete_fragments, ctx.config.review.noise_max_han)
-    return {"approved": int(result == "approved")}
-
-
-def _lazy(module: str) -> Callable[[EpisodeContext], dict]:
-    """The `run` of a stage module, imported on first use (heavy models load only when a stage runs)."""
-    def run(ctx: EpisodeContext) -> dict:
-        import importlib
-
-        return importlib.import_module(module).run(ctx)
-
-    run.__name__ = f"run_{module.rsplit('.', 1)[-1]}"
-    return run
-
-
-STAGES: list[StageDef] = [
-    StageDef("ingest", _lazy("subagent.ocr.ingest"), [], ["video"], ["bands", "changes.jsonl", "video.json"], extra=_source_key),
-    StageDef("ocr", _lazy("subagent.ocr.ocr"), ["ingest"], ["ocr", "device"], ["ocr_raw.jsonl"], extra=_style_key),
-    StageDef("events", _lazy("subagent.ocr.events"), ["ocr"], ["ocr", "non_dialogue"], ["events_raw.jsonl"]),
-    StageDef("ocr_fix", _lazy("subagent.ocr.ocr_fix"), ["events"], ["ocr_fix"], ["events.jsonl"],
-             prompts=["ocr_fix_system"], llm_roles=["utility"]),
-    StageDef("audio", _lazy("subagent.voice.audio"), [], ["audio"], ["audio.wav"], extra=_source_key, identification=True),
-    StageDef("voice", _lazy("subagent.voice.voice"), ["ocr_fix", "audio"], ["voice", "audio"], ["speakers.jsonl"],
-             identification=True),
-    StageDef("cast", _lazy("subagent.cast.cast"), ["ocr_fix"], ["cast", "video", "device"], ["cast.jsonl", "cast_embeddings.npy"],
-             extra=_source_key, identification=True),
-    StageDef("pinyin", _lazy("subagent.translation.pinyin_gen"), ["ocr_fix"], ["pinyin"], ["pinyin.jsonl"],
-             prompts=["polyphone_system"], llm_roles=["utility"]),
-    StageDef("windows", _lazy("subagent.translation.windows"), ["ocr_fix"], ["windows"], ["windows.json"]),
-    StageDef("translate", _lazy("subagent.translation.translate"), ["ocr_fix", "voice", "cast", "windows"],
-             ["translate", "evaluate", "show", "sprite"], ["translations.jsonl", "evaluations.jsonl"],
-             prompts=["translator_system", "evaluator_system"], llm_roles=["translator", "evaluator"]),
-    StageDef("sprite", _lazy("subagent.cast.sprite"), ["translate"], ["sprite"], ["translations.jsonl"], identification=True),
-    StageDef("script_review", _lazy("subagent.translation.script_review"), ["translate", "sprite"], ["script_review"],
-             ["script_review.jsonl"], prompts=["script_review_system"], llm_roles=["utility"]),
-    StageDef("review", _review_run, ["pinyin", "sprite", "script_review"], ["review"], []),
-]
-STAGE_NAMES = [s.name for s in STAGES] + ["memory", "render", "report", "cleanup"]
-
-
-def run_stage(name: str, ctx: EpisodeContext) -> dict:
-    """One stage's `run(ctx)`, directly: no resume, state or progress (benchmarks)."""
-    return next(s for s in STAGES if s.name == name).run(ctx)
 
 
 @dataclass
@@ -124,12 +42,6 @@ class BatchItem:
     cost: float = 0.0
     reason: str = ""
     error_code: str = ""
-_BY_NAME = {s.name: s for s in STAGES}
-
-
-def review_outputs(mode: str) -> list[str]:
-    return ["approved.jsonl", "edits.jsonl"] if mode == "auto" else ["review_draft.jsonl"]
-
 
 # -- runner ----------------------------------------------------------------------------------------
 
@@ -149,7 +61,7 @@ class Runner:
         parts: dict = {
             "upstream": {u: self.state.stages[u].output_hash if u in self.state.stages else None for u in stage.upstream},
             "config": {s: cfg.section(s) for s in stage.config},
-            "prompts": {p: _prompt_hash(self.ctx.paths, p, cfg) for p in stage.prompts},
+            "prompts": {p: prompt_hash(self.ctx.paths, p, cfg) for p in stage.prompts},
             "models": {r: cfg.llm.providers[r].model for r in stage.llm_roles if r in cfg.llm.providers},
         }
         if stage.name == "review":
@@ -185,7 +97,7 @@ class Runner:
     def ensure_available(self, stage: StageDef) -> None:
         """A purged upstream stage whose outputs are needed again is regenerated first (5.23)."""
         for name in stage.upstream:
-            up = _BY_NAME[name]
+            up = STAGE_BY_NAME[name]
             st = self.state.stages.get(name)
             if self.is_off(up):
                 continue
@@ -219,7 +131,7 @@ class Runner:
             self.state.purged.remove(stage.name)
         save_state(ctx.work, self.state)
         log.info("stage %s: done in %.1fs %s", stage.name, st.duration_s, st.counts)
-        ctx.progress.emit(stage.name, "done", message=_counts_text(st.counts), duration_s=st.duration_s)
+        ctx.progress.emit(stage.name, "done", message=counts_text(st.counts), duration_s=st.duration_s)
 
     def run_all(self, *, from_stage: str | None, force_stage: str | None) -> None:
         names = [s.name for s in STAGES]
@@ -241,10 +153,8 @@ class Runner:
 
 # `run --rerun` forces every stage from the first one that reads memory (the glossary); the stages before it
 # depend only on the video and config, so their resume check already reruns them when anything changed
-RERUN_FROM = "ocr_fix"
 
-
-def _prompt_hash(paths: Paths, name: str, config: Config | None = None) -> str | None:
+def prompt_hash(paths: Paths, name: str, config: Config | None = None) -> str | None:
     """The general prompt, the series' notes for it, and for the translator the translation style file (all
     change what the model reads)."""
     p = paths.prompts / f"{name}.md"
@@ -261,8 +171,6 @@ def _prompt_hash(paths: Paths, name: str, config: Config | None = None) -> str |
     return "+".join(parts)
 
 
-def _counts_text(counts: dict[str, int]) -> str:
-    return ", ".join(f"{k}={v}" for k, v in counts.items())
 
 
 # -- episode-level API -----------------------------------------------------------------------------
@@ -520,7 +428,7 @@ class Pipeline:
                     **({"updates_held": len(result.held)} if result.held else {})},
         )
         save_state(ctx.work, state)
-        self.progress.emit("memory", "done", message=_counts_text(state.stages["memory"].counts))
+        self.progress.emit("memory", "done", message=counts_text(state.stages["memory"].counts))
 
     def _line_decisions(self, ctx: EpisodeContext, approved: list[ReviewedLine]) -> tuple[list[str], list[str]]:
         """What the reviewer removed and kept, for the script reviewer's memory. Lossless repeat merges are not
@@ -552,7 +460,7 @@ class Pipeline:
             with job_lock(self.paths, episode.id), _episode_log(ctx.work):
                 if not ctx.artifact("cast.jsonl").is_file():
                     mode = load_state(ctx.work, episode.id).mode or "human"
-                    Runner(ctx, mode).execute(_BY_NAME["cast"])
+                    Runner(ctx, mode).execute(STAGE_BY_NAME["cast"])
                 self._learn_sprites(ctx)
             out.append((episode.id, load_state(ctx.work, episode.id).stages.get("sprites", StageState()).counts))
         return out
@@ -584,7 +492,7 @@ class Pipeline:
             counts={"talking_lines": result.lines, "confirmed": result.confirmed, "corrected": result.corrected,
                     "named": len(result.named), "added": result.added, "removed": result.removed})
         save_state(ctx.work, state)
-        self.progress.emit("sprites", "done", message=_counts_text(state.stages["sprites"].counts))
+        self.progress.emit("sprites", "done", message=counts_text(state.stages["sprites"].counts))
 
     def _learn_voices(self) -> None:
         """Reviewed speakers teach the voice bank. Never fails the episode: a missing model is only reported."""
@@ -644,141 +552,3 @@ class _episode_log:
         if self.handler:
             logging.getLogger("subagent").removeHandler(self.handler)
             self.handler.close()
-
-
-# -- report / status -------------------------------------------------------------------------------
-
-def collect_metrics(work: Path, episode_id: str, prices: dict | None = None) -> dict:
-    state = load_state(work, episode_id)
-    costs = read_jsonl(work / "cost.jsonl", CostRecord)
-    speakers = read_jsonl(work / "speakers.jsonl", SpeakerCandidates)
-    evaluations = read_jsonl(work / "evaluations.jsonl", Evaluation)
-    translations = read_jsonl(work / "translations.jsonl", LineTranslation)
-    events = read_jsonl(work / "events.jsonl", SubtitleEvent) or read_jsonl(work / "events_raw.jsonl", SubtitleEvent)
-    approved = read_jsonl(work / "approved.jsonl", ReviewedLine)
-    edits = read_jsonl(work / "edits.jsonl", EditRecord)
-    sprite = read_json(work / "sprite.json", []) or []
-
-    prices = prices or {}
-    by_role: dict[str, dict[str, float]] = {}
-    by_task: dict[str, dict[str, float]] = {}
-    unpriced: set[str] = set()
-    cost_total = 0.0
-    def tally(table: dict[str, dict[str, float]], key: str, c: CostRecord, cost: float) -> None:
-        r = table.setdefault(key, {"calls": 0, "cost": 0.0, "prompt": 0, "cache_hit": 0, "completion": 0,
-                                   "disk_cache_hits": 0})
-        r["calls"] += 1
-        r["cost"] += cost
-        r["prompt"] += c.prompt_tokens
-        r["cache_hit"] += c.cache_hit_tokens
-        r["completion"] += c.completion_tokens
-        r["disk_cache_hits"] += int(c.cached_response)
-
-    for c in costs:
-        cost = record_cost(c, prices)
-        if cost is None:
-            unpriced.add(c.model)
-            cost = 0.0
-        cost_total += cost
-        tally(by_role, c.role, c, cost)
-        tally(by_task, c.task or c.role, c, cost)   # calls recorded before agents were tagged show their role
-    prompt_total = sum(c.prompt_tokens for c in costs)
-    first = [e for e in evaluations if e.attempt == 1]
-    flags: Counter[str] = Counter()
-    for e in events:
-        flags.update(e.flags)
-    for t in translations:
-        flags.update(t.flags)
-    return {
-        "state": state,
-        "cost_total": cost_total,
-        "unpriced_models": sorted(unpriced),
-        "cost_by_role": by_role,
-        "cost_by_task": by_task,
-        "cache_hit_share": (sum(c.cache_hit_tokens for c in costs) / prompt_total) if prompt_total else 0.0,
-        "voice_status": Counter(s.status for s in speakers),
-        "events": len(events),
-        "first_pass_rate": (sum(e.passed for e in first) / len(first)) if first else None,
-        "retry_rate": (sum(1 for t in translations if t.attempts > 1) / len(translations)) if translations else None,
-        "flags": flags,
-        "sprite_triggered": len(sprite),
-        "sprite_resolved": sum(1 for s in sprite if s.get("result") == "resolved"),
-        "edit_rate": (len({e.event_id for e in edits}) / len(approved)) if approved else None,
-        "edits": len(edits),
-    }
-
-
-# Agents (LLM tasks) as named in reports; calls recorded before tasks existed show their role instead.
-AGENT_NAMES = {"translate": "Translator", "evaluate": "Evaluator", "script_review": "Script reviewer",
-               "ocr_fix": "OCR correction", "pinyin": "Pinyin (polyphones)", "briefing": "Memory briefing",
-               "bootstrap": "Bootstrap", "dreaming": "Dreaming"}
-
-
-def _pct(v: float | None) -> str:
-    return "n/a" if v is None else f"{v * 100:.1f}%"
-
-
-def write_report(ctx: EpisodeContext) -> Path:
-    m = collect_metrics(ctx.work, ctx.episode.id, ctx.config.llm.prices)
-    state = m["state"]
-    lines = [f"# Report {ctx.episode.id}", "", f"Source: `{ctx.episode.source_path}`",
-             f"Generated: {now_iso()}", f"Mode: {state.mode or '-'}", "", "## Stage timings", "",
-             "| stage | status | seconds | counts |", "|---|---|---|---|"]
-    for name in STAGE_NAMES:
-        st = state.stages.get(name)
-        if st:
-            lines.append(f"| {name} | {st.status} | {st.duration_s:.1f} | {_counts_text(st.counts)} |")
-    lines += ["", "## Cost", "", f"Total: ${m['cost_total']:.4f} (budget ${ctx.config.budget.max_cost_per_episode:.2f})",
-              f"Provider cache-hit share of input tokens: {_pct(m['cache_hit_share'])}", ""]
-    if m["unpriced_models"]:
-        lines += [f"**Incomplete:** no price configured for {', '.join(m['unpriced_models'])}; their calls are not "
-                  "included above. Add them under `llm.prices` in config.yaml (USD per 1M tokens); past calls are "
-                  "then priced from their recorded tokens.", ""]
-    lines += [
-              "| role | calls | disk-cache hits | prompt tokens | cache-hit tokens | completion tokens | cost |",
-              "|---|---|---|---|---|---|---|"]
-    for role, r in sorted(m["cost_by_role"].items()):
-        lines.append(f"| {role} | {int(r['calls'])} | {int(r['disk_cache_hits'])} | {int(r['prompt'])} | "
-                     f"{int(r['cache_hit'])} | {int(r['completion'])} | ${r['cost']:.4f} |")
-    lines += ["", "### Cost by agent", "",
-              "| agent | calls | disk-cache hits | prompt tokens | completion tokens | cost |", "|---|---|---|---|---|---|"]
-    for task, r in sorted(m["cost_by_task"].items(), key=lambda kv: -kv[1]["cost"]):
-        lines.append(f"| {AGENT_NAMES.get(task, task)} | {int(r['calls'])} | {int(r['disk_cache_hits'])} | "
-                     f"{int(r['prompt'])} | {int(r['completion'])} | ${r['cost']:.4f} |")
-    total_voice = sum(m["voice_status"].values())
-    lines += ["", "## Voice match", ""]
-    for status in ("fixed", "confusable", "unknown", "too_short", "new_voice"):
-        n = m["voice_status"].get(status, 0)
-        lines.append(f"- {status}: {n} ({_pct(n / total_voice if total_voice else None)})")
-    lines += ["", "## Quality", "",
-              f"- Events: {m['events']}",
-              f"- Evaluator pass rate on first attempt: {_pct(m['first_pass_rate'])}",
-              f"- Retry rate: {_pct(m['retry_rate'])}",
-              f"- Sprite check: triggered {m['sprite_triggered']}, resolved {m['sprite_resolved']}",
-              f"- Human edit rate: {_pct(m['edit_rate'])} ({m['edits']} field edits)",
-              f"- Non-dialogue suspects: {m['flags'].get('non_dialogue_suspect', 0)}",
-              "", "## Flags", ""]
-    for flag, n in m["flags"].most_common():
-        lines.append(f"- {flag}: {n}")
-    flagged = [t for t in read_jsonl(ctx.artifact("translations.jsonl"), LineTranslation) if t.flags]
-    if flagged:
-        lines += ["", "## Flagged lines", ""]
-        for t in flagged:
-            lines.append(f"- `{t.event_id}` [{', '.join(t.flags)}] {t.vi}")
-    path = ctx.artifact("report.md")
-    atomic_write_text(path, "\n".join(lines) + "\n")
-    return path
-
-
-def episode_status(paths: Paths, episode: Episode, prices: dict | None = None) -> dict:
-    work = paths.episode_dir(episode.id)
-    m = collect_metrics(work, episode.id, prices)
-    stages = {name: (m["state"].stages[name].status if name in m["state"].stages else "pending")
-              for name in STAGE_NAMES if name != "report"}
-    return {
-        "id": episode.id, "number": episode.number, "status": episode.status, "source": episode.source_path,
-        "output": episode.output_path, "stages": stages, "cost": round(m["cost_total"], 4),
-        "cost_complete": not m["unpriced_models"], "unpriced_models": m["unpriced_models"],
-        "cost_by_agent": {task: round(r["cost"], 6) for task, r in m["cost_by_task"].items()},
-        "flags": dict(m["flags"]), "flag_total": sum(m["flags"].values()),
-    }

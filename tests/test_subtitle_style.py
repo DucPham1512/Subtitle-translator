@@ -76,7 +76,7 @@ def test_unstable_components_are_dropped():
 
 
 def test_a_new_style_reruns_ocr_only_with_segmentation(project):
-    from subagent.pipeline import _BY_NAME, Runner
+    from subagent.pipeline import STAGE_BY_NAME, Runner
     from subagent.workspace.context import EpisodeContext
     from tests.conftest import register_episode
 
@@ -86,7 +86,7 @@ def test_a_new_style_reruns_ocr_only_with_segmentation(project):
                           stroke_spread=0.3, letter_height=0.7, calibrated_from="ep001")
 
     def ocr_hash(cfg) -> str:
-        return Runner(EpisodeContext(cfg, paths, ep), "auto").input_hash(_BY_NAME["ocr"])
+        return Runner(EpisodeContext(cfg, paths, ep), "auto").input_hash(STAGE_BY_NAME["ocr"])
 
     plain = ocr_hash(config)
     save_style(paths.bootstrap, style)

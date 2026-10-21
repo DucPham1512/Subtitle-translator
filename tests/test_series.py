@@ -9,7 +9,7 @@ import yaml
 from subagent.kernel.errors import ConfigError, SubagentError
 from subagent.llm.client import SERIES_NOTES, load_prompt
 from subagent.memory.store import MemoryStore
-from subagent.pipeline import _prompt_hash
+from subagent.pipeline import prompt_hash
 from subagent.settings import series as sr
 from subagent.settings.config import load_config, update_config_values
 from tests.conftest import seed_memory
@@ -50,12 +50,12 @@ def test_series_notes_follow_the_general_prompt(project):
     _, paths = project
     folder = sr.add(paths.root, "show-b", "Show B")
     _, sp = load_config(paths.root, "show-b")
-    plain, plain_hash = load_prompt(sp, "script_review_system"), _prompt_hash(sp, "script_review_system")
+    plain, plain_hash = load_prompt(sp, "script_review_system"), prompt_hash(sp, "script_review_system")
     assert SERIES_NOTES not in plain
     (folder / "prompts" / "script_review_system.md").write_text("This font draws 了 like 7.", encoding="utf-8")
     text = load_prompt(sp, "script_review_system")
     assert text.startswith(plain.rstrip()) and text.rstrip().endswith(f"{SERIES_NOTES}\n\nThis font draws 了 like 7.")
-    assert _prompt_hash(sp, "script_review_system") != plain_hash      # the stage reruns when the notes change
+    assert prompt_hash(sp, "script_review_system") != plain_hash      # the stage reruns when the notes change
 
 
 def test_settings_go_to_the_series_or_the_shared_file(project, monkeypatch):

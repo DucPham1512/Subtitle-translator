@@ -44,7 +44,7 @@ def test_a_series_takes_its_styles_text_and_pronoun_words(project):
 
 
 def test_the_translator_prompt_uses_the_series_style(project):
-    from subagent.pipeline import _prompt_hash
+    from subagent.pipeline import prompt_hash
     from subagent.translation.translate import translator_static
 
     config, paths = project
@@ -54,4 +54,4 @@ def test_the_translator_prompt_uses_the_series_style(project):
     prompt = (paths.prompts / "translator_system.md").read_text(encoding="utf-8")
     text = translator_static(prompt, "hien_dai", cfg, load_register(paths.root, "hien_dai").body)
     assert "Modern city life." in text and "cổ trang" not in text
-    assert _prompt_hash(sp, "translator_system", cfg) != _prompt_hash(paths, "translator_system", config)
+    assert prompt_hash(sp, "translator_system", cfg) != prompt_hash(paths, "translator_system", config)

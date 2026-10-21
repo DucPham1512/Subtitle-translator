@@ -133,7 +133,7 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     from subagent.bench import suite
     from subagent.bench.baseline import _git_head
     from subagent.kernel.errors import SubagentError
-    from subagent.pipeline import _BY_NAME
+    from subagent.pipeline import STAGE_BY_NAME
     from subagent.workspace.context import EpisodeContext
     from subagent.workspace.episodes import Registry
 
@@ -149,7 +149,7 @@ def run(config: Config, paths: Paths, gold_folder: Path, *, mode: str = "snapsho
     folder.mkdir(parents=True, exist_ok=True)
     _save_state(folder, state)
     out = folder / "out"
-    stage = stage_runner or (lambda name, ctx: _BY_NAME[name].run(ctx))
+    stage = stage_runner or (lambda name, ctx: STAGE_BY_NAME[name].run(ctx))
     learn = learner or _learn
     registry = Registry(paths)
     commits = {ep: gold.manifest["episodes"][ep].get("memory_at_run") for ep in every}
