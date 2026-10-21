@@ -23,6 +23,7 @@ Vault này là **nhật ký quyết định** của Subtitle Agent: pipeline ch�
 Mở trong draw.io hoặc VS Code.
 
 - [[pipeline.drawio|Pipeline]]
+- [[modules.drawio|Các module của code]]
 - [[speaker detection.drawio|Nhận diện người nói]]
 - [[voice matching.drawio|Khớp giọng]]
 - [[sprite matching.drawio|Nhận diện hình (sprite)]]

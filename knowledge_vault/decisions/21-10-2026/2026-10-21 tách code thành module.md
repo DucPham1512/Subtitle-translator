@@ -46,6 +46,6 @@ Nhánh `refactor/modules`. Quy tắc hiện hành: `.claude/rules/architecture.m
 
 - Test vá (monkeypatch) một hàm ở nơi nó được tìm: thuộc tính của gói khi nơi gọi ở module khác (`subagent.infra.extract_clip`), thuộc tính của file con khi nơi gọi cùng module. Hàm `run` của các tầng vẫn vá ở file của tầng.
 - Chưa tách bộ nhúng giọng ra `voice/engine.py` như kế hoạch ban đầu: không cần cho việc gỡ phụ thuộc, và sẽ phải sửa thêm nhiều chỗ vá trong test.
-- Sơ đồ trong `knowledge_vault/diagrams/` sẽ cập nhật sau khi nhánh được merge (CLAUDE.md mục 12).
+- Sau khi merge: `sprite matching.drawio` sửa đường dẫn file (`cast/cast.py`, `cast/learning.py`); thêm sơ đồ mới `modules.drawio` (chưa có sơ đồ nào về module): các module theo tầng, mỗi module chứa gì và dùng module nào (lấy từ code), app đi qua `app/services/`.
 
 Related: [2026-10-11 tái cấu trúc code](../11-10-2026/2026-10-11%20t%C3%A1i%20c%E1%BA%A5u%20tr%C3%BAc%20code.md), [thiết kế - lý do các lựa chọn](../thi%E1%BA%BFt%20k%E1%BA%BF%20-%20l%C3%BD%20do%20c%C3%A1c%20l%E1%BB%B1a%20ch%E1%BB%8Dn.md)
