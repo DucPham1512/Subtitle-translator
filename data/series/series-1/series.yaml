@@ -99,8 +99,6 @@ script_review:
   example_limit: 30
   memory_auto_remove_min: 2
   memory_max_han: 2
-paths:
-  work_dir: E:/Video Data/Raw
 baseline:
   # the ep001-ep016 replay (2026-10-04..06) is frozen in <work>/_baseline/replay-2026-10/; freezing is off
   # since 2026-10-06 so finishing an episode again cannot overwrite that gold

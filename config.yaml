@@ -144,7 +144,7 @@ episodes:
   - (?i)\be(\d{1,4})\b
   - (\d{1,4})
 output:
-  folder: E:/Video Data/Translated
+  folder: /home/pham-duc/Subtitle-translator/video_data/output   # absolute: a relative folder follows the launch directory
   name_suffix: _vi
   on_exists: ask
 cleanup:
