@@ -15,3 +15,7 @@ knowledge_vault/.obsidian/
 .claude/autoharness/
 knowledge_vault/.claude/
 video_data/
+graphiphy-out/*
+!graphiphy-out/graph.html
+!graphiphy-out/GRAPH_REPORT.md
+!graphiphy-out/graph.json
