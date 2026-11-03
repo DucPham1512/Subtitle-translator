@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: plan-whole-codebase
+expected_outcome: |
+  A ranked plan of at most five verified refactor targets, each backed by numbers from the graph and checked against the code, with false positives dropped and explained, ending with a request to pick a target. No source file is changed.
