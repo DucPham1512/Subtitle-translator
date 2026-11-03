@@ -297,7 +297,7 @@ AUDIO_EXTS = {".wav", ".mp3", ".flac", ".m4a", ".ogg", ".opus", ".aac"}
 
 
 def voice_clips(paths: Paths) -> dict[str, list[Path]]:
-    root = paths.bootstrap / "voices"
+    root = paths.bootstrap_voices
     if not root.is_dir():
         return {}
     out = {}

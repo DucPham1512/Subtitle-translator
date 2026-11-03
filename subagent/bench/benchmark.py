@@ -88,7 +88,7 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
 
     episode_ids = episode_ids or benchmark_episodes(paths)
     stamp = now_iso().replace(":", "").replace("-", "")[:15]
-    folder = paths.work / "_benchmark" / f"{stamp}-{label or 'run'}"
+    folder = paths.benchmarks / f"{stamp}-{label or 'run'}"
     cfg, sandbox = _sandbox_paths(config, paths, folder)
     registry = Registry(paths)
     _copy_reviewer_context(paths, sandbox, set(episode_ids))
@@ -147,7 +147,7 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
     folder.mkdir(parents=True, exist_ok=True)
     atomic_write_text(folder / "report.md", render(result))
     atomic_write_text(folder / "summary.json", json.dumps(asdict(result), ensure_ascii=False, indent=1))
-    append_jsonl(paths.work / "_benchmark" / "history.jsonl", {
+    append_jsonl(paths.benchmarks / "history.jsonl", {
         "label": label, "at": result.started_at, "folder": str(folder), "cost": round(result.cost, 4),
         "speaker_accuracy": round(1 - result.speaker["errors"], 4) if result.speaker["checked"] else None,
         "speaker_accuracy_before": round(1 - result.speaker_before["errors"], 4)

@@ -453,6 +453,7 @@ class Paths:
         self.series = config.series.default if config else None
         work = Path(config.paths.work_dir) if config else Path("work")
         self.work = work if work.is_absolute() else self.root / work
+        self.benchmarks = self.work / "_benchmark"             # speaker benchmark runs + history.jsonl (6.11b)
         self.config_file = self.root / "config.yaml"
         self.env_file = self.root / ".env"
         self.prompts = self.root / "prompts"
@@ -461,6 +462,9 @@ class Paths:
         self.series_prompts = self.data / "prompts"
         self.episodes_index = self.data / "episodes" / "index.json"
         self.bootstrap = self.data / "bootstrap"
+        self.bootstrap_voices = self.bootstrap / "voices"      # <char_id>/*.wav: curated voice clips
+        self.bootstrap_sprites = self.bootstrap / "sprites"    # <char_id>/*.png: sprite templates
+        self.cast_file = self.bootstrap / "cast.md"           # cast list + synopsis, written by the user
         self.memory = self.data / "memory"
         self.memory_db = self.memory / "memory.db"
         self.card_pins = self.data / "character_cards"

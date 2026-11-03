@@ -143,8 +143,8 @@ def card_info(paths: Paths, config: Config, char_id: str, *, current: str | None
                 card.start_ms, card.end_ms = line.start_ms, line.end_ms
     if card.event_id is not None:
         card.source = "reviewed"
-    voices = sorted((paths.bootstrap / "voices" / char_id).glob("*.wav"))
-    sprites = sorted((paths.bootstrap / "sprites" / char_id).glob("*.png"))
+    voices = sorted((paths.bootstrap_voices / char_id).glob("*.wav"))
+    sprites = sorted((paths.bootstrap_sprites / char_id).glob("*.png"))
     if voices or sprites:
         card.source = "bootstrap"
         card.clip = voices[0] if voices else None

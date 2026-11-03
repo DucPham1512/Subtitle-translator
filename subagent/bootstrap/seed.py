@@ -123,7 +123,7 @@ def name_pinyin(zh: str) -> str:
 
 
 def generate_seed(config: Config, paths: Paths, llm, *, embed=None) -> SeedDraft:
-    cast_file = paths.bootstrap / "cast.md"
+    cast_file = paths.cast_file
     if not cast_file.is_file():
         raise SubagentError(f"Write the cast list and synopsis in {cast_file} first", code="cast_missing")
     cast = cast_file.read_text(encoding="utf-8")
@@ -215,7 +215,7 @@ def save_clip(config: Config, paths: Paths, char_id: str, source: Path, start_ms
 
     if end_ms <= start_ms:
         raise SubagentError("The clip end must be after its start", code="clip_invalid")
-    folder = paths.bootstrap / "voices" / slugify(char_id)
+    folder = paths.bootstrap_voices / slugify(char_id)
     folder.mkdir(parents=True, exist_ok=True)
     out = folder / f"{source.stem}_{start_ms:08d}_{end_ms:08d}.wav"
     run([require_binary("ffmpeg"), "-hide_banner", "-loglevel", "error", "-nostdin", "-y",

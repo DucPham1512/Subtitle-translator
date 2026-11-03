@@ -26,7 +26,7 @@ IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
 
 
 def load_templates(paths: Paths) -> dict[str, list[np.ndarray]]:
-    root = paths.bootstrap / "sprites"
+    root = paths.bootstrap_sprites
     out: dict[str, list[np.ndarray]] = {}
     if not root.is_dir():
         return out
@@ -116,6 +116,6 @@ def run(ctx: EpisodeContext, frame_reader=None) -> dict[str, int]:
 
 def save_template(paths: Paths, char_id: str, image: np.ndarray, name: str) -> Path:
     """Used by the bootstrap wizard to store a cropped sprite template."""
-    path = paths.bootstrap / "sprites" / char_id / f"{name}.png"
+    path = paths.bootstrap_sprites / char_id / f"{name}.png"
     imwrite_png(path, image)
     return path

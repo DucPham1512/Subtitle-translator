@@ -353,7 +353,7 @@ class BootstrapView(QWidget):
         return page
 
     def _cast_path(self) -> Path:
-        return self.services.paths.bootstrap / "cast.md"
+        return self.services.paths.cast_file
 
     def _load_cast(self) -> None:
         p = self._cast_path()
@@ -444,7 +444,7 @@ class BootstrapView(QWidget):
             return
         files, _ = QFileDialog.getOpenFileNames(self, self.tr("Import voice clips"), "",
                                                 self.tr("Audio (*.wav *.mp3 *.flac *.m4a *.ogg)"))
-        folder = self.services.paths.bootstrap / "voices" / char
+        folder = self.services.paths.bootstrap_voices / char
         folder.mkdir(parents=True, exist_ok=True)
         for f in files:
             shutil.copy2(f, folder / Path(f).name)
@@ -516,14 +516,14 @@ class BootstrapView(QWidget):
             QMessageBox.information(self, self.tr("Sprites"), self.tr(
                 "Grab a frame, drag a rectangle around the character, and choose the character id."))
             return
-        existing = len(list((self.services.paths.bootstrap / "sprites" / char).glob("*.png")))
+        existing = len(list((self.services.paths.bootstrap_sprites / char).glob("*.png")))
         save_template(self.services.paths, char, crop, f"template_{existing + 1:02d}")
         self._load_sprites()
 
     def _load_sprites(self) -> None:
         char = self._char_id(self.sprite_char)
         self.thumbs.clear()
-        folder = self.services.paths.bootstrap / "sprites" / (char or "")
+        folder = self.services.paths.bootstrap_sprites / (char or "")
         if not char or not folder.is_dir():
             return
         from app.services.bootstrap import imread

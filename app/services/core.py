@@ -231,7 +231,7 @@ class Services:
         """Markdown: every benchmark run (newest first) and the latest run's report."""
         import json
 
-        folder = self.paths.work / "_benchmark"
+        folder = self.paths.benchmarks
         runs = []
         if (folder / "history.jsonl").is_file():
             runs = [json.loads(x) for x in (folder / "history.jsonl").read_text(encoding="utf-8").splitlines() if x]
