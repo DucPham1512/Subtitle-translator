@@ -174,6 +174,28 @@ def forget_rejections(config: Config, paths: Paths) -> int:
     return n
 
 
+def _speaker_corrections(paths: Paths, *, since: str) -> list[dict]:
+    """Reviewer speaker corrections (speaker_corrections.jsonl) made after `since` (an ISO time; "" = all)."""
+    f = paths.memory / "speaker_corrections.jsonl"
+    rows = [json.loads(x) for x in f.read_text(encoding="utf-8").splitlines() if x.strip()] if f.is_file() else []
+    return [c for c in rows if c.get("ts", "") > since]
+
+
+def _dream_variable(rejections: list[dict], usage: object, edit_rows: list[dict], corrections: list[dict],
+                    lines: list[ReviewedLine]) -> str:
+    """The variable part of the dreaming prompt (after the static prompt and the memory prefix, 5.1)."""
+    rejected_text = "\n".join(f"- {r['description']}" for r in rejections[-REJECTIONS_SHOWN_TO_MODEL:])
+    return (
+        "Proposals the reviewer rejected before (never propose these again, not even reworded):\n"
+        + (rejected_text or "(none)") + "\n\n"
+        + "Glossary terms not used consistently:\n" + json.dumps(usage, ensure_ascii=False, indent=0)
+        + "\n\nHuman edits since the last dream:\n" + json.dumps(edit_rows, ensure_ascii=False, indent=0)
+        + "\n\nSpeaker corrections since the last dream:\n" + json.dumps(corrections, ensure_ascii=False, indent=0)
+        + "\n\nApproved lines (event_id | speaker → listener | zh | vi):\n"
+        + "\n".join(f"{ln.event_id} | {ln.speaker or '-'} → {ln.listener or '-'} | {ln.zh} | {ln.vi}" for ln in lines)
+    )
+
+
 def dream(config: Config, paths: Paths, llm) -> DreamOutput:
     manager = MemoryManager(paths, config)
     manager.ensure_repo()
@@ -181,9 +203,7 @@ def dream(config: Config, paths: Paths, llm) -> DreamOutput:
     state = read_json(paths.memory / "dream_state.json", {}) or {}
     edits, edit_hashes = new_edits(paths, state)
     lines = approved_lines(paths, config.memory.dream_max_lines)
-    corrections = [json.loads(x) for x in (paths.memory / "speaker_corrections.jsonl").read_text(encoding="utf-8").splitlines()
-                   if x.strip()] if (paths.memory / "speaker_corrections.jsonl").is_file() else []
-    corrections = [c for c in corrections if c.get("ts", "") > state.get("last_dream_at", "")]
+    corrections = _speaker_corrections(paths, since=state.get("last_dream_at", ""))
 
     items: list[DreamItem] = []
     if lines or edits:
@@ -194,16 +214,7 @@ def dream(config: Config, paths: Paths, llm) -> DreamOutput:
         static = load_prompt(paths, "dreaming_system").replace("{{style_rules_max}}", str(config.memory.style_rules_max))
         prefix = "# Series memory\n\n" + "\n".join([characters_block(store), glossary_block(store), pronoun_block(store),
                                                     style_block(paths.memory)])
-        rejected_text = "\n".join(f"- {r['description']}" for r in load_rejections(paths)[-REJECTIONS_SHOWN_TO_MODEL:])
-        variable = (
-            "Proposals the reviewer rejected before (never propose these again, not even reworded):\n"
-            + (rejected_text or "(none)") + "\n\n"
-            + "Glossary terms not used consistently:\n" + json.dumps(glossary_usage(store, lines), ensure_ascii=False, indent=0)
-            + "\n\nHuman edits since the last dream:\n" + json.dumps(edit_rows, ensure_ascii=False, indent=0)
-            + "\n\nSpeaker corrections since the last dream:\n" + json.dumps(corrections, ensure_ascii=False, indent=0)
-            + "\n\nApproved lines (event_id | speaker → listener | zh | vi):\n"
-            + "\n".join(f"{ln.event_id} | {ln.speaker or '-'} → {ln.listener or '-'} | {ln.zh} | {ln.vi}" for ln in lines)
-        )
+        variable = _dream_variable(load_rejections(paths), glossary_usage(store, lines), edit_rows, corrections, lines)
         resp: DreamResponse = llm.call("utility", build_messages(static, prefix, variable), DreamResponse, task="dreaming")
         items += _items_from_response(store, resp, paths.memory)
 
