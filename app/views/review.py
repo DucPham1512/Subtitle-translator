@@ -59,6 +59,15 @@ from subagent.kernel import LineTranslation, ReviewedLine
 LINE_TYPES = ["dialogue", "sign", "title", "sfx"]
 
 
+def _section(title: str, body: str) -> str:
+    """One titled block of the context panel."""
+    return f"<b>{html.escape(title)}</b>{body}"
+
+
+def _bullets(items: list[str]) -> str:
+    return "<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>"
+
+
 class ReviewView(QWidget):
     def __init__(self, main):
         super().__init__()
@@ -1049,66 +1058,73 @@ class ReviewView(QWidget):
         event = self.data.events.get(line.event_id)
         tr = self.data.translations.get(line.event_id)
         parts = []
-
-        def section(title: str, body: str) -> None:
-            parts.append(f"<b>{html.escape(title)}</b>{body}")
-
-        def bullets(items: list[str]) -> str:
-            return "<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>"
-
         if line.deleted:
             note = self.tr("This line is not shown in the video. Use Restore line to bring it back.")
-            section(self.tr("Deleted"), f"<p>{html.escape(note)}</p>")
+            parts.append(_section(self.tr("Deleted"), f"<p>{html.escape(note)}</p>"))
         if line.flags:
-            section(self.tr("Flags"), bullets([html.escape(flag_label(f)) for f in line.flags]))
+            parts.append(_section(self.tr("Flags"), _bullets([html.escape(flag_label(f)) for f in line.flags])))
         notes = (event.notes if event else []) + ([tr.notes] if tr and tr.notes else [])
         script_note = self.data.script_notes.get(line.event_id)
         if script_note:
             notes.append(self.tr("Script review: {note}").format(note=script_note))
         if notes:
-            section(self.tr("Reasons"), bullets([html.escape(n) for n in notes]))
-        evals = self.data.evaluations.get(line.event_id, [])
-        sug = self._suggestion(line)
-        partial = self.data.partial.get(line.event_id) if not line.approved else None
-        if partial is not None:
-            items = []
-            if sug:
-                items.append(self.tr("Suggested speaker: <b>{name}</b> ({reason})").format(
-                    name=html.escape(self._name(sug.suggested_speaker)), reason=html.escape(sug.reason)))
-            if partial.talking:
-                items.append(self.tr("Talking on screen: {name}").format(name=html.escape(self._name(partial.talking))))
-            if partial.voice and partial.voice.candidates:
-                c, s = partial.voice.candidates[0]
-                items.append(self.tr("Voice: {name} {score:.2f} ({status})").format(
-                    name=html.escape(self._name(c)), score=s, status=html.escape(partial.voice.status)))
-            if items:
-                section(self.tr("Partial review"), bullets(items))
-        if evals:
-            last = evals[-1]
-            scores = ", ".join(f"{k} {v}" for k, v in last.scores.items())
-            feedback = html.escape(last.feedback).replace("\n", "<br>")
-            body = f"<p>{html.escape(scores)}</p><p>{feedback}</p>"
-            if last.suggestion and last.suggestion.strip() != line.vi.strip():
-                body = "<p>" + self.tr("Evaluator suggests: <b>{vi}</b>").format(vi=html.escape(last.suggestion))                     + "</p>" + body
-            section(self.tr("Evaluator (attempt {n})").format(n=last.attempt), body)
-        if self.rules is not None:
-            gl = self.rules.glossary_in(line.zh)
-            if gl:
-                from subagent.kernel import contains_term
-
-                section(self.tr("Glossary terms"), bullets([
-                    f"{html.escape(g.zh)} → <b>{html.escape(g.vi)}</b> {'✓' if contains_term(line.vi, g.vi) else '✗'}"
-                    for g in gl]))
-            if line.speaker and line.listener:
-                variants = self.rules.pronoun_variants(line.speaker, line.listener)
-                rows = [html.escape(f"{v.self_term} / {v.address_term}" + (f" ({v.context})" if v.context else ""))
-                        for v in variants] or [html.escape(self.tr("No pronoun pair in memory yet"))]
-                title = self.tr("Pronouns {speaker} → {listener}").format(
-                    speaker=self._name(line.speaker), listener=self._name(line.listener))
-                section(title, bullets(rows))
+            parts.append(_section(self.tr("Reasons"), _bullets([html.escape(n) for n in notes])))
+        parts += [x for x in (self._partial_section(line), self._evaluator_section(line)) if x]
+        parts += self._rule_sections(line)
         self.context.setHtml("".join(parts) or html.escape(self.tr("No notes for this line.")))
 
-    # -- picture: original subtitle + characters on screen -------------------------------------------
+    def _partial_section(self, line: ReviewedLine) -> str | None:
+        """What the partial review found for a remaining line (6.4b)."""
+        partial = self.data.partial.get(line.event_id) if not line.approved else None
+        if partial is None:
+            return None
+        sug = self._suggestion(line)
+        items = []
+        if sug:
+            items.append(self.tr("Suggested speaker: <b>{name}</b> ({reason})").format(
+                name=html.escape(self._name(sug.suggested_speaker)), reason=html.escape(sug.reason)))
+        if partial.talking:
+            items.append(self.tr("Talking on screen: {name}").format(name=html.escape(self._name(partial.talking))))
+        if partial.voice and partial.voice.candidates:
+            c, s = partial.voice.candidates[0]
+            items.append(self.tr("Voice: {name} {score:.2f} ({status})").format(
+                name=html.escape(self._name(c)), score=s, status=html.escape(partial.voice.status)))
+        return _section(self.tr("Partial review"), _bullets(items)) if items else None
+
+    def _evaluator_section(self, line: ReviewedLine) -> str | None:
+        """The last attempt's scores and feedback, with the evaluator's suggestion when it differs."""
+        evals = self.data.evaluations.get(line.event_id, [])
+        if not evals:
+            return None
+        last = evals[-1]
+        scores = ", ".join(f"{k} {v}" for k, v in last.scores.items())
+        feedback = html.escape(last.feedback).replace("\n", "<br>")
+        body = f"<p>{html.escape(scores)}</p><p>{feedback}</p>"
+        if last.suggestion and last.suggestion.strip() != line.vi.strip():
+            body = "<p>" + self.tr("Evaluator suggests: <b>{vi}</b>").format(vi=html.escape(last.suggestion)) \
+                + "</p>" + body
+        return _section(self.tr("Evaluator (attempt {n})").format(n=last.attempt), body)
+
+    def _rule_sections(self, line: ReviewedLine) -> list[str]:
+        """Glossary terms in the line with their required Vietnamese, and the speaker → listener pronoun pair."""
+        if self.rules is None:
+            return []
+        out = []
+        gl = self.rules.glossary_in(line.zh)
+        if gl:
+            from subagent.kernel import contains_term
+
+            out.append(_section(self.tr("Glossary terms"), _bullets([
+                f"{html.escape(g.zh)} → <b>{html.escape(g.vi)}</b> {'✓' if contains_term(line.vi, g.vi) else '✗'}"
+                for g in gl])))
+        if line.speaker and line.listener:
+            variants = self.rules.pronoun_variants(line.speaker, line.listener)
+            rows = [html.escape(f"{v.self_term} / {v.address_term}" + (f" ({v.context})" if v.context else ""))
+                    for v in variants] or [html.escape(self.tr("No pronoun pair in memory yet"))]
+            title = self.tr("Pronouns {speaker} → {listener}").format(
+                speaker=self._name(line.speaker), listener=self._name(line.listener))
+            out.append(_section(title, _bullets(rows)))
+        return out
 
     def _load_picture(self) -> None:
         eid = self.current
