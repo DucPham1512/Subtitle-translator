@@ -149,3 +149,26 @@ def test_new_character_without_id_means_blank_is_right(project):
     ids = [s.event_id for s in audit.draw_sample(config, paths, ep.id)]
     audit.save_marks(work, {ids[0]: AuditMark(event_id=ids[0], speaker=False, correct_speaker=audit.NO_ID_YET)})
     assert audit.gold_speakers(work) == {ids[0]: None} and audit.missing_answers(work) == 0
+
+
+def test_score_episode_strata_and_disagreements():
+    from subagent.bench.benchmark import _score_episode
+    from subagent.kernel import AuditSample
+
+    def line(e: str, speaker: str, flags: list[str] | None = None) -> ReviewedLine:
+        return ReviewedLine(event_id=e, start_ms=0, end_ms=1, speaker=speaker, listener=None, zh="字", pinyin="zì",
+                            vi="x", flags=flags or [])
+
+    audited = {"a": line("a", "lin_yuan"), "b": line("b", "lin_yuan", ["speaker_invalid"]),
+               "c": line("c", "lin_yuan", ["cps_exceeded"]), "d": line("d", "shi_zun")}
+    sample = {"a": AuditSample(event_id="a", kind="random", flagged=False),
+              "b": AuditSample(event_id="b", kind="random", flagged=True),
+              "d": AuditSample(event_id="d", kind="disagreement", flagged=False)}
+    gold = {"a": "lin_yuan", "b": "shi_zun", "d": "shi_zun", "e": "lin_yuan"}      # e: gold but never audited
+    predicted = {"a": "lin_yuan", "b": "shi_zun", "d": "lin_yuan", "e": "lin_yuan"}
+    t = _score_episode("ep001", gold, predicted, audited, sample, ["cps_exceeded"])
+    assert (t.score.gold, t.score.right, t.score.before_right) == (4, 3, 2)
+    assert [c["event_id"] for c in t.score.changed] == ["b", "d", "e"]
+    assert t.cells == [(1, 1, 0), (3, 1, 0)]                # flagged: b only (c's flag is ignored); unflagged: a, c, d
+    assert t.before_cells == [(1, 1, 1), (3, 1, 0)]         # b was wrong as audited
+    assert (t.disagreement_wrong, t.disagreement_lines) == (1, 1)

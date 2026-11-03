@@ -49,6 +49,48 @@ class BenchmarkResult:
     cost: float = 0.0
 
 
+@dataclass
+class _Tally:
+    """One episode's part of a run: its score, its stratum cells (lines in the stratum, checked, wrong) now and
+    as audited, flagged first, and its disagreement lines."""
+
+    score: EpisodeScore
+    cells: list[tuple[int, int, int]] = field(default_factory=list)
+    before_cells: list[tuple[int, int, int]] = field(default_factory=list)
+    disagreement_wrong: int = 0
+    disagreement_lines: int = 0
+
+
+def _score_episode(ep_id: str, gold: dict[str, str | None], predicted: dict[str, str | None], audited: dict,
+                   sample: dict, ignore: list[str]) -> _Tally:
+    """Today's speakers (`predicted`) and the audited output's against the gold."""
+    t = _Tally(EpisodeScore(ep_id))
+    lines = list(audited.values())
+    sizes = {True: sum(is_flagged(x, ignore) for x in lines), False: sum(not is_flagged(x, ignore) for x in lines)}
+    per = {True: [0, 0, 0], False: [0, 0, 0]}          # [checked, wrong now, wrong before]
+    for e, g in gold.items():
+        now_ok = predicted.get(e) == g
+        before_ok = audited[e].speaker == g if e in audited else False
+        t.score.gold += 1
+        t.score.right += now_ok
+        t.score.before_right += before_ok
+        if predicted.get(e) != (audited[e].speaker if e in audited else None):
+            t.score.changed.append({"event_id": e, "before": audited[e].speaker if e in audited else None,
+                                    "now": predicted.get(e), "gold": g})
+        s = sample.get(e)
+        if s is not None and s.kind == "random":
+            per[s.flagged][0] += 1
+            per[s.flagged][1] += not now_ok
+            per[s.flagged][2] += not before_ok
+        elif s is not None:
+            t.disagreement_wrong += not now_ok
+            t.disagreement_lines += 1
+    for f in (True, False):
+        t.cells.append((sizes[f], per[f][0], per[f][1]))
+        t.before_cells.append((sizes[f], per[f][0], per[f][2]))
+    return t
+
+
 def benchmark_episodes(paths: Paths) -> list[str]:
     from subagent.workspace import Registry
 
@@ -115,32 +157,12 @@ def run_benchmark(config: Config, paths: Paths, episode_ids: list[str] | None = 
         predicted = {t.event_id: t.speaker for t in read_jsonl(work / "translations.jsonl", LineTranslation)}
         audited = {x.event_id: x for x in auditable_lines(src)}
         sample = {s.event_id: s for s in load_sample(src)}
-        score = EpisodeScore(ep_id)
-        lines = list(audited.values())
-        ignore = config.audit.ignore_flags
-        sizes = {True: sum(is_flagged(x, ignore) for x in lines), False: sum(not is_flagged(x, ignore) for x in lines)}
-        per = {True: [0, 0, 0], False: [0, 0, 0]}          # [checked, wrong now, wrong before]
-        for e, g in gold.items():
-            now_ok = predicted.get(e) == g
-            before_ok = audited[e].speaker == g if e in audited else False
-            score.gold += 1
-            score.right += now_ok
-            score.before_right += before_ok
-            if predicted.get(e) != (audited[e].speaker if e in audited else None):
-                score.changed.append({"event_id": e, "before": audited[e].speaker if e in audited else None,
-                                      "now": predicted.get(e), "gold": g})
-            s = sample.get(e)
-            if s is not None and s.kind == "random":
-                per[s.flagged][0] += 1
-                per[s.flagged][1] += not now_ok
-                per[s.flagged][2] += not before_ok
-            elif s is not None:
-                dis[0] += not now_ok
-                dis[1] += 1
-        for f in (True, False):
-            cells.append((sizes[f], per[f][0], per[f][1]))
-            before_cells.append((sizes[f], per[f][0], per[f][2]))
-        result.episodes.append(score)
+        tally = _score_episode(ep_id, gold, predicted, audited, sample, config.audit.ignore_flags)
+        cells += tally.cells
+        before_cells += tally.before_cells
+        dis[0] += tally.disagreement_wrong
+        dis[1] += tally.disagreement_lines
+        result.episodes.append(tally.score)
     result.speaker = asdict(stratified(cells))
     result.speaker_before = asdict(stratified(before_cells))
     result.disagreement = asdict(wilson(*dis))
