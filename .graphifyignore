@@ -1,0 +1,28 @@
+# Files graphify leaves out of the knowledge graph (gitignore syntax).
+# .gitignore is read first; this file only adds exclusions.
+# Rule: the graph shows the project's source code, plus files the code reads
+# at runtime (prompts/, bootstrap/cast.md, config). Documentation, content
+# managed outside this project and tool state stay out.
+
+# Claude Code skills (third-party, plus this project's experiments workflow)
+# and Claude Code's own settings.
+.claude/skills/
+.claude/settings.json
+
+# Series media: character portraits, bootstrap sprites, voice samples.
+# By extension, so the card metadata (pin.json) the code reads stays in.
+data/series/**/*.png
+data/series/**/*.wav
+
+# Bundled Noto fonts and their license (SIL OFL).
+app/fonts/
+data/series/*/fonts/
+
+# Documentation: the spec, the project guide, the README, the cast template.
+.claude/rules/
+CLAUDE.md
+README.md
+data/series/*/bootstrap/cast.example.md
+
+# Exclude knowledge_vault from being presented in the graph.
+knowledge_vault
