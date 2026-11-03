@@ -6,7 +6,7 @@ The review screen never calls an LLM. It only edits review_draft.jsonl (autosave
 from __future__ import annotations
 
 import html
-import time
+from collections.abc import Callable
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
@@ -36,10 +36,11 @@ from app import shortcuts
 from app.messages import error_message, flag_label, status_label
 from app.preview import PreviewWidget
 from app.services import ReviewData
-from app.services.review import FLAG_ORDER, RULE_WARNING_FLAGS, needs_attention, review_order
+from app.services.review import FLAG_ORDER, needs_attention, review_order
 from app.views.audit import AuditBar
 from app.views.cast_panel import BandView, CastPanel
 from app.views.common import choose_on_exists, job_busy
+from app.views.review_state import LineFilter, LineHistory, line_matches
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
 from subagent.kernel import LineTranslation, ReviewedLine
@@ -76,9 +77,7 @@ class ReviewView(QWidget):
         self.order: list[str] = []
         self.visible: list[str] = []
         self.current: str | None = None
-        self.undo: dict[str, list[ReviewedLine]] = {}
-        self.redo: dict[str, list[ReviewedLine]] = {}
-        self._last_push: tuple[str, str, float] = ("", "", 0.0)
+        self.history = LineHistory()
         self._loading = False
         self._saving = False
         self._save_pending = False
@@ -394,7 +393,7 @@ class ReviewView(QWidget):
         self.data, self.engine, self.rules, self.characters = data, engine, rules, chars
         self.originals = originals
         self.lines = {line.event_id: line for line in data.lines}
-        self.undo, self.redo = {}, {}
+        self.history.clear()
         idx = self.episode_box.findData(data.episode.id)
         if idx < 0:
             self.episode_box.addItem(f"{data.episode.id} — {status_label(data.episode.status)}", data.episode.id)
@@ -561,26 +560,15 @@ class ReviewView(QWidget):
 
     # -- list ---------------------------------------------------------------------------------------
 
-    def _matches(self, line: ReviewedLine) -> bool:
-        if self.audit_mode and line.event_id not in self.audit_sample:
-            return False
-        flag = self.flag_filter.currentData()
-        if flag == "rule_warnings":
-            if not any(f in RULE_WARNING_FLAGS for f in line.flags):
-                return False
-        elif flag and flag not in line.flags:
-            return False
-        speaker = self.speaker_filter.currentData()
-        if speaker and line.speaker != speaker:
-            return False
-        if self.unapproved.isChecked() and line.approved:
-            return False
-        q = self.search.text().strip().lower()
-        return not q or q in line.zh.lower() or q in line.vi.lower()
+    def _line_filter(self) -> LineFilter:
+        return LineFilter(flag=self.flag_filter.currentData(), speaker=self.speaker_filter.currentData(),
+                          unapproved_only=self.unapproved.isChecked(), text=self.search.text(),
+                          sample=self.audit_sample if self.audit_mode else None)
 
     def _apply_filters(self, *_: object, select: str | None = None) -> None:
         keep = select or self.current
-        self.visible = [eid for eid in self.order if self._matches(self.lines[eid])]
+        f = self._line_filter()
+        self.visible = [eid for eid in self.order if line_matches(self.lines[eid], f)]
         self.table.blockSignals(True)
         self.table.setRowCount(len(self.visible))
         for row, eid in enumerate(self.visible):
@@ -739,14 +727,7 @@ class ReviewView(QWidget):
                                   and self.lines.get(line.event_id) != self.originals[line.event_id])
 
     def _push_undo(self, eid: str, field: str) -> None:
-        now = time.monotonic()
-        last_id, last_field, last_t = self._last_push
-        if last_id == eid and last_field == field and now - last_t < 1.5:
-            self._last_push = (eid, field, now)
-            return
-        self.undo.setdefault(eid, []).append(self.lines[eid].model_copy(deep=True))
-        self.redo[eid] = []
-        self._last_push = (eid, field, now)
+        self.history.push(self.lines[eid], field)
 
     def _edit(self, field: str, value: object) -> None:
         if self._loading or self.current is None or (self.data and self.data.read_only):
@@ -804,19 +785,20 @@ class ReviewView(QWidget):
             self._rules_timer.start()
 
     def _undo(self) -> None:
-        self._undo_redo(self.undo, self.redo)
+        self._undo_redo(self.history.undo_step)
 
     def _redo(self) -> None:
-        self._undo_redo(self.redo, self.undo)
+        self._undo_redo(self.history.redo_step)
 
-    def _undo_redo(self, source: dict, target: dict) -> None:
+    def _undo_redo(self, step: Callable[[ReviewedLine], ReviewedLine | None]) -> None:
         eid = self.current
-        if not eid or not source.get(eid) or (self.data and self.data.read_only):
+        if not eid or (self.data and self.data.read_only):
             return
-        target.setdefault(eid, []).append(self.lines[eid].model_copy(deep=True))
-        self.lines[eid] = source[eid].pop()
-        self._last_push = ("", "", 0.0)
-        self._load_editor(self.lines[eid])
+        line = step(self.lines[eid])
+        if line is None:
+            return
+        self.lines[eid] = line
+        self._load_editor(line)
         self._changed(eid)
 
     # -- approve / finish ---------------------------------------------------------------------------
@@ -869,7 +851,7 @@ class ReviewView(QWidget):
         if eid is None or eid not in self.originals or (self.data and self.data.read_only):
             return
         self._push_undo(eid, "reset")
-        self._last_push = ("", "", 0.0)
+        self.history.break_merge()
         self.lines[eid] = self.originals[eid].model_copy(deep=True)
         self._load_editor(self.lines[eid])
         self._changed(eid)
@@ -888,8 +870,8 @@ class ReviewView(QWidget):
         """Replace the draft by the pipeline's output (after confirmation)."""
         self._save_timer.stop()
         self.lines = {eid: line.model_copy(deep=True) for eid, line in self.originals.items()}
-        self.undo, self.redo = {}, {}
-        self._last_push = ("", "", 0.0)
+        self.history.clear()
+        self.history.break_merge()
         self.services.save_draft(self.data.episode.id, list(self.lines.values()))
         self._resort()
         self.current = None

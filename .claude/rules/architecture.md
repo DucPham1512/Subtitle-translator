@@ -105,6 +105,7 @@ app/                   desktop app (PySide6); imports `subagent`, never the reve
   views/
     episodes.py  run.py  review.py  memory.py  bootstrap.py  dreaming.py  settings.py
     character_dialog.py  character_browser.py  common.py  settings_form.py  cast_panel.py  audit.py
+    review_state.py    review screen state without widgets: per-line undo / redo, the line filter
   i18n/                app_en.ts, app_vi.ts (+ compiled .qm), fill_vi.py (Vietnamese strings)
 prompts/               one .md file per prompt, loaded at runtime; registers/<id>.md: translation styles (5.11)
 data/series/<slug>/    one folder per series (5.2a); "data/<x>" in this spec means data/series/<slug>/<x>
