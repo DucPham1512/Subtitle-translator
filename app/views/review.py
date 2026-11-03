@@ -47,7 +47,10 @@ from app.views.review_state import (
     line_matches,
     marked_count,
     next_npc_number,
+    next_pending,
     next_unmarked,
+    review_counts,
+    row_state,
 )
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
@@ -591,10 +594,7 @@ class ReviewView(QWidget):
 
     def _fill_row(self, row: int, line: ReviewedLine) -> None:
         flagged = needs_attention(line)
-        state = "✕" if line.deleted else "✓" if line.approved else ("⚑" if flagged else "·")
-        if self.audit_mode:
-            mark = self.audit_marks.get(line.event_id)
-            state = "·" if mark is None or not mark.marked() else "✗" if mark.any_wrong() else "✓"
+        state = row_state(line, self.audit_marks.get(line.event_id), audit=self.audit_mode)
         who = f"{self._name(line.speaker)} → {self._name(line.listener)}" if line.line_type == "dialogue" \
             else f"[{self.line_type.itemText(LINE_TYPES.index(line.line_type))}]"
         values = [state, fmt_ms(line.start_ms), who, line.zh, line.vi]
@@ -618,19 +618,16 @@ class ReviewView(QWidget):
         return self.characters.get(cid, cid) if cid else "—"
 
     def _update_counter(self) -> None:
-        lines = [x for x in self.lines.values() if not x.deleted]
-        deleted = len(self.lines) - len(lines)
-        flagged_left = sum(1 for x in lines if needs_attention(x) and not x.approved)
-        approved = sum(1 for x in lines if x.approved)
+        c = review_counts(list(self.lines.values()))
         text = self.tr("Flagged remaining: {flagged} · Approved: {approved} / {total}").format(
-            flagged=flagged_left, approved=approved, total=len(lines))
-        if deleted:
-            text += " · " + self.tr("Deleted: {n}").format(n=deleted)
+            flagged=c.flagged_left, approved=c.approved, total=c.total)
+        if c.deleted:
+            text += " · " + self.tr("Deleted: {n}").format(n=c.deleted)
         self.counter.setText(text)
         ro = self.data is None or self.data.read_only
-        self.approve_rest_btn.setEnabled(not ro and flagged_left == 0 and approved < len(lines))
-        self.partial_btn.setEnabled(not ro and 0 < approved < len(lines) and not self._partial_job)
-        self.finish_btn.setEnabled(not ro and bool(self.lines) and approved == len(lines))
+        self.approve_rest_btn.setEnabled(not ro and c.flagged_left == 0 and c.approved < c.total)
+        self.partial_btn.setEnabled(not ro and 0 < c.approved < c.total and not self._partial_job)
+        self.finish_btn.setEnabled(not ro and bool(self.lines) and c.approved == c.total)
 
     def _select(self, event_id: str) -> None:
         row = self.visible.index(event_id)
@@ -823,10 +820,7 @@ class ReviewView(QWidget):
         self._select_next_pending(eid)
 
     def _select_next_pending(self, eid: str) -> None:
-        pending = [x for x in self.visible if not self.lines[x].approved and not self.lines[x].deleted]
-        after = [x for x in pending if self.visible.index(x) > self.visible.index(eid)]
-        nxt = (after or pending or [eid])[0]
-        self._select(nxt)
+        self._select(next_pending(self.visible, self.lines, eid))
 
     def _approve_rest(self) -> None:
         rest = [eid for eid, x in self.lines.items() if not x.approved and not x.deleted and not needs_attention(x)]

@@ -1,4 +1,4 @@
-"""Review screen state without widgets: undo / redo steps, the line filter, audit marking, new NPC ids."""
+"""Review screen state without widgets: undo / redo steps, the line filter and counts, audit marking, new NPC ids."""
 
 from __future__ import annotations
 
@@ -10,7 +10,10 @@ from app.views.review_state import (
     line_matches,
     marked_count,
     next_npc_number,
+    next_pending,
     next_unmarked,
+    review_counts,
+    row_state,
 )
 from subagent.kernel import AuditMark, ReviewedLine
 
@@ -115,3 +118,32 @@ def test_next_npc_number_counts_this_episode_only():
     assert next_npc_number(ids, "npc", 7) == 4
     assert next_npc_number(ids, "npc", 8) == 1
     assert next_npc_number([], "npc", 7) == 1
+
+
+def test_review_counts_leave_deleted_lines_out():
+    lines = [_line("a", flags=["cps_exceeded"]), _line("b", approved=True), _line("c", deleted=True, flags=["x"]),
+             _line("d", approved=True, flags=["cps_exceeded"])]
+    c = review_counts(lines)
+    assert (c.total, c.approved, c.flagged_left, c.deleted) == (3, 2, 1, 1)
+
+
+def test_next_pending_goes_forward_then_wraps():
+    lines = {e: _line(e) for e in "abcd"}
+    lines["b"] = _line("b", approved=True)
+    lines["d"] = _line("d", deleted=True)
+    visible = list("abcd")
+    assert next_pending(visible, lines, "a") == "c"         # b approved, skipped
+    assert next_pending(visible, lines, "c") == "a"         # d deleted: wraps to the first pending
+    for e in "ac":
+        lines[e] = _line(e, approved=True)
+    assert next_pending(visible, lines, "c") == "c"         # nothing left: stays
+
+
+def test_row_state():
+    assert row_state(_line()) == "·"
+    assert row_state(_line(flags=["cps_exceeded"])) == "⚑"
+    assert row_state(_line(approved=True, flags=["cps_exceeded"])) == "✓"
+    assert row_state(_line(deleted=True, approved=True)) == "✕"
+    assert row_state(_line(approved=True), None, audit=True) == "·"           # audit mode shows the mark only
+    assert row_state(_line(), AuditMark(event_id="a", speaker=True), audit=True) == "✓"
+    assert row_state(_line(), AuditMark(event_id="a", speaker=False), audit=True) == "✗"
