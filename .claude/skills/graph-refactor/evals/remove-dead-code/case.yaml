@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: remove-dead-code
+expected_outcome: |
+  The three really unused symbols (atomic_write_bytes in subagent/kernel/util.py, read_episode_briefing in subagent/memory/briefings.py, PreviewWidget.close_media in app/preview.py) are verified and removed on a refactor branch, nothing else is removed, lint and the full test suite pass before and after, the graph is refreshed with the before/after count, and the change is recorded in the knowledge vault.
