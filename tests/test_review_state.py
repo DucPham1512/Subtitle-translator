@@ -1,9 +1,18 @@
-"""Review screen state without widgets: undo / redo steps and the line filter."""
+"""Review screen state without widgets: undo / redo steps, the line filter, audit marking, new NPC ids."""
 
 from __future__ import annotations
 
-from app.views.review_state import MERGE_S, LineFilter, LineHistory, line_matches
-from subagent.kernel import ReviewedLine
+from app.views.review_state import (
+    MERGE_S,
+    LineFilter,
+    LineHistory,
+    all_correct_mark,
+    line_matches,
+    marked_count,
+    next_npc_number,
+    next_unmarked,
+)
+from subagent.kernel import AuditMark, ReviewedLine
 
 
 def _line(eid: str = "ep001:0000", **kw) -> ReviewedLine:
@@ -76,3 +85,33 @@ def test_line_filter():
     assert line_matches(plain, LineFilter(sample={"ep001:0001": None}))
     assert not line_matches(flagged, LineFilter(sample={"ep001:0001": None}))
     assert not line_matches(flagged, LineFilter(sample={}))       # audit mode with an empty sample shows nothing
+
+
+def test_audit_marking():
+    sample = {"a": None, "b": None, "c": None}
+    marks = {"a": AuditMark(event_id="a", speaker=True), "b": AuditMark(event_id="b")}   # b: opened, not marked
+    assert marked_count(sample, marks) == 1
+    old = AuditMark(event_id="c", pronouns=False, na=["pronouns"], note="no pronoun")
+    mark = all_correct_mark("c", old, "lin_yuan", "2026-11-03T10:00:00")
+    assert (mark.speaker, mark.ocr, mark.translation, mark.pronouns) == (True, True, True, None)   # n/a kept
+    assert mark.note == "no pronoun" and mark.speaker_value == "lin_yuan" and mark.marked_at.startswith("2026")
+    assert all_correct_mark("a", None, None, "t").na == []
+
+
+def test_next_unmarked_wraps_and_waits_for_who_really_speaks():
+    order = ["a", "b", "c"]
+    done = AuditMark(event_id="", speaker=True)
+    assert next_unmarked(order, "a", {"a": done}) == "b"
+    assert next_unmarked(order, "c", {"c": done, "b": done}) == "a"              # wraps round
+    assert next_unmarked(order, None, {}) == "a"                               # nothing selected: the first
+    wrong = AuditMark(event_id="b", speaker=False)
+    assert next_unmarked(order, "a", {"a": done, "b": wrong, "c": done}) == "b"  # wrong but no answer yet
+    answered = wrong.model_copy(update={"correct_speaker": "shi_zun"})
+    assert next_unmarked(order, "a", {"a": done, "b": answered, "c": done}) is None
+
+
+def test_next_npc_number_counts_this_episode_only():
+    ids = ["lin_yuan", "npc_007_01", "npc_007_03", "npc_006_09", "npc_7_02"]   # the last is not an automatic id
+    assert next_npc_number(ids, "npc", 7) == 4
+    assert next_npc_number(ids, "npc", 8) == 1
+    assert next_npc_number([], "npc", 7) == 1

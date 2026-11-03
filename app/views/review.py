@@ -40,7 +40,15 @@ from app.services.review import FLAG_ORDER, needs_attention, review_order
 from app.views.audit import AuditBar
 from app.views.cast_panel import BandView, CastPanel
 from app.views.common import choose_on_exists, job_busy
-from app.views.review_state import LineFilter, LineHistory, line_matches
+from app.views.review_state import (
+    LineFilter,
+    LineHistory,
+    all_correct_mark,
+    line_matches,
+    marked_count,
+    next_npc_number,
+    next_unmarked,
+)
 from app.widgets import confirm, fmt_ms, show_error
 from app.workers import run_async
 from subagent.kernel import LineTranslation, ReviewedLine
@@ -510,15 +518,13 @@ class ReviewView(QWidget):
 
     def _new_npc(self) -> None:
         """A new automatic id for this line's speaker; no memory write (probation decides at finish, 5.15b)."""
-        from app.services.review import is_auto_id, new_voice_id
+        from app.services.review import new_voice_id
 
         if self.data is None or self.data.read_only or self.current is None:
             return
         prefix = self.services.config.voice.new_voice_prefix
         number = self.data.episode.number
-        used = [int(c.rsplit("_", 1)[-1]) for c in self.characters
-                if is_auto_id(c, prefix) and int(c.rsplit("_", 2)[-2]) == number]
-        cid = new_voice_id(prefix, number, max(used, default=0) + 1)
+        cid = new_voice_id(prefix, number, next_npc_number(self.characters, prefix, number))
         self.characters[cid] = self._voice_label(cid, "review")
         self._fill_character_boxes()
         self.speaker_filter.addItem(self.characters[cid], cid)
@@ -911,7 +917,7 @@ class ReviewView(QWidget):
     # -- audit (6.11) --------------------------------------------------------------------------------
 
     def _audit_progress(self) -> str:
-        marked = sum(1 for e in self.audit_sample if e in self.audit_marks and self.audit_marks[e].marked())
+        marked = marked_count(self.audit_sample, self.audit_marks)
         return self.tr("{marked} / {total} sampled lines marked").format(marked=marked, total=len(self.audit_sample))
 
     def _show_audit(self, line: ReviewedLine | None) -> None:
@@ -938,14 +944,10 @@ class ReviewView(QWidget):
     def _audit_all_correct(self) -> None:
         if not self.audit_mode or self.current is None or self.current not in self.audit_sample:
             return
-        from subagent.kernel import AUDIT_ASPECTS, AuditMark, now_iso
+        from subagent.kernel import now_iso
 
-        old = self.audit_marks.get(self.current)
-        na = old.na if old else []
-        self.audit_marks[self.current] = AuditMark(
-            event_id=self.current, na=na, note=old.note if old else "", marked_at=now_iso(),
-            speaker_value=self.lines[self.current].speaker,
-            **{a: (None if a in na else True) for a in AUDIT_ASPECTS})
+        self.audit_marks[self.current] = all_correct_mark(self.current, self.audit_marks.get(self.current),
+                                                          self.lines[self.current].speaker, now_iso())
         self._fill_row(self.visible.index(self.current), self.lines[self.current])
         self._audit_timer.start()
         self._audit_next()
@@ -954,12 +956,10 @@ class ReviewView(QWidget):
         order = [e for e in self.visible if e in self.audit_sample]
         if not order:
             return
-        start = order.index(self.current) + 1 if self.current in order else 0
-        for e in order[start:] + order[:start]:
-            m = self.audit_marks.get(e)
-            if m is None or (m.speaker is False and not m.correct_speaker):     # unmarked, or answer missing
-                self._select(e)
-                return
+        nxt = next_unmarked(order, self.current, self.audit_marks)
+        if nxt is not None:
+            self._select(nxt)
+            return
         self._show_audit(self.lines.get(self.current))      # everything is marked
 
     def _save_audit(self) -> None:

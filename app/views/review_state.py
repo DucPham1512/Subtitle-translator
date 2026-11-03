@@ -1,14 +1,14 @@
-"""Review screen state without widgets: per-line undo / redo and the line filter (6.4). Qt-free, so it is tested
-without the app."""
+"""Review screen state without widgets: per-line undo / redo, the line filter (6.4), audit marking (6.11) and new
+NPC ids. Qt-free, so it is tested without the app."""
 
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Iterable, Mapping
 from dataclasses import dataclass
 
-from app.services.review import RULE_WARNING_FLAGS
-from subagent.kernel import ReviewedLine
+from app.services.review import RULE_WARNING_FLAGS, is_auto_id
+from subagent.kernel import AUDIT_ASPECTS, AuditMark, ReviewedLine
 
 MERGE_S = 1.5       # edits of one field of one line closer together than this are one undo step
 
@@ -81,3 +81,33 @@ def line_matches(line: ReviewedLine, f: LineFilter) -> bool:
         return False
     q = f.text.strip().lower()
     return not q or q in line.zh.lower() or q in line.vi.lower()
+
+
+def marked_count(sample: Collection[str], marks: Mapping[str, AuditMark]) -> int:
+    return sum(1 for e in sample if e in marks and marks[e].marked())
+
+
+def all_correct_mark(event_id: str, old: AuditMark | None, speaker: str | None, marked_at: str) -> AuditMark:
+    """Every aspect correct, except the ones already marked not applicable; the note is kept."""
+    na = old.na if old else []
+    return AuditMark(event_id=event_id, na=na, note=old.note if old else "", marked_at=marked_at,
+                     speaker_value=speaker, **{a: (None if a in na else True) for a in AUDIT_ASPECTS})
+
+
+def next_unmarked(order: list[str], current: str | None, marks: Mapping[str, AuditMark]) -> str | None:
+    """The first sampled line after `current` (wrapping round) still to mark: unmarked, or speaker marked wrong
+    without who really speaks. None when every line is done."""
+    start = order.index(current) + 1 if current in order else 0
+    for e in order[start:] + order[:start]:
+        m = marks.get(e)
+        if m is None or (m.speaker is False and not m.correct_speaker):
+            return e
+    return None
+
+
+def next_npc_number(ids: Iterable[str], prefix: str, episode_number: int) -> int:
+    """The next free <n> of this episode's automatic ids (<prefix>_<ep>_<n>), after the voice stage's and the ones
+    made in review."""
+    used = [int(c.rsplit("_", 1)[-1]) for c in ids
+            if is_auto_id(c, prefix) and int(c.rsplit("_", 2)[-2]) == episode_number]
+    return max(used, default=0) + 1
