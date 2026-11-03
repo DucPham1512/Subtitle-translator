@@ -51,10 +51,6 @@ def _replace_with_retry(src: Path, dst: Path, attempts: int = 10) -> None:
             time.sleep(0.05 * (i + 1))
 
 
-def atomic_write_bytes(path: Path, data: bytes) -> None:
-    _atomic_write(path, data)
-
-
 def atomic_write_text(path: Path, text: str) -> None:
     _atomic_write(path, text.encode("utf-8"))
 

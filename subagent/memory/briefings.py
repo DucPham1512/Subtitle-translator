@@ -76,10 +76,6 @@ def read_story(memory: Path) -> str:
     return _read(briefings_dir(memory) / "story_so_far.md")
 
 
-def read_episode_briefing(memory: Path, episode_id: str) -> str:
-    return _read(briefings_dir(memory) / f"{episode_id}.md")
-
-
 def list_episode_briefings(memory: Path) -> list[str]:
     d = briefings_dir(memory)
     if not d.is_dir():

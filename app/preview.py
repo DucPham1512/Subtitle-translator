@@ -237,10 +237,6 @@ class PreviewWidget(QWidget):
         p.loadfile(str(video))
         p.pause = True
 
-    def close_media(self) -> None:
-        if self.player:
-            self.player.command("stop")
-
     def reload_subtitles(self) -> None:
         if self.player:
             try:
