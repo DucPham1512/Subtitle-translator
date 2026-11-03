@@ -20,7 +20,7 @@ from subagent.kernel import MemoryProposal, ReviewedLine
 from subagent.llm import build_messages, load_prompt
 from subagent.memory import briefings as bf
 from subagent.memory.prefix import characters_block
-from subagent.memory.store import MemoryStore, parse_aliases
+from subagent.memory.store import Candidate, Character, MemoryStore, PronounPair, parse_aliases
 from subagent.settings import Config, Paths
 
 log = logging.getLogger(__name__)
@@ -123,62 +123,75 @@ def check(resp: CharacterUpdateResponse, store: MemoryStore, lines: list[Reviewe
     allowed = set(by_id) if learnable is None else set(by_id) & learnable
     chars = {c.id: c for c in store.characters()}
     cands = {c.id: c for c in store.candidates()}
-    cap = config.memory.description_max_chars
-    out: list[MemoryProposal] = []
-    dropped: list[str] = []
-    for ch in resp.characters:
-        if ch.id not in ids:
-            dropped.append(f"{ch.id}: not in this episode")
-            continue
-        evidence = [e for e in dict.fromkeys(ch.evidence) if e in allowed and ch.id in
-                    (by_id[e].speaker, by_id[e].listener)]
-        if not evidence:
-            dropped.append(f"{ch.id}: no usable evidence")
-            continue
-        addressed = " ".join(by_id[e].zh for e in evidence if by_id[e].listener == ch.id)
-        current = chars.get(ch.id) or cands.get(ch.id)
-        payload: dict = {"id": ch.id}
-        name_zh = (ch.name_zh or "").strip()
-        name_vi = (ch.name_vi or "").strip()
-        if name_zh and name_vi and name_vi != ch.id and (name_zh in addressed or _introduces(
-                [by_id[e].zh for e in evidence if by_id[e].speaker == ch.id], name_zh)):
-            if not current or (current.name_zh, current.name_vi) != (name_zh, name_vi):
-                payload["name_zh"], payload["name_vi"] = name_zh, name_vi
-        elif name_zh or name_vi:
-            dropped.append(f"{ch.id}: name {name_zh or name_vi} not used to address or introduce it")
-        desc = " ".join((ch.description or "").split())
-        if desc and (not current or desc != (current.description or "")):
-            payload["description"] = _clip(desc, cap)
-        have = list(current.aliases) if current else []
-        new = [a for a in parse_aliases(ch.aliases) if a not in have and _alias_zh(a)
-               and _alias_zh(a) in addressed]
-        if new:
-            payload["aliases"] = (have + new)[:config.memory.aliases_max]
-        if len(payload) > 1:
-            out.append(MemoryProposal(kind="character", source="updater", payload=payload, evidence=evidence))
     pairs = {(p.speaker_id, p.listener_id, p.context): p for p in store.pronoun_pairs()}
-    for pu in resp.pronouns:
-        s, li = pu.speaker_id, pu.listener_id
-        self_term, address_term = " ".join(pu.self_term.split()), " ".join(pu.address_term.split())
-        context = " ".join(pu.context.split())
-        if s not in ids or li not in ids or s == li or not self_term or not address_term:
-            dropped.append(f"pronouns {s} → {li}: not two characters of this episode")
-            continue
-        evidence = [e for e in dict.fromkeys(pu.evidence) if e in allowed and by_id[e].speaker == s
-                    and by_id[e].listener == li and (_has_word(by_id[e].vi, self_term)
-                                                    or _has_word(by_id[e].vi, address_term))]
-        if not evidence:
-            dropped.append(f"pronouns {s} → {li}: terms not used in its evidence lines")
-            continue
-        old = pairs.get((s, li, context))
-        if old and (old.self_term.lower(), old.address_term.lower()) == (self_term.lower(), address_term.lower()):
-            continue
-        out.append(MemoryProposal(kind="pronoun_pair", source="updater", evidence=evidence, payload={
-            "speaker_id": s, "listener_id": li, "self_term": self_term, "address_term": address_term,
-            "context": context}))
+    dropped: list[str] = []
+    out = [_character_change(ch, by_id, allowed, chars.get(ch.id) or cands.get(ch.id), ids, config, dropped)
+           for ch in resp.characters]
+    out += [_pronoun_change(pu, by_id, allowed, pairs, ids, dropped) for pu in resp.pronouns]
     if dropped:
         log.info("character updates: %d dropped by the checks: %s", len(dropped), "; ".join(dropped[:20]))
-    return out
+    return [x for x in out if x is not None]
+
+
+def _character_change(ch: CharacterChange, by_id: dict[str, ReviewedLine], allowed: set[str],
+                      current: Character | Candidate | None, ids: list[str],
+                      config: Config, dropped: list[str]) -> MemoryProposal | None:
+    """One character's update, kept only where its evidence lines show it: a name used to address or introduce
+    it, a new description, aliases it is called by. None when nothing is left (the reason goes to `dropped`)."""
+    if ch.id not in ids:
+        dropped.append(f"{ch.id}: not in this episode")
+        return None
+    evidence = [e for e in dict.fromkeys(ch.evidence) if e in allowed and ch.id in
+                (by_id[e].speaker, by_id[e].listener)]
+    if not evidence:
+        dropped.append(f"{ch.id}: no usable evidence")
+        return None
+    addressed = " ".join(by_id[e].zh for e in evidence if by_id[e].listener == ch.id)
+    payload: dict = {"id": ch.id}
+    name_zh = (ch.name_zh or "").strip()
+    name_vi = (ch.name_vi or "").strip()
+    if name_zh and name_vi and name_vi != ch.id and (name_zh in addressed or _introduces(
+            [by_id[e].zh for e in evidence if by_id[e].speaker == ch.id], name_zh)):
+        if not current or (current.name_zh, current.name_vi) != (name_zh, name_vi):
+            payload["name_zh"], payload["name_vi"] = name_zh, name_vi
+    elif name_zh or name_vi:
+        dropped.append(f"{ch.id}: name {name_zh or name_vi} not used to address or introduce it")
+    desc = " ".join((ch.description or "").split())
+    if desc and (not current or desc != (current.description or "")):
+        payload["description"] = _clip(desc, config.memory.description_max_chars)
+    have = list(current.aliases) if current else []
+    new = [a for a in parse_aliases(ch.aliases) if a not in have and _alias_zh(a)
+           and _alias_zh(a) in addressed]
+    if new:
+        payload["aliases"] = (have + new)[:config.memory.aliases_max]
+    if len(payload) > 1:
+        return MemoryProposal(kind="character", source="updater", payload=payload, evidence=evidence)
+    return None
+
+
+def _pronoun_change(pu: PronounUse, by_id: dict[str, ReviewedLine], allowed: set[str],
+                    pairs: dict[tuple[str, str, str], PronounPair], ids: list[str],
+                    dropped: list[str]) -> MemoryProposal | None:
+    """A pronoun pair between two characters of this episode, kept only when its evidence lines use the terms and
+    it differs from the pair in memory."""
+    s, li = pu.speaker_id, pu.listener_id
+    self_term, address_term = " ".join(pu.self_term.split()), " ".join(pu.address_term.split())
+    context = " ".join(pu.context.split())
+    if s not in ids or li not in ids or s == li or not self_term or not address_term:
+        dropped.append(f"pronouns {s} → {li}: not two characters of this episode")
+        return None
+    evidence = [e for e in dict.fromkeys(pu.evidence) if e in allowed and by_id[e].speaker == s
+                and by_id[e].listener == li and (_has_word(by_id[e].vi, self_term)
+                                                or _has_word(by_id[e].vi, address_term))]
+    if not evidence:
+        dropped.append(f"pronouns {s} → {li}: terms not used in its evidence lines")
+        return None
+    old = pairs.get((s, li, context))
+    if old and (old.self_term.lower(), old.address_term.lower()) == (self_term.lower(), address_term.lower()):
+        return None
+    return MemoryProposal(kind="pronoun_pair", source="updater", evidence=evidence, payload={
+        "speaker_id": s, "listener_id": li, "self_term": self_term, "address_term": address_term,
+        "context": context})
 
 
 def _clip(text: str, cap: int) -> str:
