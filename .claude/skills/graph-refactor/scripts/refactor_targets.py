@@ -142,11 +142,22 @@ def analyse(graph_path: Path, top: int) -> dict:
     code = {i: n for i, n in nodes.items() if n.get("file_type") == "code" and src(i).endswith(".py")}
     prod = {i: n for i, n in code.items() if package(src(i)) not in ("tests", "")}
 
-    # Freshness: the graph is only as good as the commit it was built from.
+    # Freshness: Python files changed (committed, uncommitted or new) since the graph was built. Only files the graph
+    # covers count (already in it, or new in a folder it covers; .graphifyignore'd ones are neither), and only when
+    # they are newer than graph.json: `graphify update` reads the working tree, uncommitted edits included.
     built = g.get("built_at_commit") or ""
     head = git("rev-parse", "HEAD")
-    changed = git("diff", "--name-only", built, "--", "*.py").splitlines() if built and built != head else []
-    changed += [p for p in git("diff", "--name-only", "HEAD", "--", "*.py").splitlines() if p not in changed]
+    candidates = set(git("diff", "--name-only", built, "--", "*.py").splitlines()) if built else set()
+    candidates |= set(git("diff", "--name-only", "HEAD", "--", "*.py").splitlines())
+    candidates |= set(git("ls-files", "--others", "--exclude-standard", "--", "*.py").splitlines())
+    in_graph = {src(i) for i in code}
+    folders = {str(Path(p).parent) for p in in_graph}
+    built_at = graph_path.stat().st_mtime
+
+    def newer(p: str) -> bool:      # a deleted file counts: the graph still has its nodes
+        return not (ROOT / p).exists() or (ROOT / p).stat().st_mtime > built_at
+
+    changed = sorted(p for p in candidates if (p in in_graph or str(Path(p).parent) in folders) and newer(p))
     freshness = {"built_at_commit": built, "head": head, "changed_py_since_build": changed}
 
     inbound: dict[str, list[dict]] = defaultdict(list)
