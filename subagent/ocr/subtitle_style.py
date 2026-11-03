@@ -152,13 +152,17 @@ def propose_regions(gray: np.ndarray, light: bool, mser) -> list[np.ndarray]:
 
 def calibrate(bands: list[np.ndarray], *, stable_range: int = 12, source: str = "") -> SubtitleStyle:
     """Learn the subtitle style from bands sampled in time order (consecutive samples decide stability)."""
-    import cv2
-
-    from subagent.kernel import now_iso
-
     if len(bands) < 2:
         raise ValueError("calibration needs at least two sampled bands")
     h = bands[0].shape[0]
+    return _style_from_regions(_text_regions(bands, stable_range, h), h, source)
+
+
+def _text_regions(bands: list[np.ndarray], stable_range: int, h: int) -> dict[str, list[dict]]:
+    """Text-like regions per polarity ("light", "dark"): letter-sized, consistent stroke widths, unchanged between
+    consecutive samples; each with its stroke and ring greys and whether the ring sets it off (an outline)."""
+    import cv2
+
     mser = cv2.MSER_create()
     mser.setMinArea(max(4, h // 6))
     mser.setMaxArea(h * h * 2)
@@ -185,6 +189,12 @@ def calibrate(bands: list[np.ndarray], *, stable_range: int = 12, source: str = 
                     f["ringed"] = (core - ring_mid > 60) if pol == "light" else (ring_mid - core > 60)
                     f["frame"] = len(found[pol])
                     found[pol].append(f)
+    return found
+
+
+def _style_from_regions(found: dict[str, list[dict]], h: int, source: str) -> SubtitleStyle:
+    from subagent.kernel import now_iso
+
     # the text fill is the polarity whose strokes are consistently set off from what surrounds them: an outline,
     # itself a constant-width stroke, has the fill on one side and the background on the other (mixed ring)
     def score(p: str) -> float:
